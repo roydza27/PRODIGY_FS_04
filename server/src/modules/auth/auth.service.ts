@@ -286,7 +286,7 @@ export const resetPassword = async (password: string, token: string): Promise<st
   const user = await UserModel.findById(decoded.id).select("+passwordHash");
   if (!user) throw new Error("User associated with this token no longer exists.");
 
-  const secret = (process.env.JWT_SECRET || 'fallback_secret') + user.passwordHash;
+  const secret = env.jwtSecret + user.passwordHash;
   
   try {
     jwt.verify(token, secret);

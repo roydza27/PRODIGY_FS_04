@@ -42,8 +42,3 @@ export type ApiSuccessResponse<T> = {
   message?: string;
   data: T;
 };
-
-export type AuthResponse = {
-  user: AuthUser;
-  token: string;
-};
