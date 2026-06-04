@@ -2,3 +2,7 @@ venv/
 *.md
 
 node_modules/
+.agents/
+.claude/
+server/dist/
+skills-lock.json
