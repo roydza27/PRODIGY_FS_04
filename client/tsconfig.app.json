@@ -7,9 +7,11 @@
     "types": ["vite/client"],
     "skipLibCheck": true,
 
-    "baseUrl": ".",
+    // ⛔ Removed baseUrl and ignoreDeprecations completely
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"],
+      "radix-ui": ["./src/shared/components/ui/radix-wrapper.ts"] 
+      // 👈 Make sure this exactly matches the real path to your custom radix index file!
     },
 
     /* Bundler mode */

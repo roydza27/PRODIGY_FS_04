@@ -1,9 +1,12 @@
 import type {
   AuthUser,
-  AuthResponse,
 } from "@/shared/types/auth";
 
-export type { AuthUser, AuthResponse };
+import { type AuthResponse as NetworkAuthResponse } from "@/shared/types/auth";
+
+export type { AuthUser, NetworkAuthResponse };
+
+
 
 export type AuthSession = {
   user: AuthUser;

@@ -1,4 +1,4 @@
-import api from "@/services/api";
+import { api } from "@/services/api";
 import { AUTH_ROUTES } from "../utils/auth.constants";
 import type {
   AuthResponse,
@@ -25,12 +25,8 @@ export async function registerUser(data: RegisterPayload): Promise<AuthResponse>
   return response.data.data;
 }
 
-export async function getMe(token: string): Promise<AuthUser> {
-  const response = await api.get<ApiEnvelope<AuthUser>>(AUTH_ROUTES.me, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+export async function getMe(): Promise<AuthUser> {
+  const response = await api.get<ApiEnvelope<AuthUser>>(AUTH_ROUTES.me);
 
   return response.data.data;
 }

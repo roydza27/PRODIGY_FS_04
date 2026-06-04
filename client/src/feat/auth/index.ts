@@ -25,7 +25,6 @@ export * from "./schemas/forgot-password.schema";
 export * from "./schemas/reset-password.schema";
 
 export * from "./services/auth.service";
-export * from "./services/auth.storage";
 
 export * from "./types/auth.types";
 export * from "./types/auth.api-types";
