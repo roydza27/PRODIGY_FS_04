@@ -1,21 +1,45 @@
-import React from 'react';
+import StoreHeroSection from "@/features/home/components/StoreHeroSection";
+import CategorySection from "@/features/home/components/CategorySection";
+import FeaturedProductsSection from "@/features/home/components/FeaturedProductsSection";
+import PromoBannerSection from "@/features/home/components/PromoBannerSection";
+import StoreHighlightsSection from "@/features/home/components/StoreHighlightsSection";
+import CTASection from "@/features/home/components/CTASection";
 
-export default function HomePage() {
+import { useProducts } from "@/features/products/hooks/useProducts";
+
+const HomePage = () => {
+  const { products, loading, error } = useProducts();
+
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800 flex flex-col items-center justify-center p-5 font-sans">
-      <header className="text-center mb-8">
-        <h1 className="text-3xl font-bold tracking-tight mb-2">Welcome to My App</h1>
-        <p className="text-gray-500">Your secure and reliable platform.</p>
-      </header>
-      
-      <main className="max-w-md w-full">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-xl font-semibold mb-2">Get Started</h3>
-          <p className="text-gray-600 leading-relaxed">
-            Explore your dashboard, manage your settings, or reset your authentication files.
-          </p>
-        </div>
+    <div className="min-h-screen bg-[#111113] text-zinc-100">
+      <main className="flex flex-col overflow-hidden">
+        <section id="hero" className="pt-4 scroll-mt-24">
+          {/* PASS PROPS HERE */}
+          <StoreHeroSection products={products} isLoading={loading} />
+        </section>
+
+        <section id="categories" className="pt-24 md:pt-32 scroll-mt-24">
+          <CategorySection />
+        </section>
+
+        <section id="featured-products" className="pt-24 md:pt-32 scroll-mt-24">
+          <FeaturedProductsSection products={products} />
+        </section>
+
+        <section id="promo-banner" className="pt-24 md:pt-32 scroll-mt-24">
+          <PromoBannerSection />
+        </section>
+
+        <section id="highlights" className="pt-24 md:pt-32 scroll-mt-24">
+          <StoreHighlightsSection />
+        </section>
+
+        <section id="cta" className="pt-24 pb-20 md:pt-32 md:pb-28 scroll-mt-24">
+          <CTASection />
+        </section>
       </main>
     </div>
   );
-}
+};
+
+export default HomePage;
