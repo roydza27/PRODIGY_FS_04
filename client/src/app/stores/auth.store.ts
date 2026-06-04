@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import axios from "axios";
 import { getMe } from "@/feat/auth/services/auth.service";
 import type { AuthUser } from "@/shared/types/auth";
 
@@ -18,14 +17,6 @@ type AuthStore = {
   setSession: (payload: SetSessionPayload) => void;
   clearSession: () => void;
 };
-
-function syncAuthHeader(token: string | null) {
-  if (token) {
-    axios.defaults.headers.common.Authorization = `Bearer ${token}`;
-  } else {
-    delete axios.defaults.headers.common.Authorization;
-  }
-}
 
 function saveSession(token: string, user: AuthUser, remember: boolean) {
   const authStorage = remember ? localStorage : sessionStorage;
@@ -56,7 +47,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
   setSession: ({ user, token, remember }) => {
     saveSession(token, user, remember);
-    syncAuthHeader(token);
 
     set({
       user,
@@ -68,7 +58,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
   clearSession: () => {
     clearAllSessionStorage();
-    syncAuthHeader(null);
 
     set({
       user: null,
@@ -82,7 +71,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     const storedToken = readStoredToken();
 
     if (!storedToken) {
-      syncAuthHeader(null);
       set({
         user: null,
         token: null,
@@ -92,18 +80,18 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       return;
     }
 
-    syncAuthHeader(storedToken);
+    // Set token immediately so interceptor can use it
+    set({ token: storedToken });
 
     try {
-      const user = await getMe(storedToken);
+      const user = await getMe();
 
       set({
         user,
-        token: storedToken,
         isLoading: false,
         isAuthenticated: true,
       });
-    } catch {
+    } catch (error) {
       get().clearSession();
     }
   },

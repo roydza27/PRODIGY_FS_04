@@ -23,7 +23,7 @@ export const useLoginForm = () => {
       setSession({
         user: data.user,
         token: data.token,
-        remember: values.remember,
+        remember: values.remember ?? false,
       });
 
       toast.success(AUTH_MESSAGES.loginSuccess);

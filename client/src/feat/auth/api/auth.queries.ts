@@ -19,7 +19,7 @@ export const useMeQuery = ({ token, enabled = true }: UseMeQueryParams) => {
       if (!token) {
         throw new Error("Missing auth token");
       }
-      return authApi.me(token);
+      return authApi.me();
     },
     enabled: enabled && Boolean(token),
     staleTime: 1000 * 60 * 5,

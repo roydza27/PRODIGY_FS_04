@@ -3,12 +3,21 @@ import { useAuthStore } from "@/app/stores/auth.store";
 
 export default function AuthGuard() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isLoading = useAuthStore((state) => state.isLoading);
 
-  // If they are NOT logged in, kick them back to the login page
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />; // Assuming "/" is your login page right now
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#09090b] text-zinc-400">
+        <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm shadow-lg">
+          Loading session...
+        </div>
+      </div>
+    );
   }
 
-  // Otherwise, let them into the app
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
   return <Outlet />;
 }

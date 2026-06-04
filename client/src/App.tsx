@@ -11,8 +11,16 @@ function App() {
     hydrateSession();
   }, [hydrateSession]);
 
+  useEffect(() => {
+    document.documentElement.classList.add("dark");
+  }, []);
+
   if (isLoading) {
-    return <div className="flex h-screen w-full items-center justify-center bg-[#111113] text-white">Loading session...</div>;
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-[#111113] text-white">
+        Loading session...
+      </div>
+    );
   }
 
   return (
