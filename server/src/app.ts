@@ -2,6 +2,7 @@ import cors from "cors";
 import express from "express";
 import { env } from "./config/env";
 import authRouter from "./modules/auth/auth.routes";
+import workspaceRouter from "./modules/workspaces/workspace.routes";
 
 const app = express();
 
@@ -26,5 +27,6 @@ app.get("/health", healthHandler);
 app.get("/api/health", healthHandler);
 
 app.use("/api/auth", authRouter);
+app.use("/api/workspaces", workspaceRouter);
 
 export default app;
