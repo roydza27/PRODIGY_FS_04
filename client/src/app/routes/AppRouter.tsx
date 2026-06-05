@@ -18,7 +18,7 @@ import WorkspaceListPage from "@/feat/workspaces/pages/WorkspaceListPage";
 import WorkspaceHomePage from "@/feat/workspaces/pages/WorkspaceHomePage";
 import WorkspaceSettingsPage from "@/feat/workspaces/pages/WorkspaceSettingsPage";
 
-import RoomPage from "@/feat/rooms/pages/RoomPage";
+import RoomChatPage from "@/feat/chat/pages/RoomChatPage";
 
 import NotFoundPage from "@/feat/not-found/pages/NotFoundPage";
 
@@ -57,7 +57,7 @@ export default function AppRouter() {
 
           <Route
             path="/w/:workspaceSlug/rooms/:roomId"
-            element={<RoomPage />}
+            element={<RoomChatPage />}
           />
 
           <Route
