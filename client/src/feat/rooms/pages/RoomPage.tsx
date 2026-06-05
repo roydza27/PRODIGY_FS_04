@@ -4,6 +4,9 @@ import RoomSidebar from "../components/RoomSidebar";
 
 import { useRoom } from "../hooks/useRoom";
 
+import ChatHeader from "@/feat/chat/components/ChatHeader";
+import MessageList from "@/feat/chat/components/MessageList";
+
 export default function RoomPage() {
   const { workspaceId, roomId } = useParams();
 
@@ -16,20 +19,17 @@ export default function RoomPage() {
 
   return (
     <div className="flex h-full">
-      <RoomSidebar />
 
-      <div className="flex-1 p-6">
+      <div className="flex flex-1 flex-col">
         {isLoading && <p>Loading...</p>}
 
         {room && (
           <>
-            <h1 className="text-2xl font-bold">
-              {room.name}
-            </h1>
+            <ChatHeader room={room} />
 
-            <p className="mt-2 text-muted-foreground">
-              {room.description}
-            </p>
+            <div className="flex-1 overflow-hidden">
+              <MessageList />
+            </div>
           </>
         )}
       </div>
