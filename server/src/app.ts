@@ -3,6 +3,7 @@ import express from "express";
 import { env } from "./config/env";
 import authRouter from "./modules/auth/auth.routes";
 import workspaceRouter from "./modules/workspaces/workspace.routes";
+import { messageRoutes } from "./modules/messages";
 
 const app = express();
 
@@ -28,5 +29,6 @@ app.get("/api/health", healthHandler);
 
 app.use("/api/auth", authRouter);
 app.use("/api/workspaces", workspaceRouter);
+app.use("/api/messages", messageRoutes);
 
 export default app;
