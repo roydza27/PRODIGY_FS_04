@@ -30,3 +30,8 @@ export interface UpdateWorkspaceInput {
   description?: string;
   iconUrl?: string;
 }
+
+export interface WorkspaceWithRole
+  extends IWorkspace {
+  role: "owner" | "admin" | "member";
+}

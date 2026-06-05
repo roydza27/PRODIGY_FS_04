@@ -82,20 +82,6 @@ export function NavUser({ user, onLogout, items = [] }: NavUserProps) {
 
         <DropdownMenuSeparator className="bg-white/10" />
 
-        <div className="px-1 py-1">
-          <DropdownMenuItem 
-            asChild 
-            className="cursor-pointer bg-[#DB4444] text-white focus:bg-[#c53a3a] focus:text-white"
-          >
-            <Link to="/" className="flex items-center gap-2">
-              <Store className="size-4 shrink-0" />
-              <span className="font-medium">Return to Store</span>
-            </Link>
-          </DropdownMenuItem>
-        </div>
-
-        <DropdownMenuSeparator className="bg-white/10" />
-
         <DropdownMenuGroup>
           {items.map((item) => {
             const Icon = item.icon;
