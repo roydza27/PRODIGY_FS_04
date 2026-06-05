@@ -1,29 +1,42 @@
-import { useActiveWorkspace } from "./useActiveWorkspace";
-import { useAuthStore } from "@/app/stores/auth.store";
-import { useGetWorkspaceMembers } from "../api/workspace.queries";
 import { useMemo } from "react";
 
-/**
- * Hook to get the current user's role and membership in the active workspace
- */
+import { useAuthStore } from "@/app/stores/auth.store";
+
+import { useActiveWorkspace } from "./useActiveWorkspace";
+import { useGetWorkspaceMembers } from "../api/workspace.queries";
+
 export const useWorkspaceMember = () => {
   const { activeWorkspace } = useActiveWorkspace();
   const { user } = useAuthStore();
-  const { data: members, isLoading } = useGetWorkspaceMembers(
-    activeWorkspace?._id || "",
-    !!activeWorkspace
-  );
+
+  const { data: members, isLoading } =
+    useGetWorkspaceMembers(
+      activeWorkspace?._id || "",
+      !!activeWorkspace
+    );
 
   const membership = useMemo(() => {
     if (!members || !user) return null;
-    return members.find((m) => m.userId === user.id) || null;
+
+    return (
+      members.find(
+        (member) =>
+          String(
+            typeof member.userId === "string"
+              ? member.userId
+              : member.userId._id
+          ) === String(user.id)
+      ) ?? null
+    );
   }, [members, user]);
 
   return {
     membership,
-    role: membership?.role || null,
-    isAdmin: membership?.role === "admin" || membership?.role === "owner",
+    role: membership?.role ?? null,
     isOwner: membership?.role === "owner",
+    isAdmin:
+      membership?.role === "owner" ||
+      membership?.role === "admin",
     isLoading,
   };
 };
