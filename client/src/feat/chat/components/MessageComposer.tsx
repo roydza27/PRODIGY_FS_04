@@ -13,20 +13,22 @@ import {
   IconListNumbers
 } from "@tabler/icons-react";
 import { useActiveWorkspace } from "@/feat/workspaces/hooks/useActiveWorkspace";
-import { socketService } from "@/services/socket/socket.service";
 import { useAuthStore } from "@/app/stores/auth.store";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSendMessage } from "../hooks/useSendMessage";
 import type { MessagesResponse, Message } from "../types/message.types";
 import { cn } from "@/lib/utils";
 
 export default function MessageComposer() {
   const [text, setText] = useState("");
-  const { roomId } = useParams();
+  const { roomId, conversationId } = useParams();
   const { activeWorkspace } = useActiveWorkspace();
   const workspaceId = activeWorkspace?._id;
   const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const { sendMessage } = useSendMessage(workspaceId, roomId, conversationId);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -37,42 +39,36 @@ export default function MessageComposer() {
   }, [text]);
 
   const handleSend = () => {
-    if (!text.trim() || !workspaceId || !roomId || !user) return;
-
-    const newMessageData = {
-      workspaceId,
-      roomId,
-      type: "room",
-      text: text.trim(),
-    };
+    if (!text.trim() || !workspaceId || (!roomId && !conversationId) || !user) return;
 
     // Optimistic Update
     const tempId = `temp-${Date.now()}`;
     const optimisticMessage: Message = {
       _id: tempId,
       workspaceId,
-      roomId,
+      roomId: roomId || "",
+      conversationId: conversationId || "",
       senderId: {
         _id: user._id,
         name: user.name,
         avatarUrl: user.avatarUrl,
       },
-      type: "room",
+      type: conversationId ? "dm" : "room",
       text: text.trim(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
     queryClient.setQueryData<MessagesResponse>(
-      ["messages", roomId],
+      ["messages", roomId || conversationId],
       (oldData) => {
         if (!oldData) return [optimisticMessage];
         return [optimisticMessage, ...oldData];
       }
     );
 
-    // Emit socket event
-    socketService.emit("message:send", newMessageData);
+    // Use hook to send
+    sendMessage(text);
 
     setText("");
     if (textareaRef.current) {

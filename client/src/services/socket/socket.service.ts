@@ -3,15 +3,12 @@ import { io, Socket } from "socket.io-client";
 const SOCKET_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 class SocketService {
-  private socket: Socket | null = null;
+  private socket: Socket;
 
-  connect(token: string) {
-    if (this.socket?.connected) return;
-
+  constructor() {
     this.socket = io(SOCKET_URL, {
-      auth: { token },
       transports: ["websocket"],
-      autoConnect: true,
+      autoConnect: false,
     });
 
     this.socket.on("connect", () => {
@@ -27,27 +24,36 @@ class SocketService {
     });
   }
 
+  connect(token: string) {
+    if (this.socket.connected) return;
+
+    this.socket.auth = { token };
+    this.socket.connect();
+  }
+
   disconnect() {
-    if (this.socket) {
+    if (this.socket.connected) {
       this.socket.disconnect();
-      this.socket = null;
     }
   }
 
-  getSocket(): Socket | null {
+  getSocket(): Socket {
     return this.socket;
   }
 
   emit(event: string, data: any) {
-    this.socket?.emit(event, data);
+    if (!this.socket.connected) {
+      console.warn(`Attempted to emit ${event} while socket is disconnected. Socket.io will buffer this.`);
+    }
+    this.socket.emit(event, data);
   }
 
   on(event: string, callback: (...args: any[]) => void) {
-    this.socket?.on(event, callback);
+    this.socket.on(event, callback);
   }
 
   off(event: string, callback: (...args: any[]) => void) {
-    this.socket?.off(event, callback);
+    this.socket.off(event, callback);
   }
 }
 

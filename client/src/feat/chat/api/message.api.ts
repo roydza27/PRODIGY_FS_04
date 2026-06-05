@@ -12,3 +12,13 @@ export const getRoomMessages = async (
 
   return data;
 };
+
+export const getConversationMessages = async (
+  conversationId: string
+): Promise<MessagesResponse> => {
+  const { data } = await api.get(
+    `/messages/conversation/${conversationId}`
+  );
+
+  return data;
+};

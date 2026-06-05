@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useActiveWorkspace } from "@/feat/workspaces/hooks/useActiveWorkspace";
 import { useRoom } from "@/feat/rooms/hooks/useRoom";
 import { useRoomMessages } from "../hooks/useRoomMessages";
-import { useRoomSubscription } from "../hooks/useRoomSubscription";
+import { useSocketRoom } from "../hooks/useSocketRoom";
 
 import ChatHeader from "../components/ChatHeader";
 import RoomIntro from "../components/RoomIntro";
@@ -20,7 +20,7 @@ export default function RoomChatPage() {
   const { data: messages = [], isLoading: messagesLoading } = useRoomMessages(workspaceId, roomId);
 
   // Subscribe to real-time updates
-  useRoomSubscription(workspaceId, roomId);
+  useSocketRoom(workspaceId, roomId);
 
   const room = roomData?.data;
 

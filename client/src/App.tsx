@@ -2,6 +2,7 @@ import AppRouter from "@/app/routes";
 import { useEffect } from "react";
 import { Toaster } from "sonner";
 import { useAuthStore } from "@/app/stores/auth.store";
+import { SocketProvider } from "@/feat/chat/components/SocketProvider";
 
 function App() {
   const hydrateSession = useAuthStore((state) => state.hydrateSession);
@@ -24,10 +25,10 @@ function App() {
   }
 
   return (
-    <>
+    <SocketProvider>
       <AppRouter />
       <Toaster position="top-right" richColors />
-    </>
+    </SocketProvider>
   );
 }
 

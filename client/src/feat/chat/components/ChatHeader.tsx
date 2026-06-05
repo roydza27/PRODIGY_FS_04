@@ -5,33 +5,43 @@ import {
   IconBell, 
   IconPinned, 
   IconInfoCircle,
-  IconChevronDown
+  IconChevronDown,
+  IconAt
 } from "@tabler/icons-react";
 
 interface Props {
   roomName: string;
+  isDM?: boolean;
 }
 
 export default function ChatHeader({
   roomName,
+  isDM = false,
 }: Props) {
   return (
     <header className="flex h-14 items-center justify-between border-b border-border bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex items-center gap-3 overflow-hidden">
         <div className="flex items-center gap-1 font-bold text-foreground">
-          <IconHash size={20} className="text-muted-foreground" />
+          {isDM ? (
+            <IconAt size={20} className="text-muted-foreground" />
+          ) : (
+            <IconHash size={20} className="text-muted-foreground" />
+          )}
           <h2 className="truncate text-base tracking-tight">{roomName}</h2>
           <button className="flex h-5 w-5 items-center justify-center rounded hover:bg-muted transition-colors">
             <IconChevronDown size={14} className="text-muted-foreground" />
           </button>
         </div>
         
-        <div className="mx-1 h-4 w-[1px] bg-border" />
-        
-        <div className="hidden items-center gap-1 text-[13px] font-medium text-muted-foreground md:flex">
-          <IconUsers size={14} />
-          <span>12</span>
-        </div>
+        {!isDM && (
+          <>
+            <div className="mx-1 h-4 w-[1px] bg-border" />
+            <div className="hidden items-center gap-1 text-[13px] font-medium text-muted-foreground md:flex">
+              <IconUsers size={14} />
+              <span>12</span>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="flex items-center gap-1">
