@@ -7,6 +7,7 @@ export interface IRoom extends Document {
   description: string;
   type: "text" | "voice";
   isPrivate: boolean;
+  isDefault: boolean;
   createdBy: Types.ObjectId;
   status: "active" | "archived";
   createdAt: Date;

@@ -2,6 +2,9 @@
 
 import React from "react"
 import { ChevronDownIcon, Plus } from "lucide-react"
+
+import { useNavigate } from "react-router-dom";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,10 +26,16 @@ import { useAuthStore } from "@/app/stores/auth.store"
 import { CreateWorkspaceModal } from "@/feat/workspaces/components/CreateWorkspaceModal"
 
 export function WorkspaceSwitcher() {
+  const navigate = useNavigate();
   const { isMobile } = useSidebar()
   const { activeWorkspace, workspaces, isLoading } = useActiveWorkspace()
   const { setActiveWorkspaceId } = useWorkspaceStore()
   const [isModalOpen, setIsModalOpen] = React.useState(false)
+
+  const handleWorkspaceSwitch = (workspace: Workspace) => {
+    setActiveWorkspaceId(workspace._id);
+    navigate(`/w/${workspace.slug}`);
+  };
 
   const authIsLoading = useAuthStore((state) => state.isLoading)
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
@@ -102,7 +111,7 @@ export function WorkspaceSwitcher() {
               {workspaces?.map((workspace) => (
                 <DropdownMenuItem
                   key={workspace._id}
-                  onClick={() => setActiveWorkspaceId(workspace._id)}
+                  onClick={() => handleWorkspaceSwitch(workspace)}
                   className="gap-2 p-2 focus:bg-white/5 rounded-lg cursor-pointer text-foreground"
                 >
                   <div className="flex size-6 items-center justify-center rounded-md border border-white/10 bg-white/5">

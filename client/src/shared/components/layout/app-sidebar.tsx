@@ -6,6 +6,7 @@ import { IconSparkles } from "@tabler/icons-react";
 import { Store } from "lucide-react";
 
 import { WorkspaceSwitcher } from "@/shared/components/workspace/workspace-switcher";
+import RoomSidebar from "@/feat/rooms/components/RoomSidebar";
 
 import { SidebarNavItem } from "@/shared/components/layout/sidebar-nav-item";
 import { SidebarSection } from "@/shared/components/layout/sidebar-section";
@@ -56,53 +57,38 @@ export function AppSidebar({
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader className="border-b border-white/5 px-3 py-4">
         {/* ... (Header code remains exactly the same) ... */}
-<SidebarMenu>
-  <SidebarMenuItem>
-    <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-1">
-      <WorkspaceSwitcher />
-    </div>
-  </SidebarMenuItem>
-</SidebarMenu>
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-1">
+            <WorkspaceSwitcher />
+          </div>
+        </SidebarMenuItem>
+      </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent className="px-2 py-4">
-        {/* ... (SidebarContent code remains exactly the same) ... */}
-        <SidebarSection title="Browse">
-          {navMain.map((item) => (
-            <SidebarNavItem
-              key={item.title}
-              to={item.url}
-              label={item.title}
-              icon={item.icon}
-              end={item.url === "/products"}
-            />
-          ))}
-        </SidebarSection>
+<SidebarContent className="px-2 py-4">
+  <RoomSidebar />
 
-        {documents.length > 0 ? (
-          <SidebarSection title="Collections">
-            {documents.map((item) => (
-              <SidebarNavItem
-                key={item.name}
-                to={item.url}
-                label={item.name}
-                icon={item.icon}
-              />
-            ))}
-          </SidebarSection>
-        ) : null}
+  <SidebarSection title="Workspace">
+    {documents.map((item) => (
+      <SidebarNavItem
+        key={item.name}
+        to={item.url}
+        label={item.name}
+        icon={item.icon}
+      />
+    ))}
 
-        <SidebarSection title="More">
-          {navSecondary.map((item) => (
-            <SidebarNavItem
-              key={item.title}
-              to={item.url}
-              label={item.title}
-              icon={item.icon}
-            />
-          ))}
-        </SidebarSection>
-      </SidebarContent>
+    {navSecondary.map((item) => (
+      <SidebarNavItem
+        key={item.title}
+        to={item.url}
+        label={item.title}
+        icon={item.icon}
+      />
+    ))}
+  </SidebarSection>
+</SidebarContent>
 
       <SidebarFooter className="border-t border-white/5 p-3">
         <SidebarMenu>

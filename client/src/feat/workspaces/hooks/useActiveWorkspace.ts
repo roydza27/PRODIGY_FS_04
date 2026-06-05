@@ -1,28 +1,45 @@
 import { useMemo } from "react";
+
 import { useAuthStore } from "@/app/stores/auth.store";
+
 import { useGetWorkspaces } from "../api/workspace.queries";
 import { useWorkspaceStore } from "../store/workspace.store";
 
 /**
- * Hook to get the currently active workspace object
+ * Returns the currently active workspace
  */
 export const useActiveWorkspace = () => {
-  const isLoading = useAuthStore((state) => state.isLoading);
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const { activeWorkspaceId } = useWorkspaceStore();
+  const isAuthenticated = useAuthStore(
+    (state) => state.isAuthenticated
+  );
 
-  const canFetchWorkspaces = isAuthenticated && !isLoading;
+  const authLoading = useAuthStore(
+    (state) => state.isLoading
+  );
 
-  const { data: workspaces, isLoading: isWorkspacesLoading } = useGetWorkspaces(canFetchWorkspaces);
+  const activeWorkspaceId = useWorkspaceStore(
+    (state) => state.activeWorkspaceId
+  );
 
-  const activeWorkspace = useMemo(() => {
-    if (!workspaces || !activeWorkspaceId) return null;
-    return workspaces.find((w) => w._id === activeWorkspaceId) || null;
-  }, [workspaces, activeWorkspaceId]);
+  const {
+    data: workspaces = [],
+    isLoading: workspacesLoading,
+  } = useGetWorkspaces(
+    isAuthenticated && !authLoading
+  );
+
+  const activeWorkspace = useMemo(
+    () =>
+      workspaces.find(
+        (workspace) =>
+          workspace._id === activeWorkspaceId
+      ) ?? null,
+    [workspaces, activeWorkspaceId]
+  );
 
   return {
     activeWorkspace,
-    isLoading: isLoading || isWorkspacesLoading,
     workspaces,
+    isLoading: authLoading || workspacesLoading,
   };
 };

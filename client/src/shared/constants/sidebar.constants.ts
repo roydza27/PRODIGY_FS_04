@@ -12,23 +12,7 @@ import {
 export const workspaceSidebarData: SidebarData = {
   brandName: "RepoSense",
 
-  navMain: [
-    {
-      title: "Overview",
-      url: "/",
-      icon: IconHome,
-    },
-    {
-      title: "Members",
-      url: "/members",
-      icon: IconUsers,
-    },
-    {
-      title: "Invites",
-      url: "/invites",
-      icon: IconUserPlus,
-    },
-  ],
+  navMain: [],
 
   documents: [
     {
@@ -40,9 +24,14 @@ export const workspaceSidebarData: SidebarData = {
 
   navSecondary: [
     {
-      title: "Notifications",
-      url: "/notifications",
-      icon: IconBell,
+      title: "Members",
+      url: "/members",
+      icon: IconUsers,
+    },
+    {
+      title: "Invites",
+      url: "/invites",
+      icon: IconUserPlus,
     },
     {
       title: "Permissions",
@@ -56,11 +45,6 @@ export const workspaceSidebarData: SidebarData = {
       label: "Profile",
       url: "/profile",
       icon: IconUserCircle,
-    },
-    {
-      label: "Workspace Settings",
-      url: "/settings",
-      icon: IconSettings,
     },
   ],
 };

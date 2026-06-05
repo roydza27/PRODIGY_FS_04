@@ -35,3 +35,28 @@ export const createRoom = async (
 
   return room.toObject();
 };
+
+export const updateRoom = async (
+  roomId: string,
+  updates: {
+    name?: string;
+    description?: string;
+  }
+): Promise<IRoom | null> => {
+  return RoomModel.findByIdAndUpdate(
+    roomId,
+    {
+      $set: updates,
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  ).lean();
+};
+
+export const deleteRoom = async (
+  roomId: string
+): Promise<IRoom | null> => {
+  return RoomModel.findByIdAndDelete(roomId).lean();
+};
