@@ -7,6 +7,7 @@ import { Store } from "lucide-react";
 
 import { WorkspaceSwitcher } from "@/shared/components/workspace/workspace-switcher";
 import RoomSidebar from "@/feat/rooms/components/RoomSidebar";
+import DMList from "@/feat/chat/components/DMList";
 
 import { SidebarNavItem } from "@/shared/components/layout/sidebar-nav-item";
 import { SidebarSection } from "@/shared/components/layout/sidebar-section";
@@ -68,6 +69,7 @@ export function AppSidebar({
 
 <SidebarContent className="px-2 py-4">
   <RoomSidebar />
+  <DMList />
 
   <SidebarSection title="Workspace">
     {documents.map((item) => (

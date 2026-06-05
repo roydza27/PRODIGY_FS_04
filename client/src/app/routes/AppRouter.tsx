@@ -19,6 +19,7 @@ import WorkspaceHomePage from "@/feat/workspaces/pages/WorkspaceHomePage";
 import WorkspaceSettingsPage from "@/feat/workspaces/pages/WorkspaceSettingsPage";
 
 import RoomChatPage from "@/feat/chat/pages/RoomChatPage";
+import DMPage from "@/feat/chat/pages/DMPage";
 
 import NotFoundPage from "@/feat/not-found/pages/NotFoundPage";
 
@@ -58,6 +59,11 @@ export default function AppRouter() {
           <Route
             path="/w/:workspaceSlug/rooms/:roomId"
             element={<RoomChatPage />}
+          />
+
+          <Route
+            path="/w/:workspaceSlug/dm/:conversationId"
+            element={<DMPage />}
           />
 
           <Route
