@@ -1,11 +1,11 @@
 import { io, Socket } from "socket.io-client";
 
 const SOCKET_URL =
-  import.meta.env.VITE_SOCKET_URL ||
+  import.meta.env.VITE_SOCKET_URL ??
   "http://localhost:5000";
 
 export interface SendMessagePayload {
-  workspaceId: string;
+  workspaceId?: string;
   roomId?: string;
   conversationId?: string;
   text: string;
@@ -38,9 +38,6 @@ class SocketService {
     }
   }
 
-  /**
-   * Connect socket
-   */
   connect(token: string) {
     this.socket.auth = { token };
 
@@ -49,100 +46,79 @@ class SocketService {
     }
   }
 
-  /**
-   * Disconnect socket
-   */
   disconnect() {
     if (this.socket.connected) {
       this.socket.disconnect();
     }
   }
 
-  /**
-   * Connection state
-   */
-  isConnected(): boolean {
+  isConnected() {
     return this.socket.connected;
   }
 
-  /**
-   * Workspace events
-   */
+  getSocket() {
+    return this.socket;
+  }
+
+  emit(
+    event: string,
+    payload?: unknown
+  ) {
+    this.socket.emit(event, payload);
+  }
+
   joinWorkspace(workspaceId: string) {
-    this.socket.emit("workspace:join", {
+    this.emit("workspace:join", {
       workspaceId,
     });
   }
 
   leaveWorkspace(workspaceId: string) {
-    this.socket.emit("workspace:leave", {
+    this.emit("workspace:leave", {
       workspaceId,
     });
   }
 
-  /**
-   * Room events
-   */
   joinRoom(
     workspaceId: string,
     roomId: string
   ) {
-    this.socket.emit("room:join", {
+    this.emit("room:join", {
       workspaceId,
       roomId,
     });
   }
 
   leaveRoom(roomId: string) {
-    this.socket.emit("room:leave", {
+    this.emit("room:leave", {
       roomId,
     });
   }
 
-  /**
-   * DM events
-   */
-  joinDM(
-    workspaceId: string,
-    conversationId: string
-  ) {
-    this.socket.emit("dm:join", {
+  joinDM(workspaceId: string, conversationId: string) {
+    this.emit("dm:join", {
       workspaceId,
       conversationId,
     });
   }
 
   leaveDM(conversationId: string) {
-    this.socket.emit("dm:leave", {
+    this.emit("dm:leave", {
       conversationId,
     });
   }
 
-  /**
-   * Send message
-   */
-  sendMessage(
-    payload: SendMessagePayload
-  ) {
-    if (!this.socket.connected) {
-      if (import.meta.env.DEV) {
-        console.warn(
-          "[Socket] Cannot send message while disconnected."
-        );
-      }
+  sendMessage(payload: SendMessagePayload) {
+    console.log("[CLIENT] Sending", payload);
 
+    if (!this.socket.connected) {
+      console.warn("[Socket] Cannot send message");
       return;
     }
 
-    this.socket.emit(
-      "message:send",
-      payload
-    );
+    this.emit("message:send", payload);
   }
 
-  /**
-   * Generic listeners
-   */
   on<T = unknown>(
     event: string,
     callback: (data: T) => void
@@ -164,9 +140,6 @@ class SocketService {
     this.socket.once(event, callback);
   }
 
-  /**
-   * Remove listeners
-   */
   removeAllListeners(event?: string) {
     if (event) {
       this.socket.removeAllListeners(event);

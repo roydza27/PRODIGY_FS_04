@@ -56,14 +56,15 @@ export const registerDMHandlers = (
         /**
          * Verify user is a participant
          */
-        const isParticipant =
-          conversation.participants.some((participant: any) => {
+        const isParticipant = conversation.participantIds.some(
+          (participant: any) => {
             const id =
               participant?._id?.toString?.() ??
               participant?.toString?.();
 
             return id === userId;
-          });
+          }
+        );
 
         if (!isParticipant) {
           logger.warn(

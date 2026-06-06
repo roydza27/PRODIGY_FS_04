@@ -2,13 +2,18 @@ import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { socketService } from "@/services/socket/socket.service";
-import type { Message } from "../types/message.types";
+
+import type {
+  Message,
+  MessagesResponse,
+} from "../types/message.types";
 
 export function useSocketRoom(
   workspaceId?: string,
   roomId?: string
 ) {
-  const queryClient = useQueryClient();
+  const queryClient =
+    useQueryClient();
 
   useEffect(() => {
     if (!workspaceId || !roomId) {
@@ -16,50 +21,98 @@ export function useSocketRoom(
     }
 
     const joinRoom = () => {
-      socketService.joinWorkspace(workspaceId);
-      socketService.joinRoom(workspaceId, roomId);
+      socketService.joinWorkspace(
+        workspaceId
+      );
+
+      socketService.joinRoom(
+        workspaceId,
+        roomId
+      );
     };
 
     // Join immediately
     joinRoom();
 
-    const handleNewMessage = (message: Message) => {
-      const messageRoomId =
-        typeof message.roomId === "string"
-          ? message.roomId
-          : (message.roomId as { _id?: string })?._id;
+    // Rejoin after reconnect
+    socketService.on(
+      "connect",
+      joinRoom
+    );
 
-      // Ignore messages from other rooms
-      if (String(messageRoomId) !== String(roomId)) {
+    const handleNewMessage = (
+      message: Message
+    ) => {
+      console.log(
+        "[CLIENT] received",
+        message
+      );
+
+      const messageRoomId =
+        typeof message.roomId ===
+        "string"
+          ? message.roomId
+          : (
+              message.roomId as {
+                _id?: string;
+              }
+            )?._id;
+
+      if (
+        String(messageRoomId) !==
+        String(roomId)
+      ) {
         return;
       }
 
-      queryClient.setQueryData<Message[]>(
+      queryClient.setQueryData<MessagesResponse>(
         ["messages", roomId],
         (previous = []) => {
-          // Prevent duplicates
-          if (
+          const exists =
             previous.some(
-              (item) => item._id === message._id
-            )
-          ) {
+              (item) =>
+                item._id ===
+                message._id
+            );
+
+          if (exists) {
             return previous;
           }
 
-          /**
-           * Keep the same ordering as the API.
-           * If your API returns newest first,
-           * prepend the new message.
-           */
-          return [message, ...previous];
+          const optimisticIndex =
+            previous.findIndex(
+              (item) =>
+                item._id.startsWith(
+                  "temp-"
+                ) &&
+                item.text ===
+                  message.text &&
+                item.senderId._id ===
+                  message.senderId._id
+            );
+
+          if (
+            optimisticIndex !== -1
+          ) {
+            const messages = [
+              ...previous,
+            ];
+
+            messages[
+              optimisticIndex
+            ] = message;
+
+            return messages;
+          }
+
+          return [
+            ...previous,
+            message,
+          ];
         }
       );
     };
 
-    // Rejoin after reconnect
-    socketService.on("connect", joinRoom);
-
-    // Listen for realtime messages
     socketService.on<Message>(
       "message:new",
       handleNewMessage
@@ -76,7 +129,9 @@ export function useSocketRoom(
         handleNewMessage
       );
 
-      socketService.leaveRoom(roomId);
+      socketService.leaveRoom(
+        roomId
+      );
     };
   }, [
     workspaceId,
