@@ -1,12 +1,17 @@
 import { Request, Response } from "express";
 import * as conversationService from "./conversation.service";
 import { logger } from "../../utils/logger";
+import { AuthRequest } from "../../types/express";
 
-export const getOrCreateDM = async (req: Request, res: Response) => {
+export const getOrCreateDM = async (req: AuthRequest, res: Response) => {
   try {
     const { workspaceId } = req.params;
     const { participantId } = req.body;
-    const userId = (req as any).user.id;
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
     if (!participantId) {
       return res.status(400).json({ message: "Participant ID is required" });
@@ -25,10 +30,14 @@ export const getOrCreateDM = async (req: Request, res: Response) => {
   }
 };
 
-export const getConversations = async (req: Request, res: Response) => {
+export const getConversations = async (req: AuthRequest, res: Response) => {
   try {
     const { workspaceId } = req.params;
-    const userId = (req as any).user.id;
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
     const conversations = await conversationService.getUserConversations(
       workspaceId,

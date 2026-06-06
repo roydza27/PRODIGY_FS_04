@@ -2,7 +2,7 @@ import { Router } from "express";
 import * as conversationController from "./conversation.controller";
 import { protect as authMiddleware } from "../../middlewares/auth.middleware";
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 router.use(authMiddleware);
 
