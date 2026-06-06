@@ -19,6 +19,7 @@ class SocketService {
       transports: ["websocket"],
       autoConnect: false,
     });
+  }
 
     if (import.meta.env.DEV) {
       this.socket.on("connect", () => {
@@ -50,6 +51,11 @@ class SocketService {
     if (this.socket.connected) {
       this.socket.disconnect();
     }
+
+    this.socket.emit(
+      "message:send",
+      payload
+    );
   }
 
   isConnected() {
