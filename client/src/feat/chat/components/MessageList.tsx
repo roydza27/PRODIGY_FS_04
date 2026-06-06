@@ -1,62 +1,93 @@
 import { useEffect, useRef } from "react";
+import {
+  isSameDay,
+  differenceInMinutes,
+} from "date-fns";
+
 import Message from "./Message";
-import type { Message as MessageType } from "../types/message.types";
-import { isSameDay, differenceInMinutes } from "date-fns";
 import MessageDateDivider from "./MessageDateDivider";
+
+import type { Message as MessageType } from "../types/message.types";
 
 interface MessageListProps {
   messages?: MessageType[];
 }
 
-export default function MessageList({ messages = [] }: MessageListProps) {
+export default function MessageList({
+  messages = [],
+}: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom when new messages arrive
+  /**
+   * Always scroll to the latest message.
+   */
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    requestAnimationFrame(() => {
+      bottomRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
+    });
   }, [messages]);
 
   return (
-    <div className="flex flex-col-reverse py-4">
-      <div ref={bottomRef} />
-      
+    <div className="flex min-h-full flex-col px-2 py-4">
       {messages.map((message, index) => {
-        const nextMessage = messages[index + 1];
-        const prevMessage = messages[index - 1];
+        const previousMessage =
+          messages[index - 1];
 
-        // Since we are flex-col-reverse and mapping through a newest-first array:
-        // prevMessage is "newer" (lower in UI)
-        // nextMessage is "older" (higher in UI)
-        
-        const isLastInGroup = !prevMessage || 
-          prevMessage.senderId._id !== message.senderId._id ||
-          differenceInMinutes(new Date(prevMessage.createdAt), new Date(message.createdAt)) > 5;
+        const nextMessage =
+          messages[index + 1];
 
-        const isFirstInGroup = !nextMessage || 
-          nextMessage.senderId._id !== message.senderId._id ||
-          differenceInMinutes(new Date(message.createdAt), new Date(nextMessage.createdAt)) > 5;
+        const isGroupStart =
+          !previousMessage ||
+          previousMessage.senderId._id !==
+            message.senderId._id ||
+          differenceInMinutes(
+            new Date(message.createdAt),
+            new Date(previousMessage.createdAt)
+          ) > 5;
 
-        // Date divider logic: show if the next message (older) is on a different day
-        const showDateDivider = !nextMessage || !isSameDay(new Date(message.createdAt), new Date(nextMessage.createdAt));
+        const showDateDivider =
+          !previousMessage ||
+          !isSameDay(
+            new Date(message.createdAt),
+            new Date(previousMessage.createdAt)
+          );
 
         return (
           <div key={message._id}>
+            {showDateDivider && (
+              <MessageDateDivider
+                date={
+                  new Date(message.createdAt)
+                }
+              />
+            )}
+
             <Message
               author={{
-                name: message.senderId.name || "Unknown User",
-                avatarUrl: message.senderId.avatarUrl,
+                name:
+                  message.senderId.name ??
+                  "Unknown User",
+                avatarUrl:
+                  message.senderId.avatarUrl,
               }}
               content={message.text}
-              timestamp={new Date(message.createdAt)}
-              isGroupStart={isFirstInGroup}
-              isContinuation={!isFirstInGroup}
+              timestamp={
+                new Date(message.createdAt)
+              }
+              isGroupStart={isGroupStart}
+              isContinuation={!isGroupStart}
             />
-            {showDateDivider && (
-              <MessageDateDivider date={new Date(message.createdAt)} />
-            )}
           </div>
         );
       })}
+
+      <div
+        ref={bottomRef}
+        className="h-1 w-full"
+      />
     </div>
   );
 }

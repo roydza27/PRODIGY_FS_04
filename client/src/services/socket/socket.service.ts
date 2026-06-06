@@ -1,6 +1,15 @@
 import { io, Socket } from "socket.io-client";
 
-const SOCKET_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const SOCKET_URL =
+  import.meta.env.VITE_SOCKET_URL ||
+  "http://localhost:5000";
+
+export interface SendMessagePayload {
+  workspaceId: string;
+  roomId?: string;
+  conversationId?: string;
+  text: string;
+}
 
 class SocketService {
   private socket: Socket;
@@ -11,50 +20,162 @@ class SocketService {
       autoConnect: false,
     });
 
-    this.socket.on("connect", () => {
-      console.log("Connected to socket server");
-    });
+    if (import.meta.env.DEV) {
+      this.socket.on("connect", () => {
+        console.info("[Socket] Connected");
+      });
 
-    this.socket.on("disconnect", () => {
-      console.log("Disconnected from socket server");
-    });
+      this.socket.on("disconnect", (reason) => {
+        console.info("[Socket] Disconnected:", reason);
+      });
 
-    this.socket.on("connect_error", (error) => {
-      console.error("Socket connection error:", error);
-    });
+      this.socket.on("connect_error", (error) => {
+        console.error(
+          "[Socket] Connection Error:",
+          error
+        );
+      });
+    }
   }
 
+  /**
+   * Connect socket
+   */
   connect(token: string) {
-    if (this.socket.connected) return;
-
     this.socket.auth = { token };
-    this.socket.connect();
+
+    if (!this.socket.connected) {
+      this.socket.connect();
+    }
   }
 
+  /**
+   * Disconnect socket
+   */
   disconnect() {
     if (this.socket.connected) {
       this.socket.disconnect();
     }
   }
 
-  getSocket(): Socket {
-    return this.socket;
+  /**
+   * Connection state
+   */
+  isConnected(): boolean {
+    return this.socket.connected;
   }
 
-  emit(event: string, data: any) {
+  /**
+   * Workspace events
+   */
+  joinWorkspace(workspaceId: string) {
+    this.socket.emit("workspace:join", {
+      workspaceId,
+    });
+  }
+
+  leaveWorkspace(workspaceId: string) {
+    this.socket.emit("workspace:leave", {
+      workspaceId,
+    });
+  }
+
+  /**
+   * Room events
+   */
+  joinRoom(
+    workspaceId: string,
+    roomId: string
+  ) {
+    this.socket.emit("room:join", {
+      workspaceId,
+      roomId,
+    });
+  }
+
+  leaveRoom(roomId: string) {
+    this.socket.emit("room:leave", {
+      roomId,
+    });
+  }
+
+  /**
+   * DM events
+   */
+  joinDM(
+    workspaceId: string,
+    conversationId: string
+  ) {
+    this.socket.emit("dm:join", {
+      workspaceId,
+      conversationId,
+    });
+  }
+
+  leaveDM(conversationId: string) {
+    this.socket.emit("dm:leave", {
+      conversationId,
+    });
+  }
+
+  /**
+   * Send message
+   */
+  sendMessage(
+    payload: SendMessagePayload
+  ) {
     if (!this.socket.connected) {
-      console.warn(`Attempted to emit ${event} while socket is disconnected. Socket.io will buffer this.`);
+      if (import.meta.env.DEV) {
+        console.warn(
+          "[Socket] Cannot send message while disconnected."
+        );
+      }
+
+      return;
     }
-    this.socket.emit(event, data);
+
+    this.socket.emit(
+      "message:send",
+      payload
+    );
   }
 
-  on(event: string, callback: (...args: any[]) => void) {
+  /**
+   * Generic listeners
+   */
+  on<T = unknown>(
+    event: string,
+    callback: (data: T) => void
+  ) {
     this.socket.on(event, callback);
   }
 
-  off(event: string, callback: (...args: any[]) => void) {
+  off<T = unknown>(
+    event: string,
+    callback: (data: T) => void
+  ) {
     this.socket.off(event, callback);
+  }
+
+  once<T = unknown>(
+    event: string,
+    callback: (data: T) => void
+  ) {
+    this.socket.once(event, callback);
+  }
+
+  /**
+   * Remove listeners
+   */
+  removeAllListeners(event?: string) {
+    if (event) {
+      this.socket.removeAllListeners(event);
+      return;
+    }
+
+    this.socket.removeAllListeners();
   }
 }
 
-export const socketService = new SocketService();
+export const socketService =
+  new SocketService();

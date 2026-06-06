@@ -1,11 +1,20 @@
 import { Server, Socket } from "socket.io";
 import { Server as HttpServer } from "http";
 import jwt from "jsonwebtoken";
+
 import { env } from "../config/env";
 import { logger } from "../utils/logger";
+
 import { registerRoomHandlers } from "./handlers/room.handler";
 import { registerMessageHandlers } from "./handlers/message.handler";
 import { registerDMHandlers } from "./handlers/dm.handler";
+
+interface SocketJwtPayload {
+  id?: string;
+  userId?: string;
+  _id?: string;
+  sub?: string;
+}
 
 export const setupSocket = (server: HttpServer) => {
   const io = new Server(server, {
@@ -15,34 +24,70 @@ export const setupSocket = (server: HttpServer) => {
     },
   });
 
-  // Middleware for authentication
   io.use((socket: Socket, next) => {
-    const token = socket.handshake.auth?.token || socket.handshake.query?.token;
+    const token =
+      socket.handshake.auth?.token ||
+      socket.handshake.query?.token;
 
     if (!token) {
-      return next(new Error("Authentication error: No token provided"));
+      return next(new Error("Authentication failed."));
     }
 
     try {
-      const decoded = jwt.verify(token as string, env.jwtSecret) as { id: string };
-      socket.data.userId = decoded.id;
+      const decoded = jwt.verify(
+        token as string,
+        env.jwtSecret
+      ) as SocketJwtPayload;
+
+      const userId =
+        decoded.id ??
+        decoded.userId ??
+        decoded._id ??
+        decoded.sub;
+
+      if (!userId) {
+        logger.error(
+          "[Socket] Invalid JWT payload:",
+          decoded
+        );
+
+        return next(
+          new Error("Authentication failed.")
+        );
+      }
+
+      socket.data.userId = userId;
+
       next();
-    } catch (err) {
-      logger.error("Socket Auth Error:", err);
-      next(new Error("Authentication error: Invalid token"));
+    } catch (error) {
+      logger.error(
+        "Socket authentication failed",
+        error
+      );
+
+      next(
+        new Error("Authentication failed.")
+      );
     }
   });
 
   io.on("connection", (socket: Socket) => {
-    logger.info(`User connected: ${socket.data.userId}`);
+    const userId = socket.data.userId;
 
-    // Register handlers
+    logger.info(
+      `[Socket] User connected: ${userId}`
+    );
+
+    socket.join(`user:${userId}`);
+
     registerRoomHandlers(io, socket);
     registerMessageHandlers(io, socket);
     registerDMHandlers(io, socket);
 
-    socket.on("disconnect", () => {
-      logger.info(`User disconnected: ${socket.data.userId}`);
+    socket.on("disconnect", (reason) => {
+      logger.info(
+        `[Socket] User disconnected: ${userId} (${reason})`
+      );
     });
   });
 

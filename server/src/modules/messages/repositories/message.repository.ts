@@ -21,7 +21,7 @@ export const findRoomMessages = async (
     type: "room",
   })
     .select("-__v")
-    .sort({ createdAt: -1 })
+    .sort({ createdAt: 1 })
     .limit(limit)
     .populate("senderId", "name avatarUrl")
     .lean()
@@ -37,7 +37,7 @@ export const findConversationMessages = async (
     type: "dm",
   })
     .select("-__v")
-    .sort({ createdAt: -1 })
+    .sort({ createdAt: 1 })
     .limit(limit)
     .populate("senderId", "name avatarUrl")
     .lean()

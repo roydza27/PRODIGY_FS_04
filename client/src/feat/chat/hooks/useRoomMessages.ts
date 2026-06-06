@@ -2,16 +2,22 @@ import { useQuery } from "@tanstack/react-query";
 
 import { getRoomMessages } from "../api/message.api";
 
-export const useRoomMessages = (
+export function useRoomMessages(
   workspaceId?: string,
   roomId?: string
-) => {
+) {
   return useQuery({
     queryKey: ["messages", roomId],
 
-    queryFn: () =>
-      getRoomMessages(workspaceId!, roomId!),
+    queryFn: () => {
+      return getRoomMessages(
+        workspaceId!,
+        roomId!
+      );
+    },
 
-    enabled: !!workspaceId && !!roomId,
+    enabled: Boolean(workspaceId && roomId),
+
+    staleTime: 30 * 1000,
   });
-};
+}

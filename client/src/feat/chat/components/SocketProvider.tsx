@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
+
 import { useAuthStore } from "@/app/stores/auth.store";
 import { socketService } from "@/services/socket/socket.service";
 
@@ -8,44 +15,67 @@ interface SocketContextType {
 
 const SocketContext = createContext<SocketContextType | null>(null);
 
-export const useSocket = () => {
+export function useSocket() {
   const context = useContext(SocketContext);
-  if (!context) {
-    throw new Error("useSocket must be used within a SocketProvider");
-  }
-  return context;
-};
 
-export const SocketProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  if (!context) {
+    throw new Error(
+      "useSocket must be used within a SocketProvider"
+    );
+  }
+
+  return context;
+}
+
+interface SocketProviderProps {
+  children: ReactNode;
+}
+
+export function SocketProvider({
+  children,
+}: SocketProviderProps) {
   const token = useAuthStore((state) => state.token);
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const [isConnected, setIsConnected] = useState(socketService.getSocket().connected);
+  const isAuthenticated = useAuthStore(
+    (state) => state.isAuthenticated
+  );
+
+  const [isConnected, setIsConnected] =
+    useState(false);
 
   useEffect(() => {
-    const socket = socketService.getSocket();
+    const handleConnect = () => {
+      setIsConnected(true);
+    };
 
-    const onConnect = () => setIsConnected(true);
-    const onDisconnect = () => setIsConnected(false);
+    const handleDisconnect = () => {
+      setIsConnected(false);
+    };
 
-    socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
+    socketService.on("connect", handleConnect);
+    socketService.on("disconnect", handleDisconnect);
 
     if (isAuthenticated && token) {
       socketService.connect(token);
-      socketService.emit("auth:join", {});
     } else {
       socketService.disconnect();
     }
 
     return () => {
-      socket.off("connect", onConnect);
-      socket.off("disconnect", onDisconnect);
+      socketService.off("connect", handleConnect);
+      socketService.off(
+        "disconnect",
+        handleDisconnect
+      );
     };
   }, [isAuthenticated, token]);
 
   return (
-    <SocketContext.Provider value={{ isConnected }}>
+    <SocketContext.Provider
+      value={{
+        isConnected,
+      }}
+    >
       {children}
     </SocketContext.Provider>
   );
-};
+}
