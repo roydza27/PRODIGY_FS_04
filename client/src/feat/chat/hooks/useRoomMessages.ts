@@ -9,14 +9,22 @@ export function useRoomMessages(
   return useQuery({
     queryKey: ["messages", roomId],
 
-    queryFn: () => {
+    queryFn: async () => {
+      if (!workspaceId || !roomId) {
+        throw new Error(
+          "Workspace ID and Room ID are required"
+        );
+      }
+
       return getRoomMessages(
-        workspaceId!,
-        roomId!
+        workspaceId,
+        roomId
       );
     },
 
-    enabled: Boolean(workspaceId && roomId),
+    enabled: Boolean(
+      workspaceId && roomId
+    ),
 
     staleTime: 30 * 1000,
   });
