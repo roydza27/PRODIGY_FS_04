@@ -3,7 +3,10 @@ import { Outlet } from "react-router-dom";
 
 import { AppSidebar } from "@/shared/components/layout/app-sidebar";
 import { SiteHeader } from "@/shared/components/layout/site-header";
-import { SidebarInset, SidebarProvider } from "@/shared/components/ui/sidebar";
+import {
+  SidebarInset,
+  SidebarProvider,
+} from "@/shared/components/ui/sidebar";
 import { TooltipProvider } from "@/shared/components/ui/tooltip";
 import { workspaceSidebarData } from "@/shared/constants/sidebar.constants";
 
@@ -31,11 +34,10 @@ export default function AdminLayout() {
           variant="inset"
         />
 
-        <SidebarInset className="min-h-screen rounded text-[#FAFAFA]">
-          <SiteHeader />
+        <SidebarInset className="h-screen overflow-hidden rounded text-[#FAFAFA]">
 
-          <main className="flex flex-1 overflow-hidden">
-            <div className="flex-1 overflow-auto">
+          <main className="flex h-[calc(100vh-var(--header-height))] overflow-hidden">
+            <div className="flex-1 min-h-0 overflow-hidden">
               <Outlet />
             </div>
           </main>
