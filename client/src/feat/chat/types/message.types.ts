@@ -2,7 +2,8 @@ export interface Message {
   _id: string;
 
   workspaceId: string;
-  roomId: string;
+  roomId?: string;
+  conversationId?: string;
 
   senderId: {
     _id: string;

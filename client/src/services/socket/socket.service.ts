@@ -1,54 +1,181 @@
 import { io, Socket } from "socket.io-client";
 
-const SOCKET_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const SOCKET_URL =
+  import.meta.env.VITE_SOCKET_URL ||
+  "http://localhost:5000";
+
+export interface SendMessagePayload {
+  workspaceId: string;
+  roomId?: string;
+  conversationId?: string;
+  text: string;
+}
 
 class SocketService {
-  private socket: Socket | null = null;
+  private socket: Socket;
 
-  connect(token: string) {
-    if (this.socket?.connected) return;
-
+  constructor() {
     this.socket = io(SOCKET_URL, {
-      auth: { token },
       transports: ["websocket"],
-      autoConnect: true,
+      autoConnect: false,
     });
 
-    this.socket.on("connect", () => {
-      console.log("Connected to socket server");
-    });
+    if (import.meta.env.DEV) {
+      this.socket.on("connect", () => {
+        console.info("[Socket] Connected");
+      });
 
-    this.socket.on("disconnect", () => {
-      console.log("Disconnected from socket server");
-    });
+      this.socket.on("disconnect", (reason) => {
+        console.info("[Socket] Disconnected:", reason);
+      });
 
-    this.socket.on("connect_error", (error) => {
-      console.error("Socket connection error:", error);
-    });
-  }
-
-  disconnect() {
-    if (this.socket) {
-      this.socket.disconnect();
-      this.socket = null;
+      this.socket.on("connect_error", (error) => {
+        console.error(
+          "[Socket] Connection Error:",
+          error
+        );
+      });
     }
   }
 
-  getSocket(): Socket | null {
-    return this.socket;
+  /**
+   * Connect socket
+   */
+  connect(token: string) {
+    this.socket.auth = { token };
+
+    if (!this.socket.connected) {
+      this.socket.connect();
+    }
   }
 
-  emit(event: string, data: any) {
-    this.socket?.emit(event, data);
+  /**
+   * Disconnect socket
+   */
+  disconnect() {
+    if (this.socket.connected) {
+      this.socket.disconnect();
+    }
   }
 
-  on(event: string, callback: (...args: any[]) => void) {
-    this.socket?.on(event, callback);
+  /**
+   * Connection state
+   */
+  isConnected(): boolean {
+    return this.socket.connected;
   }
 
-  off(event: string, callback: (...args: any[]) => void) {
-    this.socket?.off(event, callback);
+  /**
+   * Workspace events
+   */
+  joinWorkspace(workspaceId: string) {
+    this.socket.emit("workspace:join", {
+      workspaceId,
+    });
+  }
+
+  leaveWorkspace(workspaceId: string) {
+    this.socket.emit("workspace:leave", {
+      workspaceId,
+    });
+  }
+
+  /**
+   * Room events
+   */
+  joinRoom(
+    workspaceId: string,
+    roomId: string
+  ) {
+    this.socket.emit("room:join", {
+      workspaceId,
+      roomId,
+    });
+  }
+
+  leaveRoom(roomId: string) {
+    this.socket.emit("room:leave", {
+      roomId,
+    });
+  }
+
+  /**
+   * DM events
+   */
+  joinDM(
+    workspaceId: string,
+    conversationId: string
+  ) {
+    this.socket.emit("dm:join", {
+      workspaceId,
+      conversationId,
+    });
+  }
+
+  leaveDM(conversationId: string) {
+    this.socket.emit("dm:leave", {
+      conversationId,
+    });
+  }
+
+  /**
+   * Send message
+   */
+  sendMessage(
+    payload: SendMessagePayload
+  ) {
+    if (!this.socket.connected) {
+      if (import.meta.env.DEV) {
+        console.warn(
+          "[Socket] Cannot send message while disconnected."
+        );
+      }
+
+      return;
+    }
+
+    this.socket.emit(
+      "message:send",
+      payload
+    );
+  }
+
+  /**
+   * Generic listeners
+   */
+  on<T = unknown>(
+    event: string,
+    callback: (data: T) => void
+  ) {
+    this.socket.on(event, callback);
+  }
+
+  off<T = unknown>(
+    event: string,
+    callback: (data: T) => void
+  ) {
+    this.socket.off(event, callback);
+  }
+
+  once<T = unknown>(
+    event: string,
+    callback: (data: T) => void
+  ) {
+    this.socket.once(event, callback);
+  }
+
+  /**
+   * Remove listeners
+   */
+  removeAllListeners(event?: string) {
+    if (event) {
+      this.socket.removeAllListeners(event);
+      return;
+    }
+
+    this.socket.removeAllListeners();
   }
 }
 
-export const socketService = new SocketService();
+export const socketService =
+  new SocketService();

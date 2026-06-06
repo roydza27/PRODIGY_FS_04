@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { 
-  IconPlus, 
-  IconMoodSmile, 
+import {
+  IconPlus,
+  IconMoodSmile,
   IconSend,
   IconBold,
   IconItalic,
@@ -10,25 +10,34 @@ import {
   IconCode,
   IconLink,
   IconList,
-  IconListNumbers
+  IconListNumbers,
 } from "@tabler/icons-react";
+
 import { useActiveWorkspace } from "@/feat/workspaces/hooks/useActiveWorkspace";
-import { socketService } from "@/services/socket/socket.service";
-import { useAuthStore } from "@/app/stores/auth.store";
-import { useQueryClient } from "@tanstack/react-query";
-import type { MessagesResponse, Message } from "../types/message.types";
+import { useSendMessage } from "../hooks/useSendMessage";
 import { cn } from "@/lib/utils";
+
+// Define toolbar items outside the component for cleaner code
+const TOOLBAR_ITEMS = [
+  { icon: IconBold, label: "Bold" },
+  { icon: IconItalic, label: "Italic" },
+  { icon: IconStrikethrough, label: "Strikethrough" },
+  { type: "divider" },
+  { icon: IconLink, label: "Add Link" },
+  { icon: IconList, label: "Bullet List" },
+  { icon: IconListNumbers, label: "Numbered List" },
+  { type: "divider" },
+  { icon: IconCode, label: "Code" },
+];
 
 export default function MessageComposer() {
   const [text, setText] = useState("");
-  const { roomId } = useParams();
-  const { activeWorkspace } = useActiveWorkspace();
-  const workspaceId = activeWorkspace?._id;
-  const user = useAuthStore((state) => state.user);
-  const queryClient = useQueryClient();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { roomId, conversationId } = useParams();
+  const { activeWorkspace } = useActiveWorkspace();
 
-  // Auto-resize textarea
+  const { sendMessage } = useSendMessage(activeWorkspace?._id, roomId, conversationId);
+
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
@@ -37,102 +46,56 @@ export default function MessageComposer() {
   }, [text]);
 
   const handleSend = () => {
-    if (!text.trim() || !workspaceId || !roomId || !user) return;
-
-    const newMessageData = {
-      workspaceId,
-      roomId,
-      type: "room",
-      text: text.trim(),
-    };
-
-    // Optimistic Update
-    const tempId = `temp-${Date.now()}`;
-    const optimisticMessage: Message = {
-      _id: tempId,
-      workspaceId,
-      roomId,
-      senderId: {
-        _id: user._id,
-        name: user.name,
-        avatarUrl: user.avatarUrl,
-      },
-      type: "room",
-      text: text.trim(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    queryClient.setQueryData<MessagesResponse>(
-      ["messages", roomId],
-      (oldData) => {
-        if (!oldData) return [optimisticMessage];
-        return [optimisticMessage, ...oldData];
-      }
-    );
-
-    // Emit socket event
-    socketService.emit("message:send", newMessageData);
-
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    sendMessage(trimmed);
     setText("");
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
   };
 
   return (
-    <div className="px-6 pb-6 pt-2">
+    <div className="p-4 md:px-6 md:pb-6">
       <div className="mx-auto max-w-5xl">
-        <div className="relative flex flex-col overflow-hidden rounded-xl border border-border bg-card/50 shadow-sm focus-within:border-primary/30 focus-within:ring-1 focus-within:ring-primary/30 transition-all duration-200">
+        <div className="relative flex flex-col rounded-xl border border-border bg-card shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary/20">
           
-          {/* Formatting Toolbar */}
-          <div className="flex items-center gap-0.5 border-b border-border/50 bg-muted/30 px-2 py-1">
-            <ToolbarButton icon={<IconBold size={16} />} />
-            <ToolbarButton icon={<IconItalic size={16} />} />
-            <ToolbarButton icon={<IconStrikethrough size={16} />} />
-            <div className="mx-1 h-4 w-[1px] bg-border/50" />
-            <ToolbarButton icon={<IconLink size={16} />} />
-            <ToolbarButton icon={<IconList size={16} />} />
-            <ToolbarButton icon={<IconListNumbers size={16} />} />
-            <div className="mx-1 h-4 w-[1px] bg-border/50" />
-            <ToolbarButton icon={<IconCode size={16} />} />
+          {/* Toolbar */}
+          <div className="flex items-center gap-1 border-b border-border/50 bg-muted/20 px-2 py-1.5">
+            {TOOLBAR_ITEMS.map((item, idx) => 
+              'type' in item ? (
+                <div key={idx} className="mx-1 h-4 w-px bg-border" />
+              ) : (
+                <ToolbarButton key={idx} icon={<item.icon size={16} />} label={item.label} />
+              )
+            )}
           </div>
 
           {/* Input Area */}
           <div className="flex items-end gap-2 p-3">
-            <button className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors">
+            <button className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors">
               <IconPlus size={20} />
             </button>
-            
+
             <textarea
               ref={textareaRef}
-              rows={1}
               value={text}
               onChange={(e) => setText(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Message #general"
-              className="flex-1 max-h-[400px] resize-none bg-transparent py-1.5 text-[15px] text-foreground placeholder-muted-foreground focus:outline-none"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              placeholder="Type a message..."
+              className="flex-1 max-h-[400px] min-h-[44px] py-2.5 resize-none bg-transparent text-[15px] focus:outline-none"
             />
 
-            <div className="flex items-center gap-1 self-end mb-0.5">
-              <button className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
-                <IconMoodSmile size={20} />
-              </button>
+            <div className="flex items-center gap-1 pb-1">
+              <ToolbarButton icon={<IconMoodSmile size={20} />} label="Emoji" />
               <button
                 onClick={handleSend}
                 disabled={!text.trim()}
                 className={cn(
-                  "flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200",
-                  text.trim() 
-                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/20 scale-100" 
-                    : "bg-muted text-muted-foreground scale-95 opacity-50"
+                  "flex h-9 w-9 items-center justify-center rounded-lg transition-all",
+                  text.trim() ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground opacity-50"
                 )}
               >
                 <IconSend size={18} />
@@ -140,10 +103,11 @@ export default function MessageComposer() {
             </div>
           </div>
         </div>
-        
+
+        {/* Hint Text */}
         <div className="mt-2 flex justify-end px-1">
-          <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider">
-            <b>Enter</b> to send • <b>Shift + Enter</b> for new line
+          <p className="text-[11px] font-medium text-muted-foreground/70">
+            <kbd className="bg-muted px-1 rounded">Enter</kbd> to send • <kbd className="bg-muted px-1 rounded">Shift + Enter</kbd> for new line
           </p>
         </div>
       </div>
@@ -151,9 +115,13 @@ export default function MessageComposer() {
   );
 }
 
-function ToolbarButton({ icon }: { icon: React.ReactNode }) {
+function ToolbarButton({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <button className="flex h-7 w-7 items-center justify-center rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+    <button
+      type="button"
+      aria-label={label}
+      className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+    >
       {icon}
     </button>
   );

@@ -2,6 +2,7 @@ import { Router } from "express";
 import { protect as authMiddleware } from "../../middlewares/auth.middleware";
 import * as workspaceController from "./workspace.controller";
 import roomRouter from "../rooms/room.routes";
+import conversationRouter from "../conversations/conversation.routes";
 
 const router = Router();
 
@@ -22,5 +23,8 @@ router.patch("/:workspaceId/members/role", workspaceController.updateMemberRole)
 
 // Rooms
 router.use("/:workspaceId/rooms", roomRouter);
+
+// Conversations (DMs)
+router.use("/:workspaceId/conversations", conversationRouter);
 
 export default router;
