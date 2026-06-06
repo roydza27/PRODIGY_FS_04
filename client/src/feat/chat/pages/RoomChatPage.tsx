@@ -62,10 +62,13 @@ export default function RoomChatPage() {
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-background">
-      <ChatHeader roomName={room.name} />
+      <ChatHeader 
+        roomName={room.name} 
+        memberCount={room.memberCount}
+      />
 
-      <div className="flex-1 min-h-0 flex flex-col">
-        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
           <div className="flex min-h-full flex-col">
             <RoomIntro
               roomName={room.name}
@@ -78,7 +81,7 @@ export default function RoomChatPage() {
           </div>
         </div>
 
-        <MessageComposer />
+        <MessageComposer roomId={roomId} />
       </div>
     </div>
   );
