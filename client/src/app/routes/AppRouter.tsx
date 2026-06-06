@@ -32,16 +32,27 @@ export default function AppRouter() {
       {/* Guest Routes */}
       <Route element={<GuestGuard />}>
         <Route element={<AuthLayout />}>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/forgotPassword" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route
+            path="/login"
+            element={<LoginPage />}
+          />
+          <Route
+            path="/register"
+            element={<RegisterPage />}
+          />
+          <Route
+            path="/forgotPassword"
+            element={<ForgotPasswordPage />}
+          />
+          <Route
+            path="/reset-password"
+            element={<ResetPasswordPage />}
+          />
         </Route>
       </Route>
 
       {/* Protected Routes */}
       <Route element={<AuthGuard />}>
-        {/* Global App Pages */}
         <Route element={<AppLayout />}>
           <Route
             path="/workspaces"
@@ -49,7 +60,6 @@ export default function AppRouter() {
           />
         </Route>
 
-        {/* Workspace Pages */}
         <Route element={<WorkspaceLayout />}>
           <Route
             path="/w/:workspaceSlug"
@@ -62,7 +72,7 @@ export default function AppRouter() {
           />
 
           <Route
-            path="/w/:workspaceSlug/dm/:conversationId"
+            path="/dm/:conversationId"
             element={<DMPage />}
           />
 
@@ -73,7 +83,10 @@ export default function AppRouter() {
         </Route>
       </Route>
 
-      <Route path="*" element={<NotFoundPage />} />
+      <Route
+        path="*"
+        element={<NotFoundPage />}
+      />
     </Routes>
   );
 }

@@ -36,7 +36,7 @@ export default function CreateDMDialog({ workspaceId, trigger }: CreateDMDialogP
     if (!user) return false;
     
     // Don't show current user
-    if (user._id === currentUser?._id) return false;
+    if (user._id === currentUser?.id || user._id === (currentUser as any)?._id) return false;
 
     const name = user.name.toLowerCase();
     const email = user.email.toLowerCase();
@@ -48,11 +48,11 @@ export default function CreateDMDialog({ workspaceId, trigger }: CreateDMDialogP
   const handleStartDM = async (participantId: string) => {
     try {
       setIsCreating(true);
-      const conversation = await getOrCreateDM(workspaceId, { participantId });
+      const conversation = await getOrCreateDM(participantId);
       
-      queryClient.invalidateQueries({ queryKey: ["conversations", workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
       setOpen(false);
-      navigate(`/w/${workspaceSlug}/dm/${conversation._id}`);
+      navigate(`/dm/${conversation._id}`);
     } catch (error) {
       console.error("Failed to start DM:", error);
     } finally {

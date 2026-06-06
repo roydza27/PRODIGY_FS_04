@@ -1,93 +1,153 @@
-import { Plus, MessageSquare } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
+
 import { useConversations } from "../hooks/useConversations";
-import { useActiveWorkspace } from "@/feat/workspaces/hooks/useActiveWorkspace";
 import { useAuthStore } from "@/app/stores/auth.store";
+import { useActiveWorkspace } from "@/feat/workspaces/hooks/useActiveWorkspace";
+
 import CreateDMDialog from "./CreateDMDialog";
+
 import { cn } from "@/lib/utils";
 
 export default function DMList() {
   const navigate = useNavigate();
-  const { workspaceSlug, conversationId } = useParams();
-  const { activeWorkspace } = useActiveWorkspace();
-  const currentUser = useAuthStore((state) => state.user);
-  
-  const workspaceId = activeWorkspace?._id;
-  const { data: conversations = [], isLoading } = useConversations(workspaceId);
 
-  const getOtherParticipant = (participants: any[]) => {
-    return participants.find((p) => p._id !== currentUser?._id) || participants[0];
+  const { conversationId } = useParams();
+
+  const { activeWorkspace } = useActiveWorkspace();
+
+  const currentUser = useAuthStore(
+    (state) => state.user
+  );
+
+  const {
+    data: conversations = [],
+    isLoading,
+  } = useConversations();
+
+  const getOtherParticipant = (
+    participants: typeof conversations[number]["participantIds"]
+  ) => {
+    return (
+      participants.find(
+        (participant) =>
+          participant._id !== currentUser?.id &&
+          participant._id !== (currentUser as any)?._id
+      ) ?? participants[0]
+    );
   };
 
   return (
-    <section className="mb-5">
-      {/* Header */}
-      <div className="group mb-3 flex items-center justify-between px-3">
+    <section className="mb-6">
+      <div className="group mb-2 flex items-center justify-between px-4">
         <div className="flex items-center gap-2">
-          <div className="h-1 w-1 rounded-full bg-blue-400" />
-          <span className="text-[10px] font-medium uppercase tracking-[0.24em] text-zinc-500">
+          <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+          <span className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
             Direct Messages
           </span>
           {!isLoading && conversations.length > 0 && (
-            <span className="flex h-5 min-w-5 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-1.5 text-[10px] font-medium text-muted-foreground backdrop-blur-sm">
+            <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-muted/50 px-1 text-[9px] font-black text-muted-foreground">
               {conversations.length}
             </span>
           )}
         </div>
 
-        {workspaceId && (
-          <CreateDMDialog
-            workspaceId={workspaceId}
-            trigger={
-              <button
-                type="button"
-                className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-all duration-200 group-hover:opacity-100 hover:bg-white/5 hover:text-foreground"
-              >
-                <Plus className="h-4 w-4" />
-              </button>
-            }
-          />
-        )}
+        <CreateDMDialog
+          workspaceId={activeWorkspace?._id!}
+          trigger={
+            <button
+              type="button"
+              className="flex h-6 w-6 items-center justify-center rounded-lg text-muted-foreground/40 opacity-0 transition-all duration-300 group-hover:opacity-100 hover:bg-primary/10 hover:text-primary"
+            >
+              <Plus className="h-4 w-4" strokeWidth={3} />
+            </button>
+          }
+        />
       </div>
 
-      {/* Content */}
-      <div className="space-y-0.5 px-2">
+      <div className="space-y-1 px-2">
         {isLoading ? (
           Array.from({ length: 3 }).map((_, index) => (
-            <div key={index} className="h-9 animate-pulse rounded-lg bg-white/[0.03]" />
+            <div
+              key={index}
+              className="mx-2 h-11 animate-pulse rounded-xl bg-muted/20"
+            />
           ))
         ) : conversations.length === 0 ? (
-          <p className="px-3 text-[11px] text-zinc-500 italic">No recent DMs</p>
+          <div className="px-4 py-3 text-center rounded-xl bg-muted/5 border border-dashed border-border/20 mx-2">
+            <p className="text-[10px] font-bold text-muted-foreground/30 uppercase tracking-widest">
+              No recent DMs
+            </p>
+          </div>
         ) : (
-          conversations.map((conv) => {
-            const other = getOtherParticipant(conv.participants);
-            const isActive = conversationId === conv._id;
+          conversations.map((conversation) => {
+            const other =
+              getOtherParticipant(
+                conversation.participantIds
+              );
+
+            const isActive =
+              conversationId === conversation._id;
 
             return (
               <button
-                key={conv._id}
-                onClick={() => navigate(`/w/${workspaceSlug}/dm/${conv._id}`)}
+                key={conversation._id}
+                onClick={() =>
+                  navigate(
+                    `/dm/${conversation._id}`
+                  )
+                }
                 className={cn(
-                  "group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-200",
+                  "group relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-300",
                   isActive
-                    ? "bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.05)]"
-                    : "text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-200"
+                    ? "bg-primary/10 text-primary shadow-[0_0_20px_rgba(var(--primary),0.05)] ring-1 ring-primary/20"
+                    : "text-muted-foreground hover:bg-muted/40 hover:text-foreground"
                 )}
               >
-                <div className="relative">
-                  {other.avatarUrl ? (
-                    <img src={other.avatarUrl} alt="" className="h-5 w-5 rounded-full object-cover" />
-                  ) : (
-                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-700 text-[10px] font-bold text-white">
-                      {other.name.charAt(0)}
-                    </div>
-                  )}
-                  {/* Presence indicator (placeholder) */}
-                  <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-zinc-900 bg-emerald-500" />
+                <div className="relative shrink-0 transition-transform duration-300 group-hover:scale-105 group-active:scale-95">
+                  <div className="relative h-9 w-9">
+                    {other.avatarUrl ? (
+                      <img
+                        src={other.avatarUrl}
+                        alt={other.name}
+                        className="h-full w-full rounded-xl object-cover shadow-sm ring-1 ring-border/20"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center rounded-xl bg-muted text-xs font-black text-muted-foreground/60 ring-1 ring-border/20">
+                        {other.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div className={cn(
+                      "absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card shadow-sm transition-transform duration-300 group-hover:scale-110",
+                      isActive ? "bg-emerald-500" : "bg-emerald-500/80"
+                    )} />
+                  </div>
                 </div>
-                <span className="truncate flex-1 text-left">{other.name}</span>
+
+                <div className="flex flex-1 flex-col items-start min-w-0">
+                  <span className={cn(
+                    "truncate text-[14px] font-bold tracking-tight transition-colors",
+                    isActive ? "text-primary" : "text-muted-foreground/80 group-hover:text-foreground"
+                  )}>
+                    {other.name}
+                  </span>
+                  <span className={cn(
+                    "truncate text-[10px] font-bold uppercase tracking-widest transition-colors",
+                    isActive ? "text-primary/60" : "text-muted-foreground/30 group-hover:text-muted-foreground/50"
+                  )}>
+                    Active now
+                  </span>
+                </div>
+
                 {isActive && (
-                   <div className="h-1 w-1 rounded-full bg-blue-400" />
+                  <div className="absolute right-0 h-6 w-1 rounded-l-full bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)] animate-in slide-in-from-right-1" />
+                )}
+                
+                {/* Unread Indicator Placeholder */}
+                {Math.random() > 0.8 && !isActive && (
+                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[9px] font-black text-primary-foreground shadow-lg shadow-primary/20 animate-in zoom-in">
+                    1
+                  </div>
                 )}
               </button>
             );

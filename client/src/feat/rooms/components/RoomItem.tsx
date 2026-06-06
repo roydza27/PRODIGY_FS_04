@@ -1,5 +1,6 @@
-import { Hash, MoreHorizontal } from "lucide-react";
+import { Hash, MoreHorizontal, Lock, Globe } from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,94 +26,100 @@ export default function RoomItem({
 }: RoomItemProps) {
   return (
     <div
-      className={`
-        group relative flex items-center justify-between
-        rounded-lg px-3 py-2
-        transition-all duration-200
-        ${
-          isActive
-            ? "bg-primary/15 text-primary"
-            : "hover:bg-muted/60"
-        }
-      `}
-    >
-      {/* Active Indicator */}
-      {isActive && (
-        <div className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-primary" />
+      className={cn(
+        "group relative flex items-center justify-between rounded-xl px-2 py-2 transition-all duration-300",
+        isActive
+          ? "bg-primary/10 text-primary shadow-[0_0_20px_rgba(var(--primary),0.05)] ring-1 ring-primary/20"
+          : "text-muted-foreground hover:bg-muted/40 hover:text-foreground"
       )}
-
+    >
       <button
         onClick={onClick}
-        className="flex min-w-0 flex-1 items-center gap-2 text-left"
+        className="flex min-w-0 flex-1 items-center gap-3 text-left px-1"
       >
-        <Hash
-          size={16}
-          className={`
-            shrink-0 transition-colors
-            ${
-              isActive
-                ? "text-primary"
-                : "text-muted-foreground"
-            }
-          `}
-        />
+        <div className={cn(
+          "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-all duration-300",
+          isActive 
+            ? "border-primary/30 bg-primary/10 text-primary shadow-inner shadow-primary/10" 
+            : "border-border/50 bg-muted/30 text-muted-foreground/50 group-hover:border-primary/20 group-hover:bg-primary/5 group-hover:text-primary/60"
+        )}>
+          {room.isPrivate ? (
+            <Lock size={16} strokeWidth={2.5} />
+          ) : (
+            <Hash size={18} strokeWidth={2.5} />
+          )}
+        </div>
 
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium">
+        <div className="min-w-0 flex-1 flex flex-col items-start">
+          <p className={cn(
+            "truncate text-[14px] font-bold tracking-tight transition-colors",
+            isActive ? "text-primary" : "text-muted-foreground/80 group-hover:text-foreground"
+          )}>
             {room.name}
           </p>
 
-          {room.description && (
-            <p className="truncate text-xs text-muted-foreground">
-              {room.description}
-            </p>
-          )}
+          <p className={cn(
+            "truncate text-[10px] font-bold uppercase tracking-widest transition-colors",
+            isActive ? "text-primary/60" : "text-muted-foreground/30 group-hover:text-muted-foreground/50"
+          )}>
+            {room.isPrivate ? "Private Room" : "Public Channel"}
+          </p>
         </div>
       </button>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button
-            className="
-              flex h-7 w-7 items-center justify-center
-              rounded-md
-              opacity-0
-              transition-all duration-200
-              hover:bg-background/80
-              group-hover:opacity-100
-              data-[state=open]:opacity-100
-            "
+      <div className="flex items-center gap-1 pr-1">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              className="
+                flex h-7 w-7 items-center justify-center
+                rounded-lg
+                opacity-0
+                transition-all duration-300
+                hover:bg-primary/10
+                hover:text-primary
+                group-hover:opacity-100
+                data-[state=open]:opacity-100
+              "
+            >
+              <MoreHorizontal size={14} strokeWidth={2.5} />
+            </button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent
+            align="end"
+            className="w-48 rounded-xl border-border/50 bg-popover/95 p-1 shadow-2xl backdrop-blur-xl"
           >
-            <MoreHorizontal size={14} />
-          </button>
-        </DropdownMenuTrigger>
+            <UpdateRoomDialog room={room}>
+              <DropdownMenuItem
+                className="rounded-lg font-medium"
+                onSelect={(e) =>
+                  e.preventDefault()
+                }
+              >
+                Edit Room
+              </DropdownMenuItem>
+            </UpdateRoomDialog>
 
-        <DropdownMenuContent
-          align="end"
-          className="w-40"
-        >
-          <UpdateRoomDialog room={room}>
-            <DropdownMenuItem
-              onSelect={(e) =>
-                e.preventDefault()
-              }
-            >
-              Edit Room
-            </DropdownMenuItem>
-          </UpdateRoomDialog>
+            <div className="my-1 h-px bg-border/50" />
 
-          <DeleteRoomDialog room={room}>
-            <DropdownMenuItem
-              onSelect={(e) =>
-                e.preventDefault()
-              }
-              className="text-destructive focus:text-destructive"
-            >
-              Delete Room
-            </DropdownMenuItem>
-          </DeleteRoomDialog>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            <DeleteRoomDialog room={room}>
+              <DropdownMenuItem
+                onSelect={(e) =>
+                  e.preventDefault()
+                }
+                className="rounded-lg font-medium text-destructive focus:bg-destructive/10 focus:text-destructive"
+              >
+                Delete Room
+              </DropdownMenuItem>
+            </DeleteRoomDialog>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {isActive && (
+          <div className="h-6 w-1 rounded-l-full bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)] animate-in slide-in-from-right-1" />
+        )}
+      </div>
     </div>
   );
 }

@@ -1,11 +1,10 @@
 import { api } from "@/services/api";
-
-import type { MessagesResponse } from "../types/message.types";
+import type { Message } from "../types/message.types";
 
 export const getRoomMessages = async (
   workspaceId: string,
   roomId: string
-): Promise<MessagesResponse> => {
+): Promise<Message[]> => {
   const { data } = await api.get(
     `/messages/room/${roomId}`
   );
@@ -15,7 +14,7 @@ export const getRoomMessages = async (
 
 export const getConversationMessages = async (
   conversationId: string
-): Promise<MessagesResponse> => {
+): Promise<Message[]> => {
   const { data } = await api.get(
     `/messages/conversation/${conversationId}`
   );

@@ -1,8 +1,10 @@
 import { useEffect, useRef } from "react";
 import {
-  isSameDay,
   differenceInMinutes,
+  isSameDay,
 } from "date-fns";
+
+import { useAuthStore } from "@/app/stores/auth.store";
 
 import Message from "./Message";
 import MessageDateDivider from "./MessageDateDivider";
@@ -11,12 +13,16 @@ import type { Message as MessageType } from "../types/message.types";
 
 interface MessageListProps {
   messages?: MessageType[];
+  isDM?: boolean;
 }
 
 export default function MessageList({
   messages = [],
+  isDM = false,
 }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const currentUser = useAuthStore((state) => state.user);
+  const currentUserId = currentUser?.id || (currentUser as any)?._id;
 
   /**
    * Always scroll to the latest message.
@@ -36,13 +42,20 @@ export default function MessageList({
         const previousMessage =
           messages[index - 1];
 
-        const nextMessage =
-          messages[index + 1];
+        const senderId =
+          typeof message.senderId === "string"
+            ? message.senderId
+            : message.senderId?._id;
+
+        const previousSenderId =
+          typeof previousMessage?.senderId ===
+          "string"
+            ? previousMessage.senderId
+            : previousMessage?.senderId?._id;
 
         const isGroupStart =
           !previousMessage ||
-          previousMessage.senderId._id !==
-            message.senderId._id ||
+          previousSenderId !== senderId ||
           differenceInMinutes(
             new Date(message.createdAt),
             new Date(previousMessage.createdAt)
@@ -55,6 +68,25 @@ export default function MessageList({
             new Date(previousMessage.createdAt)
           );
 
+        const author =
+          typeof message.senderId === "object"
+            ? {
+                _id: message.senderId._id,
+                name:
+                  message.senderId.name ??
+                  "Unknown User",
+                username: (message.senderId as any)
+                  .username,
+                avatarUrl:
+                  message.senderId.avatarUrl,
+              }
+            : {
+                _id: message.senderId,
+                name: "Unknown User",
+              };
+
+        const isCurrentUser = senderId === currentUserId;
+
         return (
           <div key={message._id}>
             {showDateDivider && (
@@ -66,19 +98,15 @@ export default function MessageList({
             )}
 
             <Message
-              author={{
-                name:
-                  message.senderId.name ??
-                  "Unknown User",
-                avatarUrl:
-                  message.senderId.avatarUrl,
-              }}
+              author={author}
               content={message.text}
               timestamp={
                 new Date(message.createdAt)
               }
               isGroupStart={isGroupStart}
               isContinuation={!isGroupStart}
+              isDM={isDM}
+              isCurrentUser={isCurrentUser}
             />
           </div>
         );

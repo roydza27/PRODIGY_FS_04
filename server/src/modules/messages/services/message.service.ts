@@ -10,7 +10,10 @@ export const sendMessage = async (input: CreateMessageInput) => {
 
   // If it's a DM, update the conversation's lastMessageAt
   if (input.type === "dm" && input.conversationId) {
-    await conversationRepository.updateLastMessageAt(input.conversationId);
+    await conversationRepository.updateConversationLastMessage(
+      input.conversationId,
+      message._id.toString()
+    );
   }
 
   // Re-fetch with population to ensure client gets full sender info

@@ -33,99 +33,62 @@ export default function RoomSidebar() {
   } = useRooms(workspaceId);
 
   return (
-<section className="mb-5">
-  {/* Header */}
-  <div className="group mb-3 flex items-center justify-between px-3">
-    <div className="flex items-center gap-2">
-      <div className="h-1 w-1 rounded-full bg-emerald-400" />
+    <section className="mb-6">
+      {/* Header */}
+      <div className="group mb-2 flex items-center justify-between px-4">
+        <div className="flex items-center gap-2">
+          <div className="h-1.5 w-1.5 rounded-full bg-primary/60" />
+          <span className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+            Channels
+          </span>
 
-      <span
-        className="
-          text-[10px]
-          font-medium
-          uppercase
-          tracking-[0.24em]
-          text-zinc-500
-        "
-      >
-        Rooms
-      </span>
+          {!isLoading && rooms.length > 0 && (
+            <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-muted/50 px-1 text-[9px] font-black text-muted-foreground">
+              {rooms.length}
+            </span>
+          )}
+        </div>
 
-      {!isLoading && rooms.length > 0 && (
-        <span
-          className="
-            flex
-            h-5 min-w-5
-            items-center
-            justify-center
-            rounded-full
-            border
-            border-white/10
-            bg-white/[0.04]
-            px-1.5
-            text-[10px]
-            font-medium
-            text-muted-foreground
-            backdrop-blur-sm">
-          {rooms.length}
-        </span>
-      )}
-    </div>
+        {workspaceId && canManageRooms && (
+          <CreateRoomDialog
+            workspaceId={workspaceId}
+            trigger={
+              <button
+                type="button"
+                className="flex h-6 w-6 items-center justify-center rounded-lg text-muted-foreground/40 opacity-0 transition-all duration-300 group-hover:opacity-100 hover:bg-primary/10 hover:text-primary"
+              >
+                <Plus className="h-4 w-4" strokeWidth={3} />
+              </button>
+            }
+          />
+        )}
+      </div>
 
-    {workspaceId && canManageRooms && (
-      <CreateRoomDialog
-        workspaceId={workspaceId}
-        trigger={
-          <button
-            type="button"
-            className="
-              flex h-7 w-7 items-center justify-center
-              rounded-md
-              text-muted-foreground
-              opacity-0
-              transition-all duration-200
-              group-hover:opacity-100
-              hover:bg-white/5
-              hover:text-foreground
-            "
-          >
-            <Plus className="h-4 w-4" />
-          </button>
-        }
-      />
-    )}
-  </div>
-
-  {/* Content */}
-  {isLoading ? (
-    <div className="space-y-1.5 px-2">
-      {Array.from({ length: 5 }).map((_, index) => (
-        <div
-          key={index}
-          className="
-            h-9
-            animate-pulse
-            rounded-lg
-            bg-white/[0.03]
-          "
-        />
-      ))}
-    </div>
-  ) : rooms.length === 0 ? (
-    <div className="px-2">
-      <EmptyRoomState />
-    </div>
-  ) : (
-    <RoomList
-      rooms={rooms}
-      selectedRoomId={roomId}
-      onSelect={(selectedRoomId) =>
-        navigate(
-          `/w/${workspaceSlug}/rooms/${selectedRoomId}`
-        )
-      }
-    />
-  )}
-</section>
+      {/* Content */}
+      <div className="px-2">
+        {isLoading ? (
+          <div className="space-y-1 mt-1">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <div
+                key={index}
+                className="mx-2 h-11 animate-pulse rounded-xl bg-muted/20"
+              />
+            ))}
+          </div>
+        ) : rooms.length === 0 ? (
+          <EmptyRoomState />
+        ) : (
+          <RoomList
+            rooms={rooms}
+            selectedRoomId={roomId}
+            onSelect={(selectedRoomId) =>
+              navigate(
+                `/w/${workspaceSlug}/rooms/${selectedRoomId}`
+              )
+            }
+          />
+        )}
+      </div>
+    </section>
   );
 }
