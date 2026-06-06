@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useParams } from "react-router-dom";
 
 import { useAuthStore } from "@/app/stores/auth.store";
 
@@ -9,6 +10,8 @@ import { useWorkspaceStore } from "../store/workspace.store";
  * Returns the currently active workspace
  */
 export const useActiveWorkspace = () => {
+  const { workspaceSlug } = useParams();
+
   const isAuthenticated = useAuthStore(
     (state) => state.isAuthenticated
   );
@@ -28,14 +31,23 @@ export const useActiveWorkspace = () => {
     isAuthenticated && !authLoading
   );
 
-  const activeWorkspace = useMemo(
-    () =>
+  const activeWorkspace = useMemo(() => {
+    if (workspaceSlug) {
+      return (
+        workspaces.find(
+          (workspace) =>
+            workspace.slug === workspaceSlug
+        ) ?? null
+      );
+    }
+
+    return (
       workspaces.find(
         (workspace) =>
           workspace._id === activeWorkspaceId
-      ) ?? null,
-    [workspaces, activeWorkspaceId]
-  );
+      ) ?? null
+    );
+  }, [workspaces, activeWorkspaceId, workspaceSlug]);
 
   return {
     activeWorkspace,
