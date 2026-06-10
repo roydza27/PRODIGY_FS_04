@@ -9,6 +9,7 @@ import {
 import { useAuthStore } from "@/app/stores/auth.store";
 import { usePresenceStore } from "@/app/stores/presence.store";
 import { socketService } from "@/services/socket/socket.service";
+import { getPresence } from "@/feat/users/api/user.api";
 
 interface SocketContextType {
   isConnected: boolean;
@@ -48,6 +49,8 @@ export function SocketProvider({
   useEffect(() => {
     const handleConnect = () => {
       setIsConnected(true);
+      // Fetch initial presence when socket connects
+      getPresence().then(setOnlineUsers).catch(console.error);
     };
 
     const handleDisconnect = () => {

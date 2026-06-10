@@ -77,6 +77,8 @@ export default function DMPage() {
 
   const online = isOnline(otherParticipant._id);
 
+  const online = isOnline(otherParticipant._id);
+
   return (
     <PageLayout variant="full" className="flex h-full flex-col overflow-hidden bg-background">
       <ChatHeader

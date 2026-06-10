@@ -20,6 +20,8 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { useAuthStore } from "@/app/stores/auth.store";
 
+import { PageLayout } from "@/shared/components/layout/PageLayout";
+
 export default function WorkspaceListPage() {
   const user = useAuthStore((state) => state.user);
   const { data: workspaces, isLoading: workspacesLoading } = useGetWorkspaces();
