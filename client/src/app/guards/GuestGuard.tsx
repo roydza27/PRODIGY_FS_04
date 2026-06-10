@@ -16,7 +16,7 @@ export default function GuestGuard() {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/home" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return <Outlet />;
