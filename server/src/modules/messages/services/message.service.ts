@@ -10,9 +10,8 @@ export const sendMessage = async (input: CreateMessageInput) => {
 
   // If it's a DM, update the conversation's lastMessageAt
   if (input.type === "dm" && input.conversationId) {
-    await conversationRepository.updateConversationLastMessage(
-      input.conversationId,
-      message._id.toString()
+    await conversationRepository.updateLastMessageAt(
+      input.conversationId
     );
   }
 

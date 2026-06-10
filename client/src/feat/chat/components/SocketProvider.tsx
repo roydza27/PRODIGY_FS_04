@@ -9,7 +9,6 @@ import {
 import { useAuthStore } from "@/app/stores/auth.store";
 import { usePresenceStore } from "@/app/stores/presence.store";
 import { socketService } from "@/services/socket/socket.service";
-import { getPresence } from "@/feat/users/api/user.api";
 
 interface SocketContextType {
   isConnected: boolean;
@@ -49,12 +48,14 @@ export function SocketProvider({
   useEffect(() => {
     const handleConnect = () => {
       setIsConnected(true);
-      // Fetch initial presence when socket connects
-      getPresence().then(setOnlineUsers).catch(console.error);
     };
 
     const handleDisconnect = () => {
       setIsConnected(false);
+    };
+
+    const handlePresenceSync = ({ userIds }: { userIds: string[] }) => {
+      setOnlineUsers(userIds);
     };
 
     const handlePresenceOnline = ({ userId }: { userId: string }) => {
@@ -67,6 +68,7 @@ export function SocketProvider({
 
     socketService.on("connect", handleConnect);
     socketService.on("disconnect", handleDisconnect);
+    socketService.on("presence:sync", handlePresenceSync);
     socketService.on("presence:online", handlePresenceOnline);
     socketService.on("presence:offline", handlePresenceOffline);
 
@@ -82,6 +84,7 @@ export function SocketProvider({
         "disconnect",
         handleDisconnect
       );
+      socketService.off("presence:sync", handlePresenceSync);
       socketService.off("presence:online", handlePresenceOnline);
       socketService.off("presence:offline", handlePresenceOffline);
     };

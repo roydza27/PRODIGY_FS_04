@@ -11,6 +11,8 @@ router.use(authMiddleware);
 // Workspace CRUD
 router.post("/", workspaceController.createWorkspace);
 router.get("/", workspaceController.getWorkspaces);
+router.get("/search", workspaceController.searchWorkspaces);
+router.get("/invites", workspaceController.getPendingInvites);
 router.get("/:workspaceId", workspaceController.getWorkspace);
 router.patch("/:workspaceId", workspaceController.updateWorkspace);
 
@@ -18,6 +20,7 @@ router.patch("/:workspaceId", workspaceController.updateWorkspace);
 router.get("/:workspaceId/members", workspaceController.getMembers);
 router.post("/:workspaceId/invite", workspaceController.inviteMember);
 router.post("/:workspaceId/accept-invite", workspaceController.acceptInvite);
+router.post("/:workspaceId/decline-invite", workspaceController.declineInvite);
 router.post("/:workspaceId/remove-member", workspaceController.removeMember);
 router.patch("/:workspaceId/members/role", workspaceController.updateMemberRole);
 

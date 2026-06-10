@@ -8,7 +8,7 @@ export const getRoomHistory = async (
 ) => {
   try {
     const messages = await messageService.getRoomHistory(
-      req.params.roomId
+      req.params.roomId as string
     );
 
     res.status(200).json(messages);
@@ -26,7 +26,7 @@ export const getConversationHistory = async (
   try {
     const messages =
       await messageService.getConversationHistory(
-        req.params.conversationId
+        req.params.conversationId as string
       );
 
     res.status(200).json(messages);

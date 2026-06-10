@@ -48,7 +48,7 @@ export default function CreateDMDialog({ workspaceId, trigger }: CreateDMDialogP
   const handleStartDM = async (participantId: string) => {
     try {
       setIsCreating(true);
-      const conversation = await getOrCreateDM(participantId);
+      const conversation = await getOrCreateDM(workspaceId, { participantId });
       
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
       setOpen(false);
