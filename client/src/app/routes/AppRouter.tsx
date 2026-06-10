@@ -1,7 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 
 import AuthLayout from "@/shared/layouts/AuthLayout";
-import AppLayout from "@/shared/layouts/AppLayout";
 import WorkspaceLayout from "@/shared/layouts/WorkspaceLayout";
 
 import GuestGuard from "@/app/guards/GuestGuard";
@@ -53,14 +52,12 @@ export default function AppRouter() {
 
       {/* Protected Routes */}
       <Route element={<AuthGuard />}>
-        <Route element={<AppLayout />}>
+        <Route element={<WorkspaceLayout />}>
           <Route
             path="/workspaces"
             element={<WorkspaceListPage />}
           />
-        </Route>
-
-        <Route element={<WorkspaceLayout />}>
+          
           <Route
             path="/w/:workspaceSlug"
             element={<WorkspaceHomePage />}
