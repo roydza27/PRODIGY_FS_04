@@ -15,6 +15,8 @@ const workspaceKeys = {
   detail: (id: string) => [...workspaceKeys.details(), id] as const,
   members: () => [...workspaceKeys.all, "members"] as const,
   membersList: (workspaceId: string) => [...workspaceKeys.members(), workspaceId] as const,
+  invites: () => [...workspaceKeys.all, "invites"] as const,
+  search: (query: string) => [...workspaceKeys.all, "search", query] as const,
 };
 
 /**
@@ -26,6 +28,29 @@ export const useGetWorkspaces = (enabled = true) => {
     queryFn: workspaceApi.getWorkspacesApi,
     enabled,
     staleTime: 5 * 60 * 1000,
+  });
+};
+
+/**
+ * Query: Search public workspaces
+ */
+export const useSearchWorkspaces = (query: string, enabled = true) => {
+  return useQuery({
+    queryKey: workspaceKeys.search(query),
+    queryFn: () => workspaceApi.searchWorkspacesApi(query),
+    enabled: enabled && query.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+/**
+ * Query: Get all pending invites
+ */
+export const useGetPendingInvites = () => {
+  return useQuery({
+    queryKey: workspaceKeys.invites(),
+    queryFn: workspaceApi.getPendingInvitesApi,
+    staleTime: 1 * 60 * 1000,
   });
 };
 
@@ -107,6 +132,21 @@ export const useAcceptInvite = () => {
     mutationFn: (workspaceId: string) => workspaceApi.acceptInviteApi(workspaceId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: workspaceKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: workspaceKeys.invites() });
+    },
+  });
+};
+
+/**
+ * Mutation: Decline workspace invite
+ */
+export const useDeclineInvite = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (workspaceId: string) => workspaceApi.declineInviteApi(workspaceId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: workspaceKeys.invites() });
     },
   });
 };

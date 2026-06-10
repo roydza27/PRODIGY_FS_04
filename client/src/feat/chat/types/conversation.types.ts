@@ -4,6 +4,7 @@ export interface Conversation {
   participants: {
     _id: string;
     name: string;
+    username: string;
     avatarUrl?: string;
   }[];
   lastMessageAt: string;

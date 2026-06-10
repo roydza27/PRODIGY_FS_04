@@ -41,6 +41,10 @@ export const getUserConversations = async (workspaceId: string, userId: string) 
   return conversationRepository.findUserConversations(workspaceId, userId);
 };
 
+export const getAllUserConversations = async (userId: string) => {
+  return conversationRepository.findAllUserConversations(userId);
+};
+
 export const getConversation = async (conversationId: string) => {
   const conversation = await conversationRepository.findConversationById(conversationId);
   if (!conversation) {
