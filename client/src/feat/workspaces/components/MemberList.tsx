@@ -2,6 +2,8 @@ import { useGetWorkspaceMembers } from "../api/workspace.queries";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
 import { Badge } from "@/shared/components/ui/badge";
 import { Skeleton } from "@/shared/components/ui/skeleton";
+import { usePresenceStore } from "@/app/stores/presence.store";
+import { cn } from "@/lib/utils";
 
 interface MemberListProps {
   workspaceId: string;
@@ -9,6 +11,7 @@ interface MemberListProps {
 
 export const MemberList = ({ workspaceId }: MemberListProps) => {
   const { data: members, isLoading, error } = useGetWorkspaceMembers(workspaceId);
+  const isOnline = usePresenceStore((state) => state.isOnline);
 
   if (isLoading) {
     return (
@@ -36,29 +39,40 @@ export const MemberList = ({ workspaceId }: MemberListProps) => {
         Members ({members?.length || 0})
       </h3>
       <div className="grid gap-4">
-        {members?.map((membership) => (
-          <div key={membership._id} className="flex items-center justify-between group">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={membership.user?.avatarUrl} alt={membership.user?.name} />
-                <AvatarFallback>
-                  {membership.user?.name?.charAt(0).toUpperCase() || "U"}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium leading-none">
-                    {membership.user?.name || membership.nickname}
-                  </p>
-                  <Badge variant={membership.role === "owner" ? "default" : "secondary"}>
-                    {membership.role}
-                  </Badge>
+        {members?.map((membership) => {
+          const userId = membership.user?._id;
+          const online = userId ? isOnline(userId) : false;
+
+          return (
+            <div key={membership._id} className="flex items-center justify-between group">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={membership.user?.avatarUrl} alt={membership.user?.name} />
+                    <AvatarFallback>
+                      {membership.user?.name?.charAt(0).toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className={cn(
+                    "absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background shadow-sm transition-colors duration-300",
+                    online ? "bg-emerald-500" : "bg-muted-foreground/30"
+                  )} />
                 </div>
-                <p className="text-xs text-muted-foreground">@{membership.user?.username}</p>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium leading-none">
+                      {membership.user?.name || membership.nickname}
+                    </p>
+                    <Badge variant={membership.role === "owner" ? "default" : "secondary"}>
+                      {membership.role}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">@{membership.user?.username}</p>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

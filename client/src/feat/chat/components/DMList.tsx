@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import { useConversations } from "../hooks/useConversations";
 import { useAuthStore } from "@/app/stores/auth.store";
+import { usePresenceStore } from "@/app/stores/presence.store";
 import { useActiveWorkspace } from "@/feat/workspaces/hooks/useActiveWorkspace";
 
 import CreateDMDialog from "./CreateDMDialog";
@@ -19,6 +20,8 @@ export default function DMList() {
   const currentUser = useAuthStore(
     (state) => state.user
   );
+
+  const isOnline = usePresenceStore((state) => state.isOnline);
 
   const {
     data: conversations = [],
@@ -89,6 +92,8 @@ export default function DMList() {
             const isActive =
               conversationId === conversation._id;
 
+            const online = isOnline(other._id);
+
             return (
               <button
                 key={conversation._id}
@@ -118,8 +123,8 @@ export default function DMList() {
                       </div>
                     )}
                     <div className={cn(
-                      "absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card shadow-sm transition-transform duration-300 group-hover:scale-110",
-                      isActive ? "bg-emerald-500" : "bg-emerald-500/80"
+                      "absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card shadow-sm transition-all duration-300 group-hover:scale-110",
+                      online ? "bg-emerald-500" : "bg-muted-foreground/30"
                     )} />
                   </div>
                 </div>
@@ -133,9 +138,11 @@ export default function DMList() {
                   </span>
                   <span className={cn(
                     "truncate text-[10px] font-bold uppercase tracking-widest transition-colors",
-                    isActive ? "text-primary/60" : "text-muted-foreground/30 group-hover:text-muted-foreground/50"
+                    online 
+                      ? (isActive ? "text-primary/60" : "text-emerald-500/60 group-hover:text-emerald-500")
+                      : "text-muted-foreground/30 group-hover:text-muted-foreground/50"
                   )}>
-                    Active now
+                    {online ? "Active now" : "Offline"}
                   </span>
                 </div>
 

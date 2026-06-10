@@ -1,4 +1,4 @@
-import { MessageSquare, User, AtSign, Mail, MapPin, Calendar } from "lucide-react";
+import { MessageSquare, User, AtSign } from "lucide-react";
 
 import {
   Avatar,
@@ -14,6 +14,7 @@ import { Separator } from "@/shared/components/ui/separator";
 import { Badge } from "@/shared/components/ui/badge";
 
 import { cn } from "@/lib/utils"
+import { usePresenceStore } from "@/app/stores/presence.store";
 
 interface UserCardProps {
   user: {
@@ -31,6 +32,9 @@ export default function UserCard({
   onMessage,
   onViewProfile,
 }: UserCardProps) {
+  const isOnline = usePresenceStore((state) => state.isOnline);
+  const online = isOnline(user._id);
+
   return (
     <Card className="w-[340px] overflow-hidden border-border/40 bg-card/60 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] backdrop-blur-2xl transition-all duration-500 hover:shadow-primary/5">
       {/* Premium Banner */}
@@ -53,7 +57,10 @@ export default function UserCard({
               {user.name.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-2xl border-4 border-background bg-emerald-500 shadow-lg" />
+          <div className={cn(
+            "absolute -bottom-1 -right-1 h-7 w-7 rounded-2xl border-4 border-background shadow-lg transition-colors duration-300",
+            online ? "bg-emerald-500" : "bg-muted-foreground/30"
+          )} />
         </div>
 
         {/* User Info */}
@@ -62,9 +69,18 @@ export default function UserCard({
             <h2 className="text-2xl font-black tracking-tight text-foreground">
               {user.name}
             </h2>
-            <Badge variant="secondary" className="bg-primary/10 text-primary border-none font-bold text-[10px] px-2 py-0.5 rounded-lg uppercase tracking-wider">
-              Pro Member
-            </Badge>
+            <div className="flex items-center gap-2">
+              <span className={cn(
+                "flex items-center gap-1 text-[10px] font-black uppercase tracking-widest",
+                online ? "text-emerald-500" : "text-muted-foreground/40"
+              )}>
+                {online && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />}
+                {online ? "Online" : "Offline"}
+              </span>
+              <Badge variant="secondary" className="bg-primary/10 text-primary border-none font-bold text-[10px] px-2 py-0.5 rounded-lg uppercase tracking-wider">
+                Pro Member
+              </Badge>
+            </div>
           </div>
 
           <div className="flex items-center gap-1.5 text-muted-foreground/60">

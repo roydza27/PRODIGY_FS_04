@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 
 import { env } from "../config/env";
 import { logger } from "../utils/logger";
+import { presenceService } from "./presence.service";
 
 import { registerRoomHandlers } from "./handlers/room.handler";
 import { registerMessageHandlers } from "./handlers/message.handler";
@@ -78,16 +79,32 @@ export const setupSocket = (server: HttpServer) => {
       `[Socket] User connected: ${userId}`
     );
 
+    // Register presence
+    const isFirstConnection = presenceService.add(userId, socket.id);
+    
     socket.join(`user:${userId}`);
 
     registerRoomHandlers(io, socket);
     registerMessageHandlers(io, socket);
     registerDMHandlers(io, socket);
 
+    // If it's the first connection for this user across all tabs, broadcast online status
+    if (isFirstConnection) {
+      io.emit("presence:online", { userId });
+    }
+
     socket.on("disconnect", (reason) => {
       logger.info(
         `[Socket] User disconnected: ${userId} (${reason})`
       );
+
+      // Remove presence
+      const isLastConnection = presenceService.remove(userId, socket.id);
+
+      // If it was the last active connection for this user, broadcast offline status
+      if (isLastConnection) {
+        io.emit("presence:offline", { userId });
+      }
     });
   });
 

@@ -19,7 +19,6 @@ class SocketService {
       transports: ["websocket"],
       autoConnect: false,
     });
-  }
 
     if (import.meta.env.DEV) {
       this.socket.on("connect", () => {
@@ -27,15 +26,21 @@ class SocketService {
       });
 
       this.socket.on("disconnect", (reason) => {
-        console.info("[Socket] Disconnected:", reason);
-      });
-
-      this.socket.on("connect_error", (error) => {
-        console.error(
-          "[Socket] Connection Error:",
-          error
+        console.info(
+          "[Socket] Disconnected:",
+          reason
         );
       });
+
+      this.socket.on(
+        "connect_error",
+        (error) => {
+          console.error(
+            "[Socket] Connection Error:",
+            error
+          );
+        }
+      );
     }
   }
 
@@ -51,11 +56,6 @@ class SocketService {
     if (this.socket.connected) {
       this.socket.disconnect();
     }
-
-    this.socket.emit(
-      "message:send",
-      payload
-    );
   }
 
   isConnected() {
@@ -101,7 +101,10 @@ class SocketService {
     });
   }
 
-  joinDM(workspaceId: string, conversationId: string) {
+  joinDM(
+    workspaceId: string,
+    conversationId: string
+  ) {
     this.emit("dm:join", {
       workspaceId,
       conversationId,
@@ -114,15 +117,25 @@ class SocketService {
     });
   }
 
-  sendMessage(payload: SendMessagePayload) {
-    console.log("[CLIENT] Sending", payload);
+  sendMessage(
+    payload: SendMessagePayload
+  ) {
+    console.log(
+      "[CLIENT] Sending",
+      payload
+    );
 
     if (!this.socket.connected) {
-      console.warn("[Socket] Cannot send message");
+      console.warn(
+        "[Socket] Cannot send message"
+      );
       return;
     }
 
-    this.emit("message:send", payload);
+    this.emit(
+      "message:send",
+      payload
+    );
   }
 
   on<T = unknown>(
@@ -148,7 +161,9 @@ class SocketService {
 
   removeAllListeners(event?: string) {
     if (event) {
-      this.socket.removeAllListeners(event);
+      this.socket.removeAllListeners(
+        event
+      );
       return;
     }
 

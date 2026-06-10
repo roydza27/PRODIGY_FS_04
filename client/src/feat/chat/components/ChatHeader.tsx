@@ -21,6 +21,7 @@ interface Props {
   username?: string;
   status?: string;
   memberCount?: number;
+  isOnline?: boolean;
 }
 
 export default function ChatHeader({
@@ -28,9 +29,12 @@ export default function ChatHeader({
   isDM = false,
   avatarUrl,
   username,
-  status = "Active now",
+  status,
   memberCount,
+  isOnline = false,
 }: Props) {
+  const displayStatus = status || (isOnline ? "Active now" : "Offline");
+
   return (
     <header className="flex h-16 items-center justify-between border-b border-border/50 bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex items-center gap-3 overflow-hidden">
@@ -43,7 +47,10 @@ export default function ChatHeader({
                   {roomName.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-background bg-emerald-500 shadow-sm" />
+              <div className={cn(
+                "absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-background shadow-sm transition-colors duration-300",
+                isOnline ? "bg-emerald-500" : "bg-muted-foreground/30"
+              )} />
             </div>
           ) : (
             <div className="group flex h-10 w-10 items-center justify-center rounded-xl bg-muted/50 text-muted-foreground transition-all hover:bg-muted hover:text-primary">
@@ -69,9 +76,15 @@ export default function ChatHeader({
             
             <div className="flex items-center gap-2">
               {isDM ? (
-                <span className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-500/90">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  {status}
+                <span className={cn(
+                  "flex items-center gap-1.5 text-[11px] font-bold transition-colors duration-300",
+                  isOnline ? "text-emerald-500/90" : "text-muted-foreground/60"
+                )}>
+                  <span className={cn(
+                    "h-1.5 w-1.5 rounded-full transition-colors duration-300",
+                    isOnline ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground/30"
+                  )} />
+                  {displayStatus}
                 </span>
               ) : (
                 <div className="flex items-center gap-2">
