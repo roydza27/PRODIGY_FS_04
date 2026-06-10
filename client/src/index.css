@@ -167,31 +167,31 @@ code {
 }
 
 .dark {
-  --background: #09090b; /* Very dark, near-black foundation */
+  --background: #090909; /* Softened black foundation */
   --foreground: #f4f4f5; /* Off-white for readability */
   
-  --card: #121214; /* Deep card background */
+  --card: #111111; /* Slightly lighter than background for cards */
   --card-foreground: #f4f4f5;
   
-  --popover: #121214;
+  --popover: #111111;
   --popover-foreground: #f4f4f5;
   
   --primary: #ffffff; /* Brighter primary for CTAs/important actions */
-  --primary-foreground: #09090b;
+  --primary-foreground: #090909;
   
-  --secondary: #1e1e21; /* Slightly lighter than card */
+  --secondary: #1a1a1a; /* Slightly lighter than card */
   --secondary-foreground: #f4f4f5;
   
-  --muted: #27272a;
+  --muted: #222222;
   --muted-foreground: #a1a1aa;
   
-  --accent: #27272a;
+  --accent: #222222;
   --accent-foreground: #fafafa;
   
   --destructive: #7f1d1d;
   
-  --border: #27272a; /* Subtle borders */
-  --input: #1e1e21;
+  --border: #1a1a1a; /* Subtle borders */
+  --input: #1a1a1a;
   
   --ring: #3f3f46; /* Subtle ring */
   
@@ -208,7 +208,7 @@ code {
   --sidebar-primary-foreground: #18181b;
   --sidebar-accent: #1e1e21;
   --sidebar-accent-foreground: #f4f4f5;
-  --sidebar-border: #27272a;
+  --sidebar-border: #1a1a1a;
   --sidebar-ring: #3f3f46;
 }
 
