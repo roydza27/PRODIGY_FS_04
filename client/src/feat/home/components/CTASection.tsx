@@ -1,92 +1,92 @@
-import { ArrowRight, Headphones, ShoppingCart, Store, Clock } from "lucide-react";
+import { ArrowRight, Headphones, MessageSquare, Building2, Zap } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
 const CTASection = () => {
   return (
-    <section className="px-4 sm:px-6 lg:px-8">
+    <section className="px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl text-left">
-        <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-gradient-to-br from-[#DB4444]/15 via-[#141416] to-[#0a0a0c] px-6 py-10 shadow-2xl shadow-black/60 sm:px-10 sm:py-14 lg:px-14 lg:py-16">
+        <div className="relative overflow-hidden rounded-[40px] border border-white/10 bg-gradient-to-br from-violet-600/20 via-[#111113] to-[#09090b] px-8 py-12 shadow-2xl shadow-black/60 sm:px-12 sm:py-16 lg:px-20 lg:py-24">
           {/* Radial Mesh Accent Lighting */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.04),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(219,68,68,0.12),transparent_35%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.1),transparent_40%),radial-gradient(circle_at_bottom_right,rgba(99,102,241,0.15),transparent_45%)]" />
 
-          <div className="relative z-10 grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+          <div className="relative z-10 grid gap-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             
             {/* Left Narrative Frame */}
-            <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#DB4444]/20 bg-[#DB4444]/5 px-3 py-1 text-xs uppercase tracking-[0.24em] text-[#ff8d8d] backdrop-blur-md">
-                <Store className="h-3.5 w-3.5 text-[#DB4444]" />
-                Ready to shop
+            <div className="space-y-8">
+              <div className="inline-flex items-center gap-2 rounded-full border border-violet-500/20 bg-violet-500/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-violet-300 backdrop-blur-md">
+                <Building2 className="h-4 w-4" />
+                Ready to sync up?
               </div>
 
-              <div className="space-y-3">
-                <h2 className="max-w-2xl text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl lg:text-5xl lg:leading-[1.1]">
-                  Experience a premium, local store catalog today.
+              <div className="space-y-6">
+                <h2 className="max-w-2xl text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl lg:leading-[1.1]">
+                  Experience a premium team collaboration platform.
                 </h2>
-                <p className="max-w-2xl text-base leading-7 text-zinc-400 sm:text-lg">
-                  Explore full checkout integrations, dynamic shopping carts, live stock monitoring, and secure payment layers optimized for your regional workflow.
+                <p className="max-w-2xl text-lg leading-relaxed text-zinc-400 font-medium">
+                  Join thousands of teams that use SyncSpace to organize their work, streamline communication, and build better products together.
                 </p>
               </div>
 
-              <div className="flex flex-col gap-3 sm:flex-row pt-2">
-                <Link to="/products">
-                  <Button className="h-14 w-full sm:w-fit rounded-2xl bg-white px-7 text-black hover:bg-zinc-100 transition-all duration-300 shadow-xl active:scale-98 font-medium group">
-                    Start Shopping
-                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              <div className="flex flex-col gap-4 sm:flex-row pt-4">
+                <Link to="/register">
+                  <Button size="lg" className="h-16 w-full sm:w-fit rounded-2xl bg-violet-600 px-10 text-white hover:bg-violet-700 transition-all duration-300 shadow-xl shadow-violet-600/20 active:scale-95 font-bold group">
+                    Get Started Free
+                    <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                   </Button>
                 </Link>
                 
-                <Link to="/products">
+                <Link to="/contact">
                   <Button
-                    variant="secondary"
-                    className="h-14 w-full sm:w-fit rounded-2xl border border-white/10 bg-white/[0.03] px-7 text-white hover:bg-white/[0.08] hover:border-white/20 transition-all duration-300 group"
+                    variant="outline"
+                    className="h-16 w-full sm:w-fit rounded-2xl border-white/10 bg-white/5 px-10 text-white hover:bg-white/10 transition-all duration-300 group font-bold"
                   >
                     Contact Support
-                    <Headphones className="ml-2 h-4 w-4 text-zinc-400 group-hover:text-white transition-colors" />
+                    <Headphones className="ml-2 h-5 w-5 text-zinc-400 group-hover:text-white transition-colors" />
                   </Button>
                 </Link>
               </div>
             </div>
 
             {/* Right Structural Showcase Cards */}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-1">
               
               <motion.div 
-                whileHover={{ x: 4 }}
+                whileHover={{ x: 8 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
-                className="rounded-[24px] border border-white/5 bg-black/30 p-5 backdrop-blur-xl shadow-inner group/card"
+                className="rounded-[2rem] border border-white/5 bg-white/[0.02] p-6 backdrop-blur-xl shadow-inner group/card hover:bg-white/[0.04] transition-colors"
               >
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-zinc-400 transition-colors group-hover/card:border-[#DB4444]/30 group-hover/card:bg-[#DB4444]/10 group-hover/card:text-[#DB4444]">
-                    <ShoppingCart className="h-5 w-5" />
+                <div className="flex items-start gap-5">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-black/40 text-zinc-400 transition-all group-hover/card:border-violet-500/30 group-hover/card:bg-violet-500/10 group-hover/card:text-violet-400">
+                    <MessageSquare className="h-6 w-6" />
                   </div>
-                  <div className="space-y-1 text-left">
-                    <p className="text-[11px] uppercase tracking-[0.22em] font-semibold text-zinc-500">
-                      Smart Cart Processing
+                  <div className="space-y-2 text-left">
+                    <p className="text-xs uppercase tracking-[0.2em] font-bold text-zinc-500">
+                      Smart Messaging
                     </p>
-                    <p className="text-sm font-medium text-zinc-200 leading-relaxed">
-                      Add, modify, and review local items instantly through secure unified state caches.
+                    <p className="text-base font-semibold text-zinc-200 leading-relaxed">
+                      Instant message delivery with rich formatting and threaded replies for clear communication.
                     </p>
                   </div>
                 </div>
               </motion.div>
 
               <motion.div 
-                whileHover={{ x: 4 }}
+                whileHover={{ x: 8 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
-                className="rounded-[24px] border border-white/5 bg-white/[0.02] p-5 backdrop-blur-xl transition-colors hover:bg-white/[0.04] hover:border-white/10 group/card"
+                className="rounded-[2rem] border border-white/5 bg-white/[0.02] p-6 backdrop-blur-xl transition-colors hover:bg-white/[0.04] hover:border-white/10 group/card"
               >
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-zinc-400 transition-colors group-hover/card:border-emerald-500/30 group-hover/card:bg-emerald-500/10 group-hover/card:text-emerald-400">
-                    <Clock className="h-5 w-5" />
+                <div className="flex items-start gap-5">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-black/40 text-zinc-400 transition-all group-hover/card:border-emerald-500/30 group-hover/card:bg-emerald-500/10 group-hover/card:text-emerald-400">
+                    <Zap className="h-6 w-6" />
                   </div>
-                  <div className="space-y-1 text-left">
-                    <p className="text-[11px] uppercase tracking-[0.22em] font-semibold text-zinc-500">
-                      Real-time Despatch
+                  <div className="space-y-2 text-left">
+                    <p className="text-xs uppercase tracking-[0.2em] font-bold text-zinc-500">
+                      Real-time Presence
                     </p>
-                    <p className="text-sm font-medium text-zinc-200 leading-relaxed">
-                      Track fulfillment parameters and order dispatch metrics the second verification lands.
+                    <p className="text-base font-semibold text-zinc-200 leading-relaxed">
+                      Always know who's available and connected across your team with live presence indicators.
                     </p>
                   </div>
                 </div>

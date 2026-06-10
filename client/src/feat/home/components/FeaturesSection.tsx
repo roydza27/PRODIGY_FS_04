@@ -1,115 +1,122 @@
-import { Laptop, ShieldCheck, Headset, Zap, Globe, MessageSquare, ArrowRight } from "lucide-react";
+import { 
+  Zap, 
+  ShieldCheck, 
+  Layout, 
+  Users, 
+  MessageSquare, 
+  Lock,
+  ArrowRight 
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
 const features = [
   {
-    title: "AI Intent Search",
-    description: "Navigate products smoothly with an integrated local search processing pipeline designed for instant query matching.",
-    icon: Laptop,
-    accent: "from-blue-500/10 to-transparent",
-    iconColor: "text-blue-400"
-  },
-  {
-    title: "Granular Security",
-    description: "Keep personal profiles and purchase catalogs isolated safely behind professional data-firewall architecture configurations.",
-    icon: ShieldCheck,
-    accent: "from-emerald-500/10 to-transparent",
-    iconColor: "text-emerald-400"
-  },
-  {
-    title: "1-Click Checkout",
-    description: "Enjoy a friction-free shopping flow using optimized memory cache systems built for lightning-fast cart dispatch actions.",
+    title: "Real-time Messaging",
+    description: "Experience lightning-fast communication with instant message delivery across all your workspaces and rooms.",
     icon: Zap,
     accent: "from-amber-500/10 to-transparent",
     iconColor: "text-amber-400"
   },
   {
-    title: "24/7 Order Help",
-    description: "Get real-time workspace updates and empathetic operational assistance directly through automated live messaging tracks.",
-    icon: Headset,
+    title: "Workspace Isolation",
+    description: "Keep different projects and teams organized with dedicated workspaces that maintain complete data separation.",
+    icon: ShieldCheck,
+    accent: "from-emerald-500/10 to-transparent",
+    iconColor: "text-emerald-400"
+  },
+  {
+    title: "Room Hierarchy",
+    description: "Organize conversations into public and private rooms, making it easy to find and follow relevant discussions.",
+    icon: Layout,
+    accent: "from-blue-500/10 to-transparent",
+    iconColor: "text-blue-400"
+  },
+  {
+    title: "Presence Tracking",
+    description: "See who's online and available in real-time. Stay connected with your team without the guesswork.",
+    icon: Users,
     accent: "from-purple-500/10 to-transparent",
     iconColor: "text-purple-400"
   },
   {
-    title: "Open API Ingestion",
-    description: "Index custom UI components and manage repository packages using a scalable, unified asset registry pipeline layer.",
-    icon: Globe,
-    accent: "from-cyan-500/10 to-transparent",
-    iconColor: "text-cyan-400"
-  },
-  {
-    title: "Live Notifications",
-    description: "Stay perfectly synchronized on dispatch stages with automatic environment variable broadcast systems across webhooks.",
+    title: "Rich Conversations",
+    description: "Support for direct messages, mentions, and threaded conversations to keep communication flowing naturally.",
     icon: MessageSquare,
     accent: "from-pink-500/10 to-transparent",
     iconColor: "text-pink-400"
+  },
+  {
+    title: "Enterprise Security",
+    description: "Role-based permissions and robust encryption ensure your sensitive team data remains secure and private.",
+    icon: Lock,
+    accent: "from-cyan-500/10 to-transparent",
+    iconColor: "text-cyan-400"
   },
 ];
 
 export default function FeaturesSection() {
   return (
-    <section className="px-4 py-20 md:px-8 md:py-28 text-left relative overflow-hidden bg-[#111113]">
+    <section id="features" className="px-4 py-24 md:px-8 md:py-32 text-left relative overflow-hidden bg-[#111113]">
       {/* Background Ambient Blur Rings */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-[#DB4444]/5 blur-[120px] pointer-events-none rounded-full" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-violet-600/5 blur-[120px] pointer-events-none rounded-full" />
 
       <div className="mx-auto max-w-7xl relative z-10">
         
         {/* Section Header Block */}
         <div className="mx-auto mb-16 flex max-w-3xl flex-col items-center text-center md:mb-24">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs uppercase tracking-[0.24em] text-zinc-400 mb-4">
+          <div className="inline-flex items-center gap-2 rounded-full border border-violet-500/20 bg-violet-500/10 px-4 py-1.5 text-xs uppercase tracking-[0.2em] font-bold text-violet-300 mb-6">
             Platform Capabilities
           </div>
           
-          <h2 className="mb-5 font-heading text-[clamp(2.25rem,5vw,3.5rem)] font-semibold tracking-[-0.03em] leading-[1.05] text-white">
-            Engineered for Performance.
+          <h2 className="mb-6 font-heading text-5xl md:text-6xl font-extrabold tracking-tight text-white leading-[1.1]">
+            Everything your team needs to <span className="text-violet-500">sync up.</span>
           </h2>
 
-          <p className="max-w-2xl text-base sm:text-lg leading-relaxed text-zinc-400 font-light">
-            Discover the foundational tools running behind Zynta's infrastructure—optimized for blazing fast browsing, clean data handling, and elite client delivery interfaces.
+          <p className="max-w-2xl text-lg leading-relaxed text-zinc-400 font-medium">
+            Discover the powerful tools built into SyncSpace's infrastructure—optimized for blazing fast messaging, secure data handling, and elite team collaboration.
           </p>
         </div>
 
         {/* Dynamic Grid Layout Matrix */}
-        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((feature) => {
             const IconComponent = feature.icon;
 
             return (
               <motion.div
                 key={feature.title}
-                whileHover={{ y: -4 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-white/5 bg-[#17171b]/60 p-6 shadow-xl backdrop-blur-md transition-colors hover:border-white/10 hover:bg-[#17171b]/90"
+                whileHover={{ y: -8 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className="group relative flex flex-col justify-between overflow-hidden rounded-[2rem] border border-white/5 bg-[#17171b]/40 p-8 shadow-2xl backdrop-blur-md transition-all hover:border-violet-500/30 hover:bg-[#17171b]/80"
               >
                 {/* Custom Micro-Glow Underlay Track */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${feature.accent} opacity-40 group-hover:opacity-100 transition-opacity duration-500`} />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(219,68,68,0.04),transparent_45%)] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className={`absolute inset-0 bg-gradient-to-br ${feature.accent} opacity-20 group-hover:opacity-100 transition-opacity duration-500`} />
 
-                <div className="relative z-10 space-y-5">
+                <div className="relative z-10 space-y-6">
                   {/* Enhanced Frame Box Icon */}
-                  <div className={`flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 bg-black/40 ${feature.iconColor} transition-transform duration-300 group-hover:scale-105`}>
-                    <IconComponent className="h-5 w-5" />
+                  <div className={`flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-black/40 ${feature.iconColor} transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-lg`}>
+                    <IconComponent className="h-6 w-6" />
                   </div>
 
-                  <div className="space-y-2">
-                    <h3 className="font-heading text-lg font-semibold tracking-tight text-white group-hover:text-[#DB4444] transition-colors duration-200">
+                  <div className="space-y-3">
+                    <h3 className="font-heading text-xl font-bold tracking-tight text-white group-hover:text-violet-400 transition-colors duration-200">
                       {feature.title}
                     </h3>
-                    <p className="text-sm leading-relaxed text-zinc-400 font-light">
+                    <p className="text-base leading-relaxed text-zinc-400 font-medium">
                       {feature.description}
                     </p>
                   </div>
                 </div>
 
                 {/* Styled Text-Action Button */}
-                <div className="relative z-10 mt-6 pt-2">
+                <div className="relative z-10 mt-8">
                   <Link
-                    to="/products"
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-zinc-300 transition-colors hover:text-white group/link"
+                    to="/register"
+                    className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-zinc-400 transition-all hover:text-white group/link"
                   >
                     <span>Learn more</span>
-                    <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover/link:translate-x-1 text-zinc-500 group-hover/link:text-[#DB4444]" />
+                    <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover/link:translate-x-1 text-zinc-600 group-hover/link:text-violet-500" />
                   </Link>
                 </div>
                 
