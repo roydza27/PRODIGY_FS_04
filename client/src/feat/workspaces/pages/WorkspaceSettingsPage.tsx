@@ -6,28 +6,30 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/sha
 import { Button } from "@/shared/components/ui/button";
 import { UserPlus, Settings, ShieldAlert } from "lucide-react";
 
+import { PageLayout } from "@/shared/components/layout/PageLayout";
+
 export default function WorkspaceSettingsPage() {
   const { activeWorkspace, isLoading } = useActiveWorkspace();
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
   if (isLoading) {
     return (
-      <div className="p-8 text-center">
+      <PageLayout variant="narrow" className="flex items-center justify-center">
         <p className="text-muted-foreground animate-pulse">Loading workspace settings...</p>
-      </div>
+      </PageLayout>
     );
   }
 
   if (!activeWorkspace) {
     return (
-      <div className="p-8 text-center">
+      <PageLayout variant="narrow" className="flex items-center justify-center text-center">
         <p className="text-muted-foreground">Please select a workspace first.</p>
-      </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-8">
+    <PageLayout variant="narrow" className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Workspace Settings</h1>
         <p className="text-muted-foreground">
@@ -93,7 +95,7 @@ export default function WorkspaceSettingsPage() {
         onClose={() => setIsInviteModalOpen(false)}
         workspaceId={activeWorkspace._id}
       />
-    </div>
+    </PageLayout>
   );
 }
 
