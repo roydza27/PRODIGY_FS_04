@@ -7,7 +7,9 @@ import {
 } from "react";
 
 import { useAuthStore } from "@/app/stores/auth.store";
+import { usePresenceStore } from "@/app/stores/presence.store";
 import { socketService } from "@/services/socket/socket.service";
+import { getPresence } from "@/feat/users/api/user.api";
 
 interface SocketContextType {
   isConnected: boolean;
@@ -39,20 +41,34 @@ export function SocketProvider({
     (state) => state.isAuthenticated
   );
 
+  const { setOnlineUsers, setUserOnline, setUserOffline } = usePresenceStore();
+
   const [isConnected, setIsConnected] =
     useState(false);
 
   useEffect(() => {
     const handleConnect = () => {
       setIsConnected(true);
+      // Fetch initial presence when socket connects
+      getPresence().then(setOnlineUsers).catch(console.error);
     };
 
     const handleDisconnect = () => {
       setIsConnected(false);
     };
 
+    const handlePresenceOnline = ({ userId }: { userId: string }) => {
+      setUserOnline(userId);
+    };
+
+    const handlePresenceOffline = ({ userId }: { userId: string }) => {
+      setUserOffline(userId);
+    };
+
     socketService.on("connect", handleConnect);
     socketService.on("disconnect", handleDisconnect);
+    socketService.on("presence:online", handlePresenceOnline);
+    socketService.on("presence:offline", handlePresenceOffline);
 
     if (isAuthenticated && token) {
       socketService.connect(token);
@@ -66,8 +82,10 @@ export function SocketProvider({
         "disconnect",
         handleDisconnect
       );
+      socketService.off("presence:online", handlePresenceOnline);
+      socketService.off("presence:offline", handlePresenceOffline);
     };
-  }, [isAuthenticated, token]);
+  }, [isAuthenticated, token, setOnlineUsers, setUserOnline, setUserOffline]);
 
   return (
     <SocketContext.Provider

@@ -6,10 +6,12 @@ import { useSocketDM } from "../hooks/useSocketDM";
 import { useConversation } from "../hooks/useConversation";
 
 import { useAuthStore } from "@/app/stores/auth.store";
+import { usePresenceStore } from "@/app/stores/presence.store";
 
 import ChatHeader from "../components/ChatHeader";
 import MessageList from "../components/MessageList";
 import MessageComposer from "../components/MessageComposer";
+import { cn } from "@/lib/utils";
 
 export default function DMPage() {
   const { conversationId } = useParams();
@@ -24,6 +26,8 @@ export default function DMPage() {
   const currentUser = useAuthStore(
     (state) => state.user
   );
+
+  const isOnline = usePresenceStore((state) => state.isOnline);
 
   const {
     data: conversation,
@@ -69,6 +73,8 @@ export default function DMPage() {
         participant._id !== (currentUser as any)?._id
     ) ?? conversation.participantIds[0];
 
+  const online = isOnline(otherParticipant._id);
+
   return (
     <div className="flex h-full flex-col overflow-hidden bg-background">
       <ChatHeader
@@ -76,6 +82,7 @@ export default function DMPage() {
         avatarUrl={otherParticipant.avatarUrl}
         username={otherParticipant.username}
         isDM
+        isOnline={online}
       />
 
       <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
@@ -97,15 +104,25 @@ export default function DMPage() {
                   </span>
                 )}
               </div>
-              <div className="absolute bottom-2 right-2 h-7 w-7 rounded-full border-4 border-background bg-emerald-500 shadow-lg" />
+              <div className={cn(
+                "absolute bottom-2 right-2 h-7 w-7 rounded-full border-4 border-background shadow-lg transition-colors duration-300",
+                online ? "bg-emerald-500" : "bg-muted-foreground/30"
+              )} />
             </div>
 
             <h2 className="mb-2 text-4xl font-black tracking-tight text-foreground">
               {otherParticipant.name}
             </h2>
-            <p className="mb-8 text-sm font-bold uppercase tracking-widest text-muted-foreground/50">
+            <p className="mb-2 text-sm font-bold uppercase tracking-widest text-muted-foreground/50">
               @{otherParticipant.username || otherParticipant.name.toLowerCase().replace(/\s/g, '')}
             </p>
+            <div className={cn(
+              "mb-8 flex items-center justify-center gap-1.5 text-[11px] font-black uppercase tracking-[0.2em] transition-colors duration-300",
+              online ? "text-emerald-500" : "text-muted-foreground/40"
+            )}>
+              {online && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />}
+              {online ? "Active Now" : "Offline"}
+            </div>
 
             <div className="mb-10 max-w-sm space-y-4">
               <p className="text-[16px] leading-relaxed text-muted-foreground">
