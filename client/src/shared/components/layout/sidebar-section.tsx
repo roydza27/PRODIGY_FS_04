@@ -13,13 +13,12 @@ type Props = {
 
 export function SidebarSection({ title, children }: Props) {
   return (
-    <SidebarGroup className="px-1 py-1">
-      {/* Removed group-data-[collapsible=icon]:hidden */}
-      <SidebarGroupLabel className="px-3 pb-2 text-[10px] font-medium uppercase tracking-[0.24em] text-zinc-500">
+    <SidebarGroup className="px-2 py-2">
+      <SidebarGroupLabel className="px-2 pb-2 text-[11px] font-bold uppercase tracking-wider text-white/30">
         {title}
       </SidebarGroupLabel>
       <SidebarGroupContent>
-        <SidebarMenu className="gap-1">{children}</SidebarMenu>
+        <SidebarMenu className="gap-0.5">{children}</SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
   );
