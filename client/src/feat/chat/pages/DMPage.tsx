@@ -13,6 +13,8 @@ import MessageList from "../components/MessageList";
 import MessageComposer from "../components/MessageComposer";
 import { cn } from "@/lib/utils";
 
+import { PageLayout } from "@/shared/components/layout/PageLayout";
+
 export default function DMPage() {
   const { conversationId } = useParams();
 
@@ -47,22 +49,22 @@ export default function DMPage() {
     messagesLoading
   ) {
     return (
-      <div className="flex h-full items-center justify-center bg-background">
+      <PageLayout variant="full" className="flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-2">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
           <span className="text-sm font-medium text-muted-foreground">
             Loading conversation...
           </span>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
   if (!conversation) {
     return (
-      <div className="flex h-full items-center justify-center bg-background text-muted-foreground">
+      <PageLayout variant="full" className="flex items-center justify-center bg-background text-muted-foreground">
         Conversation not found
-      </div>
+      </PageLayout>
     );
   }
 
@@ -76,7 +78,7 @@ export default function DMPage() {
   const online = isOnline(otherParticipant._id);
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-background">
+    <PageLayout variant="full" className="flex h-full flex-col overflow-hidden bg-background">
       <ChatHeader
         roomName={otherParticipant.name}
         avatarUrl={otherParticipant.avatarUrl}
@@ -85,7 +87,7 @@ export default function DMPage() {
         isOnline={online}
       />
 
-      <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+      <div className="min-h-0 flex-1 overflow-y-auto no-scrollbar">
         <div className="flex flex-col pb-4">
           {/* DM Intro Screen */}
           <div className="flex flex-col items-center px-6 py-20 text-center">
@@ -157,6 +159,6 @@ export default function DMPage() {
       </div>
 
       <MessageComposer conversationId={conversationId} />
-    </div>
+    </PageLayout>
   );
 }

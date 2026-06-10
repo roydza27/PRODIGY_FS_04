@@ -7,6 +7,8 @@ import { JoinWorkspaceModal } from "../components/JoinWorkspaceModal";
 import { Plus, Search, Building2, UserPlus, ArrowRight } from "lucide-react";
 import { Input } from "@/shared/components/ui/input";
 
+import { PageLayout } from "@/shared/components/layout/PageLayout";
+
 export default function WorkspaceListPage() {
   const { data: workspaces, isLoading } = useGetWorkspaces();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -19,17 +21,17 @@ export default function WorkspaceListPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#111113]">
+      <PageLayout className="flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           <p className="text-muted-foreground text-sm font-medium">Loading your workspaces...</p>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#111113] flex flex-col items-center py-20 px-4">
+    <PageLayout className="flex flex-col items-center">
       <div className="w-full max-w-[640px] space-y-8">
         
         {/* Header Section */}
@@ -160,6 +162,6 @@ export default function WorkspaceListPage() {
         isOpen={isJoinModalOpen}
         onClose={() => setIsJoinModalOpen(false)}
       />
-    </div>
+    </PageLayout>
   );
 }
