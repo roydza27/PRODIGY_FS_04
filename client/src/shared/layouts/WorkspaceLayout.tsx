@@ -2,7 +2,7 @@ import * as React from "react";
 import { Outlet } from "react-router-dom";
 
 import { AppSidebar } from "@/shared/components/layout/app-sidebar";
-import { SiteHeader } from "@/shared/components/layout/site-header";
+import { GlobalHeader } from "@/shared/components/layout/global-header";
 import {
   SidebarInset,
   SidebarProvider,
@@ -10,7 +10,7 @@ import {
 import { TooltipProvider } from "@/shared/components/ui/tooltip";
 import { workspaceSidebarData } from "@/shared/constants/sidebar.constants";
 
-export default function AdminLayout() {
+export default function WorkspaceLayout() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     sessionStorage.removeItem("token");
@@ -22,26 +22,30 @@ export default function AdminLayout() {
       <SidebarProvider
         style={
           {
-            "--sidebar-width": "calc(var(--spacing) * 80)",
-            "--sidebar-width-icon": "calc(var(--spacing) * 15)",
-            "--header-height": "calc(var(--spacing) * 12)",
+            "--sidebar-width": "360px",
           } as React.CSSProperties
         }
       >
-        <AppSidebar
-          onLogout={handleLogout}
-          sidebarData={workspaceSidebarData}
-          variant="inset"
-        />
+        <div className="flex flex-col h-screen w-full overflow-hidden bg-[#09090B]">
+          {/* 1. Global Header - Full Width */}
+          <GlobalHeader />
 
-        <SidebarInset className="h-screen overflow-hidden rounded text-[#FAFAFA]">
+          <div className="flex flex-1 overflow-hidden">
+            {/* The Left Navigation Area (Rail + Sidebar) is now unified within AppSidebar */}
+            <div className="flex flex-1 overflow-hidden relative">
+              <AppSidebar
+                onLogout={handleLogout}
+                sidebarData={workspaceSidebarData}
+              />
 
-          <main className="flex h-[calc(100vh-var(--header-height))] overflow-hidden">
-            <div className="flex-1 min-h-0 overflow-hidden">
-              <Outlet />
+              <SidebarInset className="flex-1 overflow-hidden rounded-none border-none bg-[#111113] text-[#FAFAFA]">
+                <main className="h-full w-full overflow-hidden">
+                  <Outlet />
+                </main>
+              </SidebarInset>
             </div>
-          </main>
-        </SidebarInset>
+          </div>
+        </div>
       </SidebarProvider>
     </TooltipProvider>
   );

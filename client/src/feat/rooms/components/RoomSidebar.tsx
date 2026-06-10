@@ -33,18 +33,17 @@ export default function RoomSidebar() {
   } = useRooms(workspaceId);
 
   return (
-    <section className="mb-6">
+    <section className="mb-4">
       {/* Header */}
-      <div className="group mb-2 flex items-center justify-between px-4">
-        <div className="flex items-center gap-2">
-          <div className="h-1.5 w-1.5 rounded-full bg-primary/60" />
-          <span className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
-            Channels
+      <div className="group mb-1 flex items-center justify-between px-2">
+        <div className="flex items-center gap-1">
+          <span className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-foreground/80 transition-colors cursor-default">
+            Text Channels
           </span>
 
           {!isLoading && rooms.length > 0 && (
-            <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-muted/50 px-1 text-[9px] font-black text-muted-foreground">
-              {rooms.length}
+            <span className="text-[11px] font-medium text-muted-foreground/40 ml-1">
+              ({rooms.length})
             </span>
           )}
         </div>
@@ -55,9 +54,9 @@ export default function RoomSidebar() {
             trigger={
               <button
                 type="button"
-                className="flex h-6 w-6 items-center justify-center rounded-lg text-muted-foreground/40 opacity-0 transition-all duration-300 group-hover:opacity-100 hover:bg-primary/10 hover:text-primary"
+                className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground/40 opacity-0 transition-all duration-200 group-hover:opacity-100 hover:text-foreground"
               >
-                <Plus className="h-4 w-4" strokeWidth={3} />
+                <Plus className="h-4 w-4" />
               </button>
             }
           />
@@ -65,13 +64,13 @@ export default function RoomSidebar() {
       </div>
 
       {/* Content */}
-      <div className="px-2">
+      <div className="space-y-0.5">
         {isLoading ? (
           <div className="space-y-1 mt-1">
             {Array.from({ length: 5 }).map((_, index) => (
               <div
                 key={index}
-                className="mx-2 h-11 animate-pulse rounded-xl bg-muted/20"
+                className="mx-2 h-8 animate-pulse rounded bg-muted/20"
               />
             ))}
           </div>
