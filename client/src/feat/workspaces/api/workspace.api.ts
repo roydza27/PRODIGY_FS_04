@@ -30,6 +30,16 @@ export const createWorkspaceApi = async (
 };
 
 /**
+ * Search public workspaces
+ */
+export const searchWorkspacesApi = async (query: string): Promise<Workspace[]> => {
+  const response = await api.get<GetWorkspacesResponse>(
+    `/workspaces/search?q=${encodeURIComponent(query)}`
+  );
+  return response.data.data;
+};
+
+/**
  * Get all workspaces for current user
  */
 export const getWorkspacesApi = async (): Promise<Workspace[]> => {
@@ -80,10 +90,25 @@ export const inviteMemberApi = async (
 };
 
 /**
+ * Get all pending invites for current user
+ */
+export const getPendingInvitesApi = async (): Promise<any[]> => {
+  const response = await api.get<any>("/workspaces/invites");
+  return response.data.data;
+};
+
+/**
  * Accept workspace invite
  */
 export const acceptInviteApi = async (workspaceId: string): Promise<void> => {
   await api.post<AcceptInviteResponse>(`/workspaces/${workspaceId}/accept-invite`);
+};
+
+/**
+ * Decline workspace invite
+ */
+export const declineInviteApi = async (workspaceId: string): Promise<void> => {
+  await api.post<any>(`/workspaces/${workspaceId}/decline-invite`);
 };
 
 /**

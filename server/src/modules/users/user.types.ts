@@ -12,6 +12,7 @@ export interface IUser {
   isEmailVerified: boolean;
   isActive: boolean;
   lastLoginAt?: Date | null;
+  lastSeenAt?: Date | null;
   authProvider: "local" | "google";
   googleId?: string;
   createdAt: Date;

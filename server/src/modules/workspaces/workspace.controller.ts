@@ -49,6 +49,49 @@ export const getWorkspaces = async (req: AuthRequest, res: Response) => {
 };
 
 /**
+ * GET /api/workspaces/invites
+ * Get all pending invites for current user
+ */
+export const getPendingInvites = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const invites = await workspaceService.getPendingInvites(userId);
+
+    return res.status(200).json({
+      success: true,
+      data: invites,
+    });
+  } catch (error) {
+    return res.status(400).json({ error: String(error) });
+  }
+};
+
+/**
+ * GET /api/workspaces/search
+ */
+export const searchWorkspaces = async (req: AuthRequest, res: Response) => {
+  try {
+    const query = req.query.q as string;
+    if (!query) {
+      return res.status(200).json({ success: true, data: [] });
+    }
+
+    const workspaces = await workspaceService.searchWorkspaces(query);
+
+    return res.status(200).json({
+      success: true,
+      data: workspaces,
+    });
+  } catch (error) {
+    return res.status(400).json({ error: String(error) });
+  }
+};
+
+/**
  * GET /api/workspaces/:workspaceId
  * Get workspace details
  */
@@ -196,6 +239,30 @@ export const acceptInvite = async (req: AuthRequest, res: Response) => {
     return res.status(200).json({
       success: true,
       data: membership,
+    });
+  } catch (error) {
+    return res.status(400).json({ error: String(error) });
+  }
+};
+
+/**
+ * POST /api/workspaces/:workspaceId/decline-invite
+ * Decline workspace invite
+ */
+export const declineInvite = async (req: AuthRequest, res: Response) => {
+  try {
+    const workspaceId = req.params.workspaceId as string;
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    await workspaceService.declineInvite(workspaceId, userId);
+
+    return res.status(200).json({
+      success: true,
+      data: { message: "Invitation declined successfully" },
     });
   } catch (error) {
     return res.status(400).json({ error: String(error) });

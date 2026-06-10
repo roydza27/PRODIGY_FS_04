@@ -2,7 +2,7 @@ import { ConversationModel } from "./conversation.model";
 import type { IConversation } from "./conversation.types";
 
 export const findConversationById = async (id: string): Promise<IConversation | null> => {
-  return ConversationModel.findById(id).populate("participants", "name avatarUrl").lean();
+  return ConversationModel.findById(id).populate("participants", "name avatarUrl username").lean();
 };
 
 export const findUserConversations = async (
@@ -13,7 +13,18 @@ export const findUserConversations = async (
     workspaceId,
     participants: userId,
   })
-    .populate("participants", "name avatarUrl")
+    .populate("participants", "name avatarUrl username")
+    .sort({ lastMessageAt: -1 })
+    .lean();
+};
+
+export const findAllUserConversations = async (
+  userId: string
+): Promise<IConversation[]> => {
+  return ConversationModel.find({
+    participants: userId,
+  })
+    .populate("participants", "name avatarUrl username")
     .sort({ lastMessageAt: -1 })
     .lean();
 };
@@ -27,7 +38,7 @@ export const findDM = async (
     workspaceId,
     participants: { $all: [participant1Id, participant2Id], $size: 2 },
   })
-    .populate("participants", "name avatarUrl")
+    .populate("participants", "name avatarUrl username")
     .lean();
 };
 

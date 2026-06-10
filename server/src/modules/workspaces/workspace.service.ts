@@ -1,5 +1,6 @@
 import * as workspaceRepository from "./workspace.repository";
 import * as membershipRepository from "./membership.repository";
+import { WorkspaceModel } from "./workspace.model";
 import type { CreateWorkspaceInput, UpdateWorkspaceInput } from "./workspace.types";
 
 /**
@@ -54,6 +55,13 @@ export const createWorkspace = async (
  */
 export const getWorkspacesByUser = async (userId: string) => {
   return workspaceRepository.findWorkspacesByMemberUserId(userId, "active");
+};
+
+/**
+ * Get all pending invites for a user
+ */
+export const getPendingInvites = async (userId: string) => {
+  return membershipRepository.findUserWorkspaces(userId, "invited");
 };
 
 /**
@@ -153,6 +161,19 @@ export const acceptInvite = async (workspaceId: string, userId: string) => {
 };
 
 /**
+ * User declines workspace invite
+ */
+export const declineInvite = async (workspaceId: string, userId: string) => {
+  const membership = await membershipRepository.findMembership(workspaceId, userId);
+
+  if (!membership || membership.status !== "invited") {
+    throw "No pending invitation found for this workspace";
+  }
+
+  return membershipRepository.removeMembership(workspaceId, userId);
+};
+
+/**
  * Remove member from workspace
  */
 export const removeMember = async (workspaceId: string, userId: string) => {
@@ -229,4 +250,17 @@ export const getUserRole = async (
   userId: string
 ): Promise<"owner" | "admin" | "member" | null> => {
   return membershipRepository.getUserRoleInWorkspace(workspaceId, userId);
+};
+
+/**
+ * Search workspaces by name
+ */
+export const searchWorkspaces = async (query: string) => {
+  const searchRegex = new RegExp(query, "i");
+  return WorkspaceModel.find({
+    name: searchRegex,
+    visibility: "public"
+  })
+  .limit(20)
+  .lean();
 };

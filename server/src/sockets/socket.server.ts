@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import { env } from "../config/env";
 import { logger } from "../utils/logger";
 import { presenceService } from "./presence.service";
+import { updateLastSeen } from "../modules/users/user.service";
 
 import { registerRoomHandlers } from "./handlers/room.handler";
 import { registerMessageHandlers } from "./handlers/message.handler";
@@ -84,6 +85,11 @@ export const setupSocket = (server: HttpServer) => {
     
     socket.join(`user:${userId}`);
 
+    // Send initial presence sync
+    socket.emit("presence:sync", {
+      userIds: presenceService.getOnlineUserIds(),
+    });
+
     registerRoomHandlers(io, socket);
     registerMessageHandlers(io, socket);
     registerDMHandlers(io, socket);
@@ -104,6 +110,7 @@ export const setupSocket = (server: HttpServer) => {
       // If it was the last active connection for this user, broadcast offline status
       if (isLastConnection) {
         io.emit("presence:offline", { userId });
+        void updateLastSeen(userId);
       }
     });
   });

@@ -1,8 +1,11 @@
 import { api } from "@/services/api";
 import type { Conversation, CreateConversationInput } from "../types/conversation.types";
 
-export const getConversations = async (workspaceId: string): Promise<Conversation[]> => {
-  const { data } = await api.get(`/workspaces/${workspaceId}/conversations`);
+export const getConversations = async (workspaceId?: string): Promise<Conversation[]> => {
+  const url = workspaceId 
+    ? `/workspaces/${workspaceId}/conversations` 
+    : "/conversations/list";
+  const { data } = await api.get(url);
   return data;
 };
 
@@ -15,9 +18,12 @@ export const getOrCreateDM = async (
 };
 
 export const getConversation = async (
-  workspaceId: string,
-  conversationId: string
+  conversationId: string,
+  workspaceId?: string
 ): Promise<Conversation> => {
-  const { data } = await api.get(`/workspaces/${workspaceId}/conversations/${conversationId}`);
+  const url = workspaceId
+    ? `/workspaces/${workspaceId}/conversations/${conversationId}`
+    : `/conversations/${conversationId}`;
+  const { data } = await api.get(url);
   return data;
 };

@@ -22,7 +22,7 @@ export function WorkspaceRail() {
   const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   const isHomeActive =
-    location.pathname === "/" || location.pathname === "/workspaces";
+    location.pathname.startsWith("/workspaces");
 
   const handleWorkspaceSwitch = (workspace: any) => {
     setActiveWorkspaceId(workspace._id);

@@ -30,7 +30,7 @@ export default function GoogleLoginButton() {
         });
 
         toast.success(AUTH_MESSAGES.googleLoginSuccess);
-        navigate("/home", { replace: true });
+        navigate("/workspaces", { replace: true });
       } catch (err: any) {
         toast.error(getAuthErrorMessage(err));
       } finally {

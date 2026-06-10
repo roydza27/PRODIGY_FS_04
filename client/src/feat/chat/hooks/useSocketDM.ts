@@ -12,7 +12,7 @@ export const useSocketDM = (
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    if (!workspaceId || !conversationId) {
+    if (!conversationId) {
       return;
     }
 

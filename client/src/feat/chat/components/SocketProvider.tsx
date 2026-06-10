@@ -57,6 +57,10 @@ export function SocketProvider({
       setIsConnected(false);
     };
 
+    const handlePresenceSync = ({ userIds }: { userIds: string[] }) => {
+      setOnlineUsers(userIds);
+    };
+
     const handlePresenceOnline = ({ userId }: { userId: string }) => {
       setUserOnline(userId);
     };
@@ -67,6 +71,7 @@ export function SocketProvider({
 
     socketService.on("connect", handleConnect);
     socketService.on("disconnect", handleDisconnect);
+    socketService.on("presence:sync", handlePresenceSync);
     socketService.on("presence:online", handlePresenceOnline);
     socketService.on("presence:offline", handlePresenceOffline);
 
@@ -82,6 +87,7 @@ export function SocketProvider({
         "disconnect",
         handleDisconnect
       );
+      socketService.off("presence:sync", handlePresenceSync);
       socketService.off("presence:online", handlePresenceOnline);
       socketService.off("presence:offline", handlePresenceOffline);
     };

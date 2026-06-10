@@ -61,6 +61,10 @@ const userSchema = new Schema<IUser>(
       type: Date,
       default: null,
     },
+    lastSeenAt: {
+      type: Date,
+      default: null,
+    },
     authProvider: {
       type: String,
       enum: ["local", "google"],

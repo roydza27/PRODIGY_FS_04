@@ -92,8 +92,8 @@ export const updateRoom = async (
     }
 
     const workspaceId =
-      req.params.workspaceId;
-    const roomId = req.params.roomId;
+      req.params.workspaceId as string;
+    const roomId = req.params.roomId as string;
 
     const payload =
       updateRoomSchema.parse(req.body);
@@ -142,8 +142,8 @@ export const deleteRoom = async (
     }
 
     const workspaceId =
-      req.params.workspaceId;
-    const roomId = req.params.roomId;
+      req.params.workspaceId as string;
+    const roomId = req.params.roomId as string;
 
     await roomService.deleteRoom(
       userId,

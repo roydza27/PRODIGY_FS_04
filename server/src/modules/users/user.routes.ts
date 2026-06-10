@@ -4,6 +4,6 @@ import * as userController from "./user.controller";
 
 const router = Router();
 
-router.get("/presence", protect, userController.getOnlineUsers);
+router.get("/search", protect, userController.searchUsers);
 
 export default router;

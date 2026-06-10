@@ -15,7 +15,7 @@ export const registerDMHandlers = (
   socket.on(
     "dm:join",
     async ({ workspaceId, conversationId }) => {
-      if (!workspaceId || !conversationId) {
+      if (!conversationId) {
         return;
       }
 
@@ -23,19 +23,21 @@ export const registerDMHandlers = (
         const userId = socket.data.userId;
 
         /**
-         * Validate workspace membership
+         * Validate workspace membership if workspaceId is provided
          */
-        const hasAccess =
-          await membershipRepository.checkMembershipExists(
-            workspaceId,
-            userId
-          );
+        if (workspaceId) {
+          const hasAccess =
+            await membershipRepository.checkMembershipExists(
+              workspaceId,
+              userId
+            );
 
-        if (!hasAccess) {
-          logger.warn(
-            `[Socket] Unauthorized DM join by ${userId}`
-          );
-          return;
+          if (!hasAccess) {
+            logger.warn(
+              `[Socket] Unauthorized DM join by ${userId} for workspace ${workspaceId}`
+            );
+            return;
+          }
         }
 
         /**
@@ -56,7 +58,7 @@ export const registerDMHandlers = (
         /**
          * Verify user is a participant
          */
-        const isParticipant = conversation.participantIds.some(
+        const isParticipant = conversation.participants.some(
           (participant: any) => {
             const id =
               participant?._id?.toString?.() ??

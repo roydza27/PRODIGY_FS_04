@@ -34,7 +34,7 @@ export default function DMPage() {
   const {
     data: conversation,
     isLoading: conversationLoading,
-  } = useConversation(conversationId);
+  } = useConversation(conversationId, workspaceId);
 
   const {
     data: messages = [],
@@ -69,11 +69,13 @@ export default function DMPage() {
   }
 
   const otherParticipant =
-    conversation.participantIds.find(
+    conversation.participants.find(
       (participant) =>
         participant._id !== currentUser?.id &&
         participant._id !== (currentUser as any)?._id
-    ) ?? conversation.participantIds[0];
+    ) ?? conversation.participants[0];
+
+  const online = isOnline(otherParticipant._id);
 
   const online = isOnline(otherParticipant._id);
 

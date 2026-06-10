@@ -26,8 +26,10 @@ export default function DMList() {
   } = useConversations();
 
   const getOtherParticipant = (
-    participants: typeof conversations[number]["participantIds"]
+    participants: any[]
   ) => {
+    if (!participants || !Array.isArray(participants)) return null;
+
     return (
       participants.find(
         (participant) =>
@@ -71,8 +73,10 @@ export default function DMList() {
           conversations.map((conversation) => {
             const other =
               getOtherParticipant(
-                conversation.participantIds
+                conversation.participants
               );
+
+            if (!other) return null;
 
             const isActive =
               conversationId === conversation._id;

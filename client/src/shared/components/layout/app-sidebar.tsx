@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { LayoutDashboard, MessageSquarePlus } from "lucide-react";
+import { LayoutDashboard, MessageSquarePlus, Home, Search, UserPlus, Plus, Building2 } from "lucide-react";
 import RoomSidebar from "@/feat/rooms/components/RoomSidebar";
 import DMList from "@/feat/chat/components/DMList";
 import { SidebarNavItem } from "@/shared/components/layout/sidebar-nav-item";
@@ -10,6 +10,8 @@ import { NavUser } from "@/shared/components/layout/nav-user";
 import { useAuthStore } from "@/app/stores/auth.store";
 import { useParams } from "react-router-dom";
 import { useActiveWorkspace } from "@/feat/workspaces/hooks/useActiveWorkspace";
+import { useGetWorkspaces } from "@/feat/workspaces/api/workspace.queries";
+import { CreateWorkspaceModal } from "@/feat/workspaces/components/CreateWorkspaceModal";
 import CreateDMDialog from "@/feat/chat/components/CreateDMDialog";
 import { WorkspaceRail } from "@/shared/components/workspace/workspace-rail";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -40,7 +42,9 @@ export function AppSidebar({
   const authUser = useAuthStore((state) => state.user);
   const { documents, navSecondary, userMenu } = sidebarData;
   const { activeWorkspace } = useActiveWorkspace();
+  const { data: workspaces = [] } = useGetWorkspaces();
   const isMobile = useIsMobile();
+  const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
 
   const isWorkspaceContext = !!workspaceSlug;
 
@@ -64,7 +68,7 @@ export function AppSidebar({
         <div className="flex flex-1 flex-col min-w-0 ">
           <SidebarHeader className="h-12 border-b border-white/5 px-4 flex flex-row items-center bg-[#0B0B0D]">
             <span className="text-[14px] font-bold tracking-tight text-white/90 truncate">
-              {isWorkspaceContext ? (activeWorkspace?.name || "Workspace") : "Direct Messages"}
+              {isWorkspaceContext ? (activeWorkspace?.name || "Workspace") : "Home"}
             </span>
           </SidebarHeader>
 
@@ -99,35 +103,55 @@ export function AppSidebar({
               <SidebarSection title="Navigation">
                 <SidebarNavItem
                   to="/workspaces"
-                  label="All Workspaces"
-                  icon={LayoutDashboard}
+                  label="Home"
+                  icon={Home}
+                  end
                 />
-                
-                {activeWorkspace && (
-                  <SidebarMenuItem className="px-1 py-0.5">
-                    <CreateDMDialog
-                      workspaceId={activeWorkspace._id}
-                      trigger={
-                        <SidebarMenuButton 
-                          tooltip="Start Conversation" 
-                          className="h-10 rounded-xl transition-all duration-300 text-zinc-500 hover:bg-white/[0.03] hover:text-zinc-200"
-                        >
-                          <div className="flex items-center gap-3 px-3 w-full">
-                            <MessageSquarePlus className="size-4 shrink-0" />
-                            <span className="truncate text-[13px] font-medium text-left">Start Conversation</span>
-                          </div>
-                        </SidebarMenuButton>
-                      }
-                    />
-                  </SidebarMenuItem>
-                )}
+                <SidebarNavItem
+                  to="/workspaces/search"
+                  label="Search"
+                  icon={Search}
+                />
+                <SidebarNavItem
+                  to="/workspaces/invites"
+                  label="Invites"
+                  icon={UserPlus}
+                />
               </SidebarSection>
 
               <DMList />
+
+              <SidebarSection title="Your Workspaces">
+                <SidebarMenuItem className="px-1 py-0.5">
+                  <SidebarMenuButton 
+                    onClick={() => setIsCreateModalOpen(true)}
+                    className="h-10 rounded-xl text-primary hover:bg-primary/10 transition-all duration-300"
+                  >
+                    <div className="flex items-center gap-3 px-3 w-full font-bold">
+                      <Plus className="size-4 shrink-0" />
+                      <span className="truncate text-[13px]">Create Workspace</span>
+                    </div>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+
+                {workspaces.map((w) => (
+                  <SidebarNavItem
+                    key={w._id}
+                    to={`/w/${w.slug}`}
+                    label={w.name}
+                    icon={Building2}
+                  />
+                ))}
+              </SidebarSection>
             </div>
           )}
         </SidebarContent>
       </div>
+
+      <CreateWorkspaceModal 
+        isOpen={isCreateModalOpen} 
+        onClose={() => setIsCreateModalOpen(false)} 
+      />
     </div>
 
     <SidebarFooter className="border-t border-white/5 p-3">
