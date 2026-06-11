@@ -11,6 +11,14 @@ export type UserSearchResult = {
 };
 
 /**
+ * Fetch initial presence (online user IDs)
+ */
+export const getPresence = async (): Promise<string[]> => {
+  const response = await api.get<{ success: boolean; data: string[] }>("/users/presence");
+  return response.data.data;
+};
+
+/**
  * Search users by name or username
  */
 export const searchUsersApi = async (query: string): Promise<UserSearchResult[]> => {

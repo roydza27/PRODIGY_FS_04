@@ -35,7 +35,7 @@ export const findWorkspaceMembers = async (
   }
 
   return MembershipModel.find(query)
-    .populate("userId", "name username email avatarUrl displayName")
+    .populate("userId", "name username email avatarUrl displayName lastSeenAt")
     .sort({ createdAt: 1 })
     .lean();
 };

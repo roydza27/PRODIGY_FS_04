@@ -5,6 +5,11 @@ type PresenceStore = {
    * Set of online user IDs
    */
   onlineUsers: Set<string>;
+
+  /**
+   * Map of userId -> ISO string of last seen timestamp
+   */
+  lastSeen: Record<string, string>;
   
   /**
    * Initialize online users
@@ -19,16 +24,28 @@ type PresenceStore = {
   /**
    * Mark a user as offline
    */
-  setUserOffline: (userId: string) => void;
-  
+  setUserOffline: (userId: string, lastSeenAt?: string) => void;
+
   /**
-   * Check if a user is online
+   * Clear all presence data
    */
-  isOnline: (userId: string) => boolean;
+  clearPresence: () => void;
+
+  /**
+   * Map of conversationId -> Set of userIds who are typing
+   */
+  typingUsers: Record<string, Set<string>>;
+
+  /**
+   * Mark a user as typing in a conversation
+   */
+  setTyping: (conversationId: string, userId: string, isTyping: boolean) => void;
 };
 
-export const usePresenceStore = create<PresenceStore>((set, get) => ({
+export const usePresenceStore = create<PresenceStore>((set) => ({
   onlineUsers: new Set<string>(),
+  lastSeen: {},
+  typingUsers: {},
 
   setOnlineUsers: (userIds) => {
     set({ onlineUsers: new Set(userIds) });
@@ -36,21 +53,56 @@ export const usePresenceStore = create<PresenceStore>((set, get) => ({
 
   setUserOnline: (userId) => {
     set((state) => {
+      // If user becomes online, remove their last seen entry as they are now active
+      const newLastSeen = { ...state.lastSeen };
+      delete newLastSeen[userId];
+
+      if (state.onlineUsers.has(userId)) {
+        return { lastSeen: newLastSeen };
+      }
+
       const newOnlineUsers = new Set(state.onlineUsers);
       newOnlineUsers.add(userId);
-      return { onlineUsers: newOnlineUsers };
+      return { onlineUsers: newOnlineUsers, lastSeen: newLastSeen };
     });
   },
 
-  setUserOffline: (userId) => {
+  setUserOffline: (userId, lastSeenAt) => {
     set((state) => {
       const newOnlineUsers = new Set(state.onlineUsers);
       newOnlineUsers.delete(userId);
-      return { onlineUsers: newOnlineUsers };
+
+      const newLastSeen = { ...state.lastSeen };
+      if (lastSeenAt) {
+        newLastSeen[userId] = lastSeenAt;
+      }
+
+      return { onlineUsers: newOnlineUsers, lastSeen: newLastSeen };
     });
   },
 
-  isOnline: (userId) => {
-    return get().onlineUsers.has(userId);
+  clearPresence: () => {
+    set({ onlineUsers: new Set(), lastSeen: {}, typingUsers: {} });
+  },
+
+  setTyping: (conversationId, userId, isTyping) => {
+    set((state) => {
+      const newTypingUsers = { ...state.typingUsers };
+      const currentSet = new Set(newTypingUsers[conversationId] || []);
+      
+      if (isTyping) {
+        currentSet.add(userId);
+      } else {
+        currentSet.delete(userId);
+      }
+      
+      if (currentSet.size === 0) {
+        delete newTypingUsers[conversationId];
+      } else {
+        newTypingUsers[conversationId] = currentSet;
+      }
+      
+      return { typingUsers: newTypingUsers };
+    });
   },
 }));

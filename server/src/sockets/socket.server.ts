@@ -74,10 +74,10 @@ export const setupSocket = (server: HttpServer) => {
   });
 
   io.on("connection", (socket: Socket) => {
-    const userId = socket.data.userId;
+    const userId = String(socket.data.userId);
 
     logger.info(
-      `[Socket] User connected: ${userId}`
+      `[Socket] User connected: ${userId} (Socket: ${socket.id})`
     );
 
     // Register presence
@@ -86,6 +86,7 @@ export const setupSocket = (server: HttpServer) => {
     socket.join(`user:${userId}`);
 
     // Send initial presence sync
+    logger.info(`[Socket] Emitting presence:sync to user ${userId}`);
     socket.emit("presence:sync", {
       userIds: presenceService.getOnlineUserIds(),
     });
@@ -96,21 +97,38 @@ export const setupSocket = (server: HttpServer) => {
 
     // If it's the first connection for this user across all tabs, broadcast online status
     if (isFirstConnection) {
+      logger.info(`[Socket] Emitting presence:online for user ${userId}`);
       io.emit("presence:online", { userId });
     }
 
     socket.on("disconnect", (reason) => {
       logger.info(
-        `[Socket] User disconnected: ${userId} (${reason})`
+        `[Socket] User disconnected: ${userId} (${reason}) (Socket: ${socket.id})`
       );
 
       // Remove presence
       const isLastConnection = presenceService.remove(userId, socket.id);
 
-      // If it was the last active connection for this user, broadcast offline status
+      // If it was the last active connection for this user, broadcast offline status after a grace period
       if (isLastConnection) {
-        io.emit("presence:offline", { userId });
-        void updateLastSeen(userId);
+        const GRACE_PERIOD = 3000; // 3 seconds
+        
+        setTimeout(async () => {
+          // Re-check if the user is still offline (didn't reconnect in another tab/refresh)
+          if (!presenceService.isOnline(userId)) {
+            logger.info(`[Socket] Grace period ended. Emitting presence:offline for user ${userId}`);
+            
+            const lastSeenAt = await updateLastSeen(userId);
+            
+            // TODO: Optimize presence broadcasts to be workspace-scoped instead of global
+            io.emit("presence:offline", { 
+              userId, 
+              lastSeenAt: lastSeenAt.toISOString() 
+            });
+          } else {
+            logger.info(`[Socket] User ${userId} reconnected during grace period. Offline broadcast skipped.`);
+          }
+        }, GRACE_PERIOD);
       }
     });
   });
