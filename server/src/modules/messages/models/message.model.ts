@@ -39,6 +39,12 @@ const messageSchema = new Schema<IMessage>(
       trim: true,
       maxlength: 4000,
     },
+
+    status: {
+      type: String,
+      enum: ["sent", "delivered", "seen"],
+      default: "sent",
+    },
   },
   {
     timestamps: true,

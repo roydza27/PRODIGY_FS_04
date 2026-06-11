@@ -43,3 +43,45 @@ export const findConversationMessages = async (
     .lean()
     .exec();
 };
+
+export const updateMessageStatus = async (
+  messageId: string,
+  status: string
+): Promise<IMessage | null> => {
+  // Define status priority
+  const statusPriority: Record<string, number> = {
+    sent: 1,
+    delivered: 2,
+    seen: 3,
+  };
+
+  const message = await MessageModel.findById(messageId);
+  if (!message) return null;
+
+  // Only update if the new status is more advanced
+  if (statusPriority[status] > statusPriority[message.status]) {
+    message.status = status;
+    await message.save();
+    
+    return MessageModel.findById(messageId)
+      .populate("senderId", "name avatarUrl")
+      .lean()
+      .exec();
+  }
+
+  return message.toObject();
+};
+
+export const markConversationAsSeen = async (
+  conversationId: string,
+  userId: string
+): Promise<void> => {
+  await MessageModel.updateMany(
+    {
+      conversationId,
+      senderId: { $ne: userId },
+      status: { $ne: "seen" },
+    },
+    { status: "seen" }
+  ).exec();
+};

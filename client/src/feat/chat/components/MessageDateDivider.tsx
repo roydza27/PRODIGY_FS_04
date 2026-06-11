@@ -1,4 +1,5 @@
 import { format, isToday, isYesterday } from "date-fns";
+import { motion } from "framer-motion";
 
 interface Props {
   date: Date;
@@ -12,12 +13,20 @@ export default function MessageDateDivider({ date }: Props) {
   };
 
   return (
-    <div className="relative my-6 flex items-center px-6">
-      <div className="flex-grow border-t border-border/40"></div>
-      <span className="mx-4 shrink-0 text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 bg-background px-2">
-        {getDateLabel(date)}
-      </span>
-      <div className="flex-grow border-t border-border/40"></div>
-    </div>
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="relative my-10 flex items-center px-8"
+    >
+      <div className="h-px flex-grow bg-gradient-to-r from-transparent via-border/50 to-border/50" />
+      <div className="mx-6 flex items-center gap-2">
+        <div className="h-1.5 w-1.5 rounded-full bg-primary/20" />
+        <span className="shrink-0 text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 px-1">
+          {getDateLabel(date)}
+        </span>
+        <div className="h-1.5 w-1.5 rounded-full bg-primary/20" />
+      </div>
+      <div className="h-px flex-grow bg-gradient-to-l from-transparent via-border/50 to-border/50" />
+    </motion.div>
   );
 }
