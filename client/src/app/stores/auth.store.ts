@@ -91,7 +91,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         isLoading: false,
         isAuthenticated: true,
       });
-    } catch (error) {
+    } catch {
       get().clearSession();
     }
   },
