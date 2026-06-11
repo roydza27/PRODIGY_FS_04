@@ -1,11 +1,12 @@
 import * as conversationRepository from "./conversation.repository";
 import * as membershipRepository from "../workspaces/membership.repository";
+import type { IConversation, IPopulatedConversation } from "./conversation.types";
 
 export const getOrCreateDM = async (
   workspaceId: string,
   userId: string,
   participantId: string
-) => {
+): Promise<IPopulatedConversation | IConversation> => {
   // 1. Validate both users are members of the workspace
   const [userIsMember, participantIsMember] = await Promise.all([
     membershipRepository.checkMembershipExists(workspaceId, userId),
@@ -17,7 +18,7 @@ export const getOrCreateDM = async (
   }
 
   // 2. Check if DM already exists
-  let conversation = await conversationRepository.findDM(
+  const conversation = await conversationRepository.findDM(
     workspaceId,
     userId,
     participantId
@@ -25,13 +26,13 @@ export const getOrCreateDM = async (
 
   // 3. Create if not exists
   if (!conversation) {
-    conversation = await conversationRepository.createConversation(workspaceId, [
+    const newConversation = await conversationRepository.createConversation(workspaceId, [
       userId,
       participantId,
     ]);
     
     // Populate participants for the newly created conversation
-    conversation = await conversationRepository.findConversationById(conversation._id.toString()) as any;
+    return await conversationRepository.findConversationById(newConversation._id.toString()) as unknown as IPopulatedConversation;
   }
 
   return conversation;

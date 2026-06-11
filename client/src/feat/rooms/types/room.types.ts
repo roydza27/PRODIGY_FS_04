@@ -5,6 +5,7 @@ export interface Room {
   description: string;
   type: "text" | "voice";
   isPrivate: boolean;
+  memberCount?: number;
   createdBy: string;
   status: "active" | "archived";
   createdAt: string;

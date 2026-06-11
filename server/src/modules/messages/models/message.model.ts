@@ -1,5 +1,6 @@
 import { Schema, model, models } from "mongoose";
 import type { IMessage } from "../types/message.types";
+import { MessageStatus } from "../types/message.types";
 
 const messageSchema = new Schema<IMessage>(
   {
@@ -42,8 +43,8 @@ const messageSchema = new Schema<IMessage>(
 
     status: {
       type: String,
-      enum: ["sent", "delivered", "seen"],
-      default: "sent",
+      enum: Object.values(MessageStatus),
+      default: MessageStatus.SENT,
     },
   },
   {

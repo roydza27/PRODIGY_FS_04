@@ -28,7 +28,7 @@ export const useLoginForm = () => {
 
       toast.success(AUTH_MESSAGES.loginSuccess);
       navigate("/workspaces", { replace: true });
-    } catch (err: any) {
+    } catch (err: unknown) {
       const message = getAuthErrorMessage(err);
       setError(message);
       toast.error(message);

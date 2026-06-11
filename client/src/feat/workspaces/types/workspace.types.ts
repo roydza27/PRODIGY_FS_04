@@ -13,10 +13,20 @@ export interface Workspace {
   updatedAt: string;
 }
 
+export interface WorkspaceUser {
+  _id: string;
+  name: string;
+  username: string;
+  email: string;
+  avatarUrl?: string;
+  displayName?: string;
+  lastSeenAt?: string;
+}
+
 export interface Membership {
   _id: string;
   workspaceId: string;
-  userId: string;
+  userId: string | WorkspaceUser;
   role: "owner" | "admin" | "member";
   status: "invited" | "active" | "removed" | "blocked";
   nickname: string;
@@ -25,14 +35,17 @@ export interface Membership {
 }
 
 export interface WorkspaceMember extends Membership {
-  user?: {
-    _id: string;
-    name: string;
-    username: string;
-    email: string;
-    avatarUrl: string;
-    displayName: string;
-  };
+  user?: WorkspaceUser;
+}
+
+export interface WorkspaceInvite {
+  _id: string;
+  workspaceId: Workspace;
+  userId: string | WorkspaceUser;
+  invitedBy: WorkspaceUser;
+  role: "admin" | "member";
+  status: "invited";
+  invitedAt: string;
 }
 
 export type CreateWorkspacePayload = {
@@ -49,7 +62,8 @@ export type UpdateWorkspacePayload = {
 };
 
 export type InviteMemberPayload = {
-  userId: string;
+  email?: string;
+  userId?: string;
   role?: "admin" | "member";
 };
 

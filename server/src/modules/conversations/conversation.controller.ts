@@ -24,9 +24,10 @@ export const getOrCreateDM = async (req: AuthRequest, res: Response) => {
     );
 
     res.json(conversation);
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error("Error in getOrCreateDM:", error);
-    res.status(400).json({ message: error.message || "Something went wrong" });
+    const message = error instanceof Error ? error.message : "Something went wrong";
+    res.status(400).json({ message });
   }
 };
 
@@ -44,9 +45,10 @@ export const getConversations = async (req: AuthRequest, res: Response) => {
       : await conversationService.getAllUserConversations(userId);
 
     res.json(conversations);
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error("Error in getConversations:", error);
-    res.status(400).json({ message: error.message || "Something went wrong" });
+    const message = error instanceof Error ? error.message : "Something went wrong";
+    res.status(400).json({ message });
   }
 };
 
@@ -57,8 +59,9 @@ export const getConversation = async (req: Request, res: Response) => {
     const conversation = await conversationService.getConversation(conversationId);
 
     res.json(conversation);
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error("Error in getConversation:", error);
-    res.status(404).json({ message: error.message || "Conversation not found" });
+    const message = error instanceof Error ? error.message : "Conversation not found";
+    res.status(404).json({ message });
   }
 };

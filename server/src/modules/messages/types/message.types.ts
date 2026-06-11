@@ -2,11 +2,13 @@ import { Types } from "mongoose";
 
 export type MessageType = "room" | "dm";
 
-export enum MessageStatus {
-  SENT = "sent",
-  DELIVERED = "delivered",
-  SEEN = "seen",
-}
+export const MessageStatus = {
+  SENT: "sent",
+  DELIVERED: "delivered",
+  SEEN: "seen",
+} as const;
+
+export type MessageStatus = typeof MessageStatus[keyof typeof MessageStatus];
 
 export interface IMessage {
   _id: Types.ObjectId;

@@ -8,11 +8,11 @@ import {
   resetPassword,
 } from "./auth.service";
 import {
-  validateForgotPasswordInput,
-  validateGoogleLoginInput,
-  validateLoginInput,
-  validateRegisterInput,
-  validateResetPasswordInput,
+  forgotPasswordSchema,
+  googleLoginSchema,
+  loginSchema,
+  registerSchema,
+  resetPasswordSchema,
 } from "./auth.validation";
 
 const sendAuthError = (res: Response, message: string, status = 400) => {
@@ -24,10 +24,8 @@ const sendAuthError = (res: Response, message: string, status = 400) => {
 
 export const registerController = async (req: Request, res: Response) => {
   try {
-    const error = validateRegisterInput(req.body);
-    if (error) return sendAuthError(res, error);
-
-    const result = await registerUser(req.body);
+    const validated = registerSchema.parse(req.body);
+    const result = await registerUser(validated);
 
     return res.status(201).json({
       success: true,
@@ -43,10 +41,8 @@ export const registerController = async (req: Request, res: Response) => {
 
 export const loginController = async (req: Request, res: Response) => {
   try {
-    const error = validateLoginInput(req.body);
-    if (error) return sendAuthError(res, error);
-
-    const result = await loginUser(req.body);
+    const validated = loginSchema.parse(req.body);
+    const result = await loginUser(validated);
 
     return res.status(200).json({
       success: true,
@@ -61,11 +57,8 @@ export const loginController = async (req: Request, res: Response) => {
 
 export const googleLoginController = async (req: Request, res: Response) => {
   try {
-    const error = validateGoogleLoginInput(req.body);
-    if (error) return sendAuthError(res, error);
-
-    const { credential } = req.body;
-    const result = await loginWithGoogle(credential);
+    const validated = googleLoginSchema.parse(req.body);
+    const result = await loginWithGoogle(validated.credential);
 
     return res.status(200).json({
       success: true,
@@ -101,11 +94,8 @@ export const forgotPasswordController = async (
   res: Response
 ) => {
   try {
-    const error = validateForgotPasswordInput(req.body);
-    if (error) return sendAuthError(res, error);
-
-    const { email } = req.body;
-    await forgotPassword(email);
+    const validated = forgotPasswordSchema.parse(req.body);
+    await forgotPassword(validated.email);
 
     return res.status(200).json({
       success: true,
@@ -125,11 +115,8 @@ export const resetPasswordController = async (
   res: Response
 ) => {
   try {
-    const error = validateResetPasswordInput(req.body);
-    if (error) return sendAuthError(res, error);
-
-    const { password, token } = req.body;
-    const message = await resetPassword(password, token);
+    const validated = resetPasswordSchema.parse(req.body);
+    const message = await resetPassword(validated.password, validated.token);
 
     return res.status(200).json({
       success: true,

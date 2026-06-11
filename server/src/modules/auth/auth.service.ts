@@ -273,7 +273,7 @@ export const forgotPassword = async (email: string): Promise<void> => {
     console.log(`[Success] Recovery email sent to: ${user.email}`);
   } catch (error) {
     console.error("SMTP Error: ", error);
-    throw new Error("Failed to send recovery email. Please try again later.");
+    throw new Error("Failed to send recovery email. Please try again later.", { cause: error });
   }
 };
 
@@ -290,8 +290,8 @@ export const resetPassword = async (password: string, token: string): Promise<st
   
   try {
     jwt.verify(token, secret);
-  } catch (err) {
-    throw new Error("This reset link has expired or has already been used.");
+  } catch (error) {
+    throw new Error("This reset link has expired or has already been used.", { cause: error });
   }
 
   const passwordHash = await bcrypt.hash(password, 12);

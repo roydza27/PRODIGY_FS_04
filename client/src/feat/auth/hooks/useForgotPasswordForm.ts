@@ -20,7 +20,7 @@ export const useForgotPasswordForm = () => {
       await forgotPasswordMutation.mutateAsync({ email });
       setSuccess(true);
       toast.success(AUTH_MESSAGES.forgotPasswordSuccess);
-    } catch (err: any) {
+    } catch (err: unknown) {
       const message = getAuthErrorMessage(err);
       setError(message);
       toast.error(message);

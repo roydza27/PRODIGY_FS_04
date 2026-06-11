@@ -1,9 +1,11 @@
-export enum MessageStatus {
-  SENDING = "sending",
-  SENT = "sent",
-  DELIVERED = "delivered",
-  SEEN = "seen",
-}
+export const MessageStatus = {
+  SENDING: "sending",
+  SENT: "sent",
+  DELIVERED: "delivered",
+  SEEN: "seen",
+} as const;
+
+export type MessageStatus = (typeof MessageStatus)[keyof typeof MessageStatus];
 
 export interface Message {
   _id: string;

@@ -6,6 +6,7 @@ export interface Conversation {
     name: string;
     username: string;
     avatarUrl?: string;
+    lastSeenAt?: string;
   }[];
   lastMessageAt: string;
   createdAt: string;
