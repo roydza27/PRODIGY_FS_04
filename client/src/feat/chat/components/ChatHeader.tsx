@@ -1,18 +1,22 @@
+import React, { useState, useRef, useEffect } from "react";
 import { 
   IconHash, 
-  IconUsers, 
   IconSearch, 
-  IconBell, 
-  IconPinned, 
+  IconDotsVertical,
   IconInfoCircle,
-  IconChevronDown,
-  IconAt,
-  IconStar,
-  IconPhone,
-  IconVideo
+  IconSquareCheck,
+  IconClock,
+  IconHeart,
+  IconLayoutList,
+  IconCircleX,
+  IconCircleMinus,
+  IconTrash
 } from "@tabler/icons-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
+import { PresenceStatus } from "@/shared/components/ui/presence-status";
+import { formatLastSeen } from "@/utils/date";
 
 interface Props {
   roomName: string;
@@ -22,113 +26,169 @@ interface Props {
   status?: string;
   memberCount?: number;
   isOnline?: boolean;
+  lastSeenAt?: string;
 }
 
+// ============================================================================
+// POP-UP MENU COMPONENT
+// ============================================================================
+function ChatOptionsMenu({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    if (isOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen, onClose]);
+
+  const menuItems = [
+    { icon: <IconInfoCircle size={18} stroke={1.5} />, label: "Contact info" },
+    { icon: <IconSearch size={18} stroke={1.5} />, label: "Search" },
+    { icon: <IconSquareCheck size={18} stroke={1.5} />, label: "Select messages" },
+    { icon: <IconClock size={18} stroke={1.5} />, label: "Disappearing messages" },
+    { icon: <IconHeart size={18} stroke={1.5} />, label: "Add to favourites" },
+    { icon: <IconLayoutList size={18} stroke={1.5} />, label: "Add to list" },
+    { icon: <IconCircleX size={18} stroke={1.5} />, label: "Close chat" },
+    { icon: <IconCircleMinus size={18} stroke={1.5} />, label: "Clear chat" },
+    { icon: <IconTrash size={18} stroke={1.5} className="text-destructive" />, label: "Delete chat", isDestructive: true },
+  ];
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div 
+          ref={menuRef}
+          initial={{ opacity: 0, scale: 0.95, y: -10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: -10 }}
+          transition={{ duration: 0.15, ease: "easeOut" }}
+          className="absolute right-4 top-[56px] z-50 w-56 rounded-xl bg-popover py-2 shadow-xl border border-border/50"
+        >
+          <ul className="flex flex-col text-[14.5px] text-popover-foreground">
+            {menuItems.map((item, index) => (
+              <li 
+                key={index}
+                onClick={onClose}
+                className={cn(
+                  "flex items-center gap-3.5 px-5 py-2.5 cursor-pointer transition-colors hover:bg-muted/80",
+                  item.isDestructive ? "text-destructive hover:bg-destructive/10" : "text-popover-foreground/80 hover:text-popover-foreground"
+                )}
+              >
+                <span className="opacity-80">{item.icon}</span>
+                <span>{item.label}</span>
+              </li>
+            ))}
+          </ul>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+// ============================================================================
+// MAIN HEADER COMPONENT
+// ============================================================================
 export default function ChatHeader({
   roomName,
   isDM = false,
   avatarUrl,
   username,
   status,
-  memberCount,
   isOnline = false,
+  lastSeenAt,
 }: Props) {
-  const displayStatus = status || (isOnline ? "Active now" : "Offline");
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
+  // Cleaned up the status text to be more minimal
+  const displayStatus = status || (isOnline ? "online" : formatLastSeen(lastSeenAt).toLowerCase());
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-border/50 bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex items-center gap-3 overflow-hidden">
-        <div className="flex items-center gap-3 font-bold text-foreground">
-          {isDM ? (
-            <div className="relative">
-              <Avatar className="h-10 w-10 rounded-xl shadow-sm transition-transform hover:scale-105">
-                <AvatarImage src={avatarUrl} alt={roomName} />
-                <AvatarFallback className="rounded-xl bg-primary/10 text-primary">
-                  {roomName.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className={cn(
-                "absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-background shadow-sm transition-colors duration-300",
-                isOnline ? "bg-emerald-500" : "bg-muted-foreground/30"
-              )} />
-            </div>
-          ) : (
-            <div className="group flex h-10 w-10 items-center justify-center rounded-xl bg-muted/50 text-muted-foreground transition-all hover:bg-muted hover:text-primary">
-              <IconHash size={22} className="transition-transform group-hover:rotate-12" />
-            </div>
-          )}
-          
-          <div className="flex flex-col leading-tight">
-            <div className="flex items-center gap-1.5">
-              <h2 className="truncate text-[16px] font-black tracking-tight">{roomName}</h2>
-              {isDM && username && (
-                <span className="hidden text-[13px] font-medium text-muted-foreground/60 md:inline">
-                  @{username}
-                </span>
-              )}
-              <button className="flex h-5 w-5 items-center justify-center rounded-md hover:bg-muted transition-colors">
-                <IconChevronDown size={14} className="text-muted-foreground" />
-              </button>
-              <button className="ml-1 flex h-5 w-5 items-center justify-center rounded-md text-muted-foreground/40 hover:text-yellow-500 transition-colors">
-                <IconStar size={14} />
-              </button>
-            </div>
+    <header className="sticky top-0 z-40 flex h-[60px] w-full items-center justify-between border-b border-border/30 bg-background px-4">
+      
+      {/* Left Section: Avatar & Info */}
+      <div className="flex items-center gap-3.5 cursor-pointer group">
+        {isDM ? (
+          <div className="relative flex items-center justify-center">
+            {/* Perfectly Round Avatar */}
+            <Avatar className="h-10 w-10 rounded-full bg-muted/50 border border-border/20">
+              <AvatarImage src={avatarUrl} alt={roomName} className="object-cover" />
+              <AvatarFallback className="rounded-full bg-muted text-foreground font-medium text-[15px]">
+                {roomName.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
             
-            <div className="flex items-center gap-2">
-              {isDM ? (
-                <span className={cn(
-                  "flex items-center gap-1.5 text-[11px] font-bold transition-colors duration-300",
-                  isOnline ? "text-emerald-500/90" : "text-muted-foreground/60"
-                )}>
-                  <span className={cn(
-                    "h-1.5 w-1.5 rounded-full transition-colors duration-300",
-                    isOnline ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground/30"
-                  )} />
-                  {displayStatus}
-                </span>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-bold text-muted-foreground/60"># channel</span>
-                  {memberCount !== undefined && (
-                    <>
-                      <div className="h-1 w-1 rounded-full bg-muted-foreground/30" />
-                      <button className="flex items-center gap-1 text-[11px] font-bold text-muted-foreground/60 hover:text-primary transition-colors">
-                        <IconUsers size={12} />
-                        <span>{memberCount}</span>
-                      </button>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
+            {/* Clean Status Dot */}
+            <PresenceStatus 
+              online={isOnline} 
+              size="sm" 
+              className="absolute -bottom-0.5 -right-0.5" 
+            />
           </div>
+        ) : (
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted/40 text-muted-foreground border border-border/50">
+            <IconHash size={20} stroke={2} />
+          </div>
+        )}
+        
+        {/* Name and Status (Refined Typography) */}
+        <div className="flex flex-col justify-center gap-0.5 text-left">
+          <div className="flex items-center gap-2 leading-none">
+            {!isDM &&
+              <h2 className="text-[16px] font-medium text-foreground/95">
+              {roomName}
+            </h2>
+            }
+            {isDM && username && (
+              <span className="text-[16px] font-normal text-muted-foreground/50 hidden sm:inline-block">
+                {username}
+              </span>
+            )}
+          </div>
+          
+          {isDM &&
+          <span className={cn(
+            "py-0.5 text-[12px] leading-none transition-colors",
+            isOnline ? "text-emerald-500/90" : "text-muted-foreground/60"
+          )}>
+            {displayStatus}
+          </span>
+        }
         </div>
       </div>
 
-      <div className="flex items-center gap-0.5 md:gap-1">
-        {isDM && (
-          <>
-            <HeaderAction icon={<IconPhone size={20} stroke={1.5} />} label="Voice Call" />
-            <HeaderAction icon={<IconVideo size={20} stroke={1.5} />} label="Video Call" />
-            <div className="mx-2 h-6 w-[1px] bg-border/60" />
-          </>
-        )}
-        <HeaderAction icon={<IconSearch size={20} stroke={1.5} />} label="Search" />
-        <HeaderAction icon={<IconPinned size={20} stroke={1.5} />} label="Pinned Messages" />
-        <HeaderAction icon={<IconBell size={20} stroke={1.5} />} label="Mute Notifications" />
-        <HeaderAction icon={<IconInfoCircle size={20} stroke={1.5} />} label="Details" />
+      {/* Right Section: Minimal Actions */}
+      <div className="flex items-center gap-1 text-muted-foreground/70">
+        <button 
+          title="Search"
+          className="flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-muted/50 hover:text-foreground active:scale-95"
+        >
+          <IconSearch size={20} stroke={1.5} />
+        </button>
+        
+        <button 
+          title="Menu"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className={cn(
+            "flex h-10 w-10 items-center justify-center rounded-full transition-colors active:scale-95",
+            isMenuOpen 
+              ? "bg-muted/50 text-foreground" 
+              : "hover:bg-muted/50 hover:text-foreground"
+          )}
+        >
+          <IconDotsVertical size={20} stroke={1.5} />
+        </button>
       </div>
-    </header>
-  );
-}
 
-function HeaderAction({ icon, label }: { icon: React.ReactNode, label: string }) {
-  return (
-    <button 
-      title={label}
-      className="flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground active:scale-95"
-    >
-      {icon}
-    </button>
+      {/* Options Menu Pop-up */}
+      <ChatOptionsMenu 
+        isOpen={isMenuOpen} 
+        onClose={() => setIsMenuOpen(false)} 
+      />
+    </header>
   );
 }

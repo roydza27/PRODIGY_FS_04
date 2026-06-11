@@ -11,7 +11,7 @@ interface MemberListProps {
 
 export const MemberList = ({ workspaceId }: MemberListProps) => {
   const { data: members, isLoading, error } = useGetWorkspaceMembers(workspaceId);
-  const isOnline = usePresenceStore((state) => state.isOnline);
+  const onlineUsers = usePresenceStore((state) => state.onlineUsers);
 
   if (isLoading) {
     return (
@@ -41,7 +41,7 @@ export const MemberList = ({ workspaceId }: MemberListProps) => {
       <div className="grid gap-4">
         {members?.map((membership) => {
           const userId = membership.user?._id;
-          const online = userId ? isOnline(userId) : false;
+          const online = userId ? onlineUsers.has(userId) : false;
 
           return (
             <div key={membership._id} className="flex items-center justify-between group">

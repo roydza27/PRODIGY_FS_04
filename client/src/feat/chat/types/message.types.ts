@@ -1,3 +1,10 @@
+export enum MessageStatus {
+  SENDING = "sending",
+  SENT = "sent",
+  DELIVERED = "delivered",
+  SEEN = "seen",
+}
+
 export interface Message {
   _id: string;
 
@@ -13,6 +20,7 @@ export interface Message {
 
   type: "room" | "dm";
   text: string;
+  status: MessageStatus;
 
   createdAt: string;
   updatedAt: string;

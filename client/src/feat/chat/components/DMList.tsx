@@ -6,6 +6,7 @@ import { usePresenceStore } from "@/app/stores/presence.store";
 import { useActiveWorkspace } from "@/feat/workspaces/hooks/useActiveWorkspace";
 
 import { cn } from "@/lib/utils";
+import { PresenceStatus } from "@/shared/components/ui/presence-status";
 
 export default function DMList() {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ export default function DMList() {
     (state) => state.user
   );
 
-  const isOnline = usePresenceStore((state) => state.isOnline);
+  const onlineUsers = usePresenceStore((state) => state.onlineUsers);
 
   const {
     data: conversations = [],
@@ -81,7 +82,7 @@ export default function DMList() {
             const isActive =
               conversationId === conversation._id;
 
-            const online = isOnline(other._id);
+            const online = other ? onlineUsers.has(other._id) : false;
 
             return (
               <button
@@ -111,10 +112,11 @@ export default function DMList() {
                         {other.name.charAt(0)}
                       </div>
                     )}
-                    <div className={cn(
-                      "absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-[3px] border-[#09090B] transition-colors duration-200",
-                      online ? "bg-[#23A55A]" : "bg-[#80848E]"
-                    )} />
+                    <PresenceStatus 
+                      online={online} 
+                      size="sm" 
+                      className="absolute -bottom-0.5 -right-0.5" 
+                    />
                   </div>
                 </div>
 

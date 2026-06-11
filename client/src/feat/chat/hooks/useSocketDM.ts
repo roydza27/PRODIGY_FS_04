@@ -2,7 +2,9 @@ import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { socketService } from "@/services/socket/socket.service";
+import { useAuthStore } from "@/app/stores/auth.store";
 
+import { MessageStatus } from "../types/message.types";
 import type { Message } from "../types/message.types";
 
 export const useSocketDM = (
@@ -10,6 +12,8 @@ export const useSocketDM = (
   conversationId?: string
 ) => {
   const queryClient = useQueryClient();
+  const currentUser = useAuthStore((state) => state.user);
+  const currentUserId = currentUser?.id || (currentUser as any)?._id;
 
   useEffect(() => {
     if (!conversationId) {
@@ -18,6 +22,8 @@ export const useSocketDM = (
 
     const joinDM = () => {
       socketService.joinDM(workspaceId, conversationId);
+      // Mark as seen when joining
+      socketService.markDMSeen(conversationId);
     };
 
     // Join immediately
@@ -29,16 +35,25 @@ export const useSocketDM = (
     const handleNewMessage = (
       newMessage: Message
     ) => {
-      console.log(
-        "[CLIENT] received",
-        newMessage
-      );
+      console.log("[useSocketDM] Received message:", newMessage);
 
       if (
         String(newMessage.conversationId) !==
         String(conversationId)
       ) {
+        console.log("[useSocketDM] Message for different conversation, ignoring");
         return;
+      }
+
+      // If message is from others, mark as delivered
+      if (newMessage.senderId._id !== currentUserId) {
+        console.log("[useSocketDM] Marking as delivered:", newMessage._id);
+        socketService.markDMDelivered(newMessage._id, conversationId);
+        
+        // Also mark as seen if the window is focused
+        if (document.hasFocus()) {
+           socketService.markDMSeen(conversationId);
+        }
       }
 
       queryClient.setQueryData<Message[]>(
@@ -94,6 +109,33 @@ export const useSocketDM = (
       handleNewMessage
     );
 
+    const handleMessageStatus = ({ messageId, status }: { messageId: string, status: MessageStatus }) => {
+      queryClient.setQueryData<Message[]>(
+        ["conversation-messages", conversationId],
+        (previous = []) => {
+          return previous.map(m => m._id === messageId ? { ...m, status } : m);
+        }
+      );
+    };
+
+    const handleSeenAll = ({ seenBy }: { seenBy: string }) => {
+      if (seenBy === currentUserId) return;
+
+      queryClient.setQueryData<Message[]>(
+        ["conversation-messages", conversationId],
+        (previous = []) => {
+          return previous.map(m => 
+            m.senderId._id === currentUserId && m.status !== MessageStatus.SEEN 
+              ? { ...m, status: MessageStatus.SEEN } 
+              : m
+          );
+        }
+      );
+    };
+
+    socketService.on("message:status", handleMessageStatus);
+    socketService.on("message:seen:all", handleSeenAll);
+
     return () => {
       socketService.off(
         "connect",
@@ -108,10 +150,14 @@ export const useSocketDM = (
         "message:new",
         handleNewMessage
       );
+
+      socketService.off("message:status", handleMessageStatus);
+      socketService.off("message:seen:all", handleSeenAll);
     };
   }, [
     workspaceId,
     conversationId,
     queryClient,
+    currentUserId,
   ]);
 };

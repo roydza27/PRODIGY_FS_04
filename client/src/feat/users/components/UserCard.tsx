@@ -1,4 +1,4 @@
-import { MessageSquare, User, AtSign } from "lucide-react";
+import { MessageSquare, User, AtSign, Briefcase, Clock } from "lucide-react";
 
 import {
   Avatar,
@@ -10,7 +10,6 @@ import {
   Card,
   CardContent,
 } from "@/shared/components/ui/card";
-import { Separator } from "@/shared/components/ui/separator";
 import { Badge } from "@/shared/components/ui/badge";
 
 import { cn } from "@/lib/utils"
@@ -32,102 +31,94 @@ export default function UserCard({
   onMessage,
   onViewProfile,
 }: UserCardProps) {
-  const isOnline = usePresenceStore((state) => state.isOnline);
-  const online = isOnline(user._id);
+  const online = usePresenceStore((state) => state.onlineUsers.has(user._id));
+  const fallbackInitial = user.name?.charAt(0)?.toUpperCase() ?? "?";
+  const displayUsername = user.username || user.name?.toLowerCase().replace(/\s/g, '');
 
   return (
-    <Card className="w-[340px] overflow-hidden border-border/40 bg-card/60 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] backdrop-blur-2xl transition-all duration-500 hover:shadow-primary/5">
-      {/* Premium Banner */}
-      <div className="relative h-28 overflow-hidden bg-gradient-to-br from-primary/20 via-primary/5 to-background">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
-      </div>
-
-      <CardContent className="relative px-6 pb-6 pt-0">
-        {/* Avatar with Status Overlay */}
-        <div className="-mt-14 mb-4 relative inline-block group">
-          <div className="absolute -inset-1 rounded-3xl bg-gradient-to-tr from-primary to-blue-500 opacity-20 blur-sm transition-all group-hover:opacity-40" />
-          <Avatar className="h-24 w-24 rounded-3xl border-4 border-background bg-card shadow-2xl transition-transform duration-500 group-hover:scale-105">
+    <Card className="w-[320px] overflow-hidden border border-border/30 bg-popover/95 shadow-2xl backdrop-blur-xl">
+      <CardContent className="p-5">
+        
+        {/* Avatar & Status (Removed negative margins, standard sizing) */}
+        <div className="relative mb-4 inline-flex">
+          <Avatar className="h-16 w-16 rounded-full border border-border/10 bg-muted/50 shadow-sm">
             <AvatarImage
               src={user.avatarUrl}
               alt={user.name}
               className="object-cover"
             />
-            <AvatarFallback className="bg-primary/10 text-3xl font-black text-primary">
-              {user.name.charAt(0).toUpperCase()}
+            <AvatarFallback className="text-[18px] font-medium text-foreground">
+              {fallbackInitial}
             </AvatarFallback>
           </Avatar>
+          
+          {/* Status Indicator */}
           <div className={cn(
-            "absolute -bottom-1 -right-1 h-7 w-7 rounded-2xl border-4 border-background shadow-lg transition-colors duration-300",
-            online ? "bg-emerald-500" : "bg-muted-foreground/30"
+            "absolute bottom-0 right-0 h-4 w-4 rounded-full border-[3px] border-popover transition-colors duration-300",
+            online ? "bg-emerald-500" : "bg-muted-foreground/40"
           )} />
         </div>
 
-        {/* User Info */}
-        <div className="space-y-1">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-black tracking-tight text-foreground">
-              {user.name}
-            </h2>
-            <div className="flex items-center gap-2">
-              <span className={cn(
-                "flex items-center gap-1 text-[10px] font-black uppercase tracking-widest",
-                online ? "text-emerald-500" : "text-muted-foreground/40"
-              )}>
-                {online && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />}
-                {online ? "Online" : "Offline"}
-              </span>
-              <Badge variant="secondary" className="bg-primary/10 text-primary border-none font-bold text-[10px] px-2 py-0.5 rounded-lg uppercase tracking-wider">
-                Pro Member
-              </Badge>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5 text-muted-foreground/60">
-            <AtSign size={14} strokeWidth={3} />
-            <p className="text-[13px] font-bold tracking-tight">
-              {user.username || user.name.toLowerCase().replace(/\s/g, '')}
-            </p>
+        {/* User Identity */}
+        <div className="mb-4 flex flex-col gap-0.5">
+          <h2 className="text-[17px] font-semibold tracking-tight text-foreground/95">
+            {user.name}
+          </h2>
+          <div className="flex items-center gap-1 text-[13.5px] text-muted-foreground/70">
+            <AtSign size={12} strokeWidth={2.5} />
+            <span>{displayUsername}</span>
           </div>
         </div>
 
-        {/* User Stats/Bio Placeholder */}
-        <div className="mt-6 grid grid-cols-2 gap-3">
-          <div className="rounded-2xl bg-muted/30 p-3 transition-colors hover:bg-muted/50">
-            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Points</p>
-            <p className="text-lg font-black text-foreground">1,284</p>
-          </div>
-          <div className="rounded-2xl bg-muted/30 p-3 transition-colors hover:bg-muted/50">
-            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Streak</p>
-            <p className="text-lg font-black text-foreground">12 Days</p>
-          </div>
+        {/* Badges */}
+        <div className="mb-5 flex flex-wrap gap-2">
+          <Badge variant="secondary" className="rounded-md bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary hover:bg-primary/15 border-transparent">
+            Pro Member
+          </Badge>
+          <Badge variant="outline" className="rounded-md border-border/50 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+            <span className={cn(
+              "mr-1.5 inline-block h-1.5 w-1.5 rounded-full", 
+              online ? "bg-emerald-500" : "bg-muted-foreground/50"
+            )} />
+            {online ? "Online" : "Offline"}
+          </Badge>
         </div>
 
-        <Separator className="my-6 bg-border/40" />
+        {/* Workspace-style Meta Info */}
+        <div className="mb-6 space-y-2.5 rounded-xl bg-muted/30 p-3 border border-border/30">
+          <div className="flex items-center gap-2.5 text-[12.5px] text-muted-foreground">
+            <Briefcase size={14} className="text-muted-foreground/60" />
+            <span className="font-medium">Software Engineer</span>
+          </div>
+          <div className="flex items-center gap-2.5 text-[12.5px] text-muted-foreground">
+            <Clock size={14} className="text-muted-foreground/60" />
+            <span className="font-medium">Local time: 10:42 AM</span>
+          </div>
+        </div>
 
         {/* Actions */}
-        <div className="flex gap-3">
+        <div className="flex gap-2">
           {onMessage && (
             <Button
               type="button"
-              className="flex-1 rounded-[14px] h-12 font-bold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95"
               onClick={onMessage}
+              className="h-9 flex-1 rounded-xl bg-primary text-[13px] font-medium text-primary-foreground shadow-none transition-colors hover:bg-primary/90 active:scale-[0.98]"
             >
-              <MessageSquare className="mr-2 h-4 w-4" strokeWidth={3} />
+              <MessageSquare className="mr-2 h-4 w-4" />
               Message
             </Button>
           )}
 
           <Button
             type="button"
-            variant="outline"
-            className={cn(
-              "rounded-[14px] h-12 font-bold transition-all hover:bg-muted/80 hover:scale-[1.02] active:scale-95",
-              onMessage ? "w-12 px-0" : "flex-1"
-            )}
+            variant="secondary"
             onClick={onViewProfile}
+            className={cn(
+              "h-9 rounded-xl bg-muted/50 text-[13px] font-medium text-foreground shadow-none transition-colors hover:bg-muted active:scale-[0.98]",
+              onMessage ? "w-10 px-0" : "flex-1"
+            )}
           >
-            <User className={cn("h-5 w-5", !onMessage && "mr-2")} strokeWidth={3} />
+            <User className={cn("h-4 w-4 text-muted-foreground", !onMessage && "mr-2")} />
             {!onMessage && "View Profile"}
           </Button>
         </div>

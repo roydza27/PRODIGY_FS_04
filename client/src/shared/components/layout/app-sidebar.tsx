@@ -120,38 +120,10 @@ export function AppSidebar({
               </SidebarSection>
 
               <DMList />
-
-              <SidebarSection title="Your Workspaces">
-                <SidebarMenuItem className="px-1 py-0.5">
-                  <SidebarMenuButton 
-                    onClick={() => setIsCreateModalOpen(true)}
-                    className="h-10 rounded-xl text-primary hover:bg-primary/10 transition-all duration-300"
-                  >
-                    <div className="flex items-center gap-3 px-3 w-full font-bold">
-                      <Plus className="size-4 shrink-0" />
-                      <span className="truncate text-[13px]">Create Workspace</span>
-                    </div>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-
-                {workspaces.map((w) => (
-                  <SidebarNavItem
-                    key={w._id}
-                    to={`/w/${w.slug}`}
-                    label={w.name}
-                    icon={Building2}
-                  />
-                ))}
-              </SidebarSection>
             </div>
           )}
         </SidebarContent>
       </div>
-
-      <CreateWorkspaceModal 
-        isOpen={isCreateModalOpen} 
-        onClose={() => setIsCreateModalOpen(false)} 
-      />
     </div>
 
     <SidebarFooter className="border-t border-white/5 p-3">

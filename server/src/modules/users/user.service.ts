@@ -1,13 +1,15 @@
 import { UserModel } from "./user.model";
 import { logger } from "../../utils/logger";
 
-export const updateLastSeen = async (userId: string) => {
+export const updateLastSeen = async (userId: string, date: Date = new Date()): Promise<Date> => {
   try {
     await UserModel.findByIdAndUpdate(userId, {
-      lastSeenAt: new Date(),
+      lastSeenAt: date,
     });
+    return date;
   } catch (error) {
     logger.error(`[UserService] Error updating lastSeenAt for user ${userId}:`, error);
+    return date;
   }
 };
 

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { LogOut, MoreHorizontal, Store } from "lucide-react";
+import { LogOut, MoreHorizontal } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -12,6 +12,9 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
+import { usePresenceStore } from "@/app/stores/presence.store";
+import { useAuthStore } from "@/app/stores/auth.store";
+import { PresenceStatus } from "@/shared/components/ui/presence-status";
 
 type NavUserItem = {
   label: string;
@@ -30,6 +33,9 @@ type NavUserProps = {
 };
 
 export function NavUser({ user, onLogout, items = [] }: NavUserProps) {
+  const userId = useAuthStore(state => state.user?.id || (state.user as any)?._id);
+  const isOnline = usePresenceStore(state => state.onlineUsers.has(userId));
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -37,12 +43,19 @@ export function NavUser({ user, onLogout, items = [] }: NavUserProps) {
         <button
           className="flex w-full items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] p-2 text-left text-sm transition-colors hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DB4444]/60 data-[state=open]:bg-white/[0.06]"
         >
-          <Avatar className="h-8 w-8 shrink-0 rounded-lg">
-            <AvatarImage src={user?.avatar} alt={user?.name} />
-            <AvatarFallback className="rounded-lg bg-zinc-800 text-xs font-medium text-zinc-300">
-              {user?.name?.slice(0, 2).toUpperCase() || "U"}
-            </AvatarFallback>
-          </Avatar>
+          <div className="relative shrink-0">
+            <Avatar className="h-8 w-8 rounded-lg">
+              <AvatarImage src={user?.avatar} alt={user?.name} />
+              <AvatarFallback className="rounded-lg bg-zinc-800 text-xs font-medium text-zinc-300">
+                {user?.name?.slice(0, 2).toUpperCase() || "U"}
+              </AvatarFallback>
+            </Avatar>
+            <PresenceStatus 
+              online={isOnline} 
+              size="sm" 
+              className="absolute -bottom-0.5 -right-0.5" 
+            />
+          </div>
 
           {/* Magic classes hide text and icon when sidebar collapses */}
           <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
@@ -64,12 +77,19 @@ export function NavUser({ user, onLogout, items = [] }: NavUserProps) {
       >
         <DropdownMenuLabel className="p-0 font-normal">
           <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-            <Avatar className="h-8 w-8 shrink-0 rounded-lg">
-              <AvatarImage src={user?.avatar} alt={user?.name} />
-              <AvatarFallback className="rounded-lg bg-white/10 text-white">
-                {user?.name?.slice(0, 2).toUpperCase() || "U"}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative shrink-0">
+              <Avatar className="h-8 w-8 rounded-lg">
+                <AvatarImage src={user?.avatar} alt={user?.name} />
+                <AvatarFallback className="rounded-lg bg-white/10 text-white">
+                  {user?.name?.slice(0, 2).toUpperCase() || "U"}
+                </AvatarFallback>
+              </Avatar>
+              <PresenceStatus 
+                online={isOnline} 
+                size="sm" 
+                className="absolute -bottom-0.5 -right-0.5" 
+              />
+            </div>
 
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-medium">{user?.name}</span>
