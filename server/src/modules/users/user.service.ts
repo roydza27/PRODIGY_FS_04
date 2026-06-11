@@ -14,6 +14,20 @@ export const updateLastSeen = async (userId: string, date: Date = new Date()): P
 };
 
 /**
+ * Find user by email
+ */
+export const findUserByEmail = async (email: string) => {
+  return UserModel.findOne({ email: email.toLowerCase().trim() }).lean();
+};
+
+/**
+ * Find user by ID
+ */
+export const findUserById = async (id: string) => {
+  return UserModel.findById(id).lean();
+};
+
+/**
  * Search users by name or username
  */
 export const searchUsers = async (query: string) => {

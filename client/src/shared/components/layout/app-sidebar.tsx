@@ -81,7 +81,7 @@ export function AppSidebar({
                   {documents.map((item) => (
                     <SidebarNavItem
                       key={item.name}
-                      to={item.url}
+                      to={`/w/${workspaceSlug}${item.url}`}
                       label={item.name}
                       icon={item.icon}
                     />
@@ -90,7 +90,7 @@ export function AppSidebar({
                   {navSecondary.map((item) => (
                     <SidebarNavItem
                       key={item.title}
-                      to={item.url}
+                      to={`/w/${workspaceSlug}${item.url}`}
                       label={item.title}
                       icon={item.icon}
                     />

@@ -2,6 +2,7 @@ import * as workspaceRepository from "./workspace.repository";
 import * as membershipRepository from "./membership.repository";
 import { WorkspaceModel } from "./workspace.model";
 import type { CreateWorkspaceInput, UpdateWorkspaceInput } from "./workspace.types";
+import * as userService from "../users/user.service";
 
 /**
  * Generate a unique slug from workspace name
@@ -87,10 +88,23 @@ export const getWorkspaceMembers = async (workspaceId: string) => {
  */
 export const inviteMember = async (
   workspaceId: string,
-  userId: string,
   invitedByUserId: string,
-  role: "admin" | "member" = "member"
+  input: { userId?: string; email?: string; role?: "admin" | "member" }
 ) => {
+  let userId = input.userId;
+
+  if (!userId && input.email) {
+    const user = await userService.findUserByEmail(input.email);
+    if (!user) {
+      throw "User not found with this email";
+    }
+    userId = user._id.toString();
+  }
+
+  if (!userId) {
+    throw "User ID or Email is required";
+  }
+
   const existing = await membershipRepository.findMembership(workspaceId, userId);
 
   if (existing?.status === "active") {
@@ -100,6 +114,8 @@ export const inviteMember = async (
   if (existing?.status === "invited") {
     throw "User has already been invited";
   }
+
+  const role = input.role || "member";
 
   if (existing) {
     const updated = await membershipRepository.updateMembershipByUserAndWorkspace(
@@ -127,6 +143,7 @@ export const inviteMember = async (
     invitedBy: invitedByUserId,
   });
 };
+
 /**
  * User accepts workspace invite
  */
@@ -233,6 +250,20 @@ export const updateWorkspace = async (
   }
 
   return updated;
+};
+
+/**
+ * Delete workspace
+ */
+export const deleteWorkspace = async (workspaceId: string) => {
+  await membershipRepository.deleteAllWorkspaceMemberships(workspaceId);
+  const deleted = await workspaceRepository.deleteWorkspace(workspaceId);
+
+  if (!deleted) {
+    throw "Workspace not found";
+  }
+
+  return deleted;
 };
 
 /**

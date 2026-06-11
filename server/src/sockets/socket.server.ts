@@ -10,6 +10,7 @@ import { updateLastSeen } from "../modules/users/user.service";
 import { registerRoomHandlers } from "./handlers/room.handler";
 import { registerMessageHandlers } from "./handlers/message.handler";
 import { registerDMHandlers } from "./handlers/dm.handler";
+import { socketService } from "../services/socket.service";
 
 interface SocketJwtPayload {
   id?: string;
@@ -25,6 +26,9 @@ export const setupSocket = (server: HttpServer) => {
       credentials: true,
     },
   });
+
+  // Store IO instance for global use
+  socketService.setIO(io);
 
   io.use((socket: Socket, next) => {
     const token =

@@ -128,3 +128,8 @@ export const archiveWorkspace = async (workspaceId: string): Promise<IWorkspace 
     { new: true }
   ).lean();
 };
+
+export const deleteWorkspace = async (workspaceId: string): Promise<boolean> => {
+  const result = await WorkspaceModel.findByIdAndDelete(workspaceId);
+  return !!result;
+};

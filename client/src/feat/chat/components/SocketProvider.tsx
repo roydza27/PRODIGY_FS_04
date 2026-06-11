@@ -5,11 +5,13 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { useAuthStore } from "@/app/stores/auth.store";
 import { usePresenceStore } from "@/app/stores/presence.store";
 import { socketService } from "@/services/socket/socket.service";
 import { getPresence } from "@/feat/users/api/user.api";
+import { workspaceKeys } from "@/feat/workspaces/api/workspace.queries";
 
 interface SocketContextType {
   isConnected: boolean;
@@ -36,6 +38,7 @@ interface SocketProviderProps {
 export function SocketProvider({
   children,
 }: SocketProviderProps) {
+  const queryClient = useQueryClient();
   const token = useAuthStore((state) => state.token);
   const isAuthenticated = useAuthStore(
     (state) => state.isAuthenticated
@@ -147,6 +150,11 @@ export function SocketProvider({
       setTyping(roomId, userId, false);
     };
 
+    const handleWorkspaceMembersUpdated = () => {
+      console.info("[Socket] Workspace members updated - invalidating queries");
+      queryClient.invalidateQueries({ queryKey: workspaceKeys.all });
+    };
+
     socketService.on("connect", handleConnect);
     socketService.on("disconnect", handleDisconnect);
     socketService.on(
@@ -177,6 +185,13 @@ export function SocketProvider({
       "room:typing:stop",
       handleRoomTypingStop
     );
+
+    // Membership Events
+    socketService.on("workspace:member-joined", handleWorkspaceMembersUpdated);
+    socketService.on("workspace:member-removed", handleWorkspaceMembersUpdated);
+    socketService.on("workspace:member-updated", handleWorkspaceMembersUpdated);
+    socketService.on("workspace:invited", handleWorkspaceMembersUpdated);
+    socketService.on("workspace:removed", handleWorkspaceMembersUpdated);
 
     if (isAuthenticated && token) {
       console.info("[Socket] Connecting with token");
@@ -233,6 +248,12 @@ export function SocketProvider({
         handleRoomTypingStop
       );
 
+      socketService.off("workspace:member-joined", handleWorkspaceMembersUpdated);
+      socketService.off("workspace:member-removed", handleWorkspaceMembersUpdated);
+      socketService.off("workspace:member-updated", handleWorkspaceMembersUpdated);
+      socketService.off("workspace:invited", handleWorkspaceMembersUpdated);
+      socketService.off("workspace:removed", handleWorkspaceMembersUpdated);
+
       // Explicitly disconnect when unmounting or dependencies change
       // This is crucial for logout scenarios where the provider might unmount
       socketService.disconnect();
@@ -245,6 +266,7 @@ export function SocketProvider({
     setUserOffline,
     clearPresence,
     setTyping,
+    queryClient,
   ]);
 
   return (

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useParams, useNavigate, useLocation } from "react-router-dom";
 
 import { AppSidebar } from "@/shared/components/layout/app-sidebar";
 import { GlobalHeader } from "@/shared/components/layout/global-header";
@@ -9,13 +9,30 @@ import {
 } from "@/shared/components/ui/sidebar";
 import { TooltipProvider } from "@/shared/components/ui/tooltip";
 import { workspaceSidebarData } from "@/shared/constants/sidebar.constants";
+import { useActiveWorkspace } from "@/feat/workspaces/hooks/useActiveWorkspace";
 
 export default function WorkspaceLayout() {
+  const { workspaceSlug } = useParams();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const { activeWorkspace, isLoading } = useActiveWorkspace();
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     sessionStorage.removeItem("token");
     window.location.replace("/login");
   };
+
+  // Redirect if on a workspace route but workspace is not found (after loading)
+  React.useEffect(() => {
+    if (!isLoading && workspaceSlug && !activeWorkspace) {
+      // Only redirect if we are on a route that requires a workspace
+      if (pathname.startsWith("/w/")) {
+        console.warn("[WorkspaceLayout] Workspace not found, redirecting to /workspaces");
+        navigate("/workspaces");
+      }
+    }
+  }, [isLoading, workspaceSlug, activeWorkspace, pathname, navigate]);
 
   return (
     <TooltipProvider delayDuration={0}>
