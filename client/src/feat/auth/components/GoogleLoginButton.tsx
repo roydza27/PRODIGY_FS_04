@@ -31,7 +31,7 @@ export default function GoogleLoginButton() {
 
         toast.success(AUTH_MESSAGES.googleLoginSuccess);
         navigate("/workspaces", { replace: true });
-      } catch (err: any) {
+      } catch (err: unknown) {
         toast.error(getAuthErrorMessage(err));
       } finally {
         setAuthenticating(false);

@@ -1,6 +1,4 @@
 import {
-  createContext,
-  useContext,
   useEffect,
   useState,
   type ReactNode,
@@ -12,24 +10,7 @@ import { usePresenceStore } from "@/app/stores/presence.store";
 import { socketService } from "@/services/socket/socket.service";
 import { getPresence } from "@/feat/users/api/user.api";
 import { workspaceKeys } from "@/feat/workspaces/api/workspace.queries";
-
-interface SocketContextType {
-  isConnected: boolean;
-}
-
-const SocketContext = createContext<SocketContextType | null>(null);
-
-export function useSocket() {
-  const context = useContext(SocketContext);
-
-  if (!context) {
-    throw new Error(
-      "useSocket must be used within a SocketProvider"
-    );
-  }
-
-  return context;
-}
+import { SocketContext } from "../hooks/useSocket";
 
 interface SocketProviderProps {
   children: ReactNode;
@@ -200,7 +181,9 @@ export function SocketProvider({
       // If already connected, manual sync is needed because the 'connect' event won't fire again
       if (socketService.isConnected()) {
         console.info("[Socket] Already connected - manual sync");
-        setIsConnected(true);
+        setTimeout(() => {
+          setIsConnected(true);
+        }, 0);
         getPresence().then(setOnlineUsers).catch(console.error);
       }
     } else {

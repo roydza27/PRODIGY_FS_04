@@ -10,10 +10,20 @@ export const AUTH_ERRORS = {
   unknown: "Something went wrong",
 } as const;
 
-export const getAuthErrorMessage = (error: any): string => {
+interface ApiError {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+  message?: string;
+}
+
+export const getAuthErrorMessage = (error: unknown): string => {
+  const err = error as ApiError;
   return (
-    error?.response?.data?.message ||
-    error?.message ||
+    err?.response?.data?.message ||
+    err?.message ||
     AUTH_ERRORS.unknown
   );
 };

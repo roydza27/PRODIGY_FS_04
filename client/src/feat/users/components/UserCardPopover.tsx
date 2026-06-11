@@ -5,6 +5,7 @@ import UserCard from "./UserCard";
 
 import { useAuthStore } from "@/app/stores/auth.store";
 import { getOrCreateDM } from "@/feat/chat/api/conversation.api";
+import { useActiveWorkspace } from "@/feat/workspaces/hooks/useActiveWorkspace";
 import {
   Popover,
   PopoverContent,
@@ -17,6 +18,8 @@ interface UserCardPopoverProps {
     name: string;
     username?: string;
     avatarUrl?: string;
+    bio?: string;
+    statusMessage?: string;
   };
   children: ReactNode;
   onViewProfile?: () => void;
@@ -29,16 +32,18 @@ export default function UserCardPopover({
 }: UserCardPopoverProps) {
   const navigate = useNavigate();
   const currentUser = useAuthStore((state) => state.user);
+  const { activeWorkspace } = useActiveWorkspace();
 
   const isCurrentUser =
-    user._id === currentUser?.id ||
-    user._id === (currentUser as any)?._id;
+    user._id === currentUser?.id;
 
   const handleMessage = async () => {
-    if (isCurrentUser) return;
+    if (isCurrentUser || !activeWorkspace) return;
 
     try {
-      const conversation = await getOrCreateDM(user._id);
+      const conversation = await getOrCreateDM(activeWorkspace._id, {
+        participantId: user._id
+      });
 
       navigate(`/dm/${conversation._id}`);
     } catch (error) {

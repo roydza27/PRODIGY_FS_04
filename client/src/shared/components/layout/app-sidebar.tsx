@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { LayoutDashboard, MessageSquarePlus, Home, Search, UserPlus, Plus, Building2 } from "lucide-react";
+import { Home, Search, UserPlus } from "lucide-react";
 import RoomSidebar from "@/feat/rooms/components/RoomSidebar";
 import DMList from "@/feat/chat/components/DMList";
 import { SidebarNavItem } from "@/shared/components/layout/sidebar-nav-item";
@@ -10,9 +10,6 @@ import { NavUser } from "@/shared/components/layout/nav-user";
 import { useAuthStore } from "@/app/stores/auth.store";
 import { useParams } from "react-router-dom";
 import { useActiveWorkspace } from "@/feat/workspaces/hooks/useActiveWorkspace";
-import { useGetWorkspaces } from "@/feat/workspaces/api/workspace.queries";
-import { CreateWorkspaceModal } from "@/feat/workspaces/components/CreateWorkspaceModal";
-import CreateDMDialog from "@/feat/chat/components/CreateDMDialog";
 import { WorkspaceRail } from "@/shared/components/workspace/workspace-rail";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -21,9 +18,6 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
 } from "@/shared/components/ui/sidebar";
 
 import type { SidebarData } from "@/shared/types/sidebar";
@@ -40,19 +34,24 @@ export function AppSidebar({
 }: AppSidebarProps) {
   const { workspaceSlug } = useParams();
   const authUser = useAuthStore((state) => state.user);
-  const { documents, navSecondary, userMenu } = sidebarData;
+  const { documents = [], navSecondary = [], userMenu = [] } = sidebarData;
   const { activeWorkspace } = useActiveWorkspace();
-  const { data: workspaces = [] } = useGetWorkspaces();
   const isMobile = useIsMobile();
-  const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
 
   const isWorkspaceContext = !!workspaceSlug;
 
   const navUserData = {
     name: authUser?.name || "User",
     email: authUser?.email || "",
-    avatar: authUser?.avatar || "",
+    avatar: authUser?.avatarUrl || "",
   };
+
+  // Convert SidebarItem to NavUserItem
+  const navUserItems = userMenu.map(item => ({
+    label: item.label || item.name || item.title || "",
+    url: item.url,
+    icon: item.icon
+  }));
 
   return (
     <Sidebar 
@@ -80,19 +79,19 @@ export function AppSidebar({
                 <SidebarSection title="Settings">
                   {documents.map((item) => (
                     <SidebarNavItem
-                      key={item.name}
+                      key={item.name || item.title || item.url}
                       to={`/w/${workspaceSlug}${item.url}`}
-                      label={item.name}
-                      icon={item.icon}
+                      label={item.name || item.title || ""}
+                      icon={item.icon!}
                     />
                   ))}
 
                   {navSecondary.map((item) => (
                     <SidebarNavItem
-                      key={item.title}
+                      key={item.title || item.name || item.url}
                       to={`/w/${workspaceSlug}${item.url}`}
-                      label={item.title}
-                      icon={item.icon}
+                      label={item.title || item.name || ""}
+                      icon={item.icon!}
                     />
                   ))}
                 </SidebarSection>
@@ -130,7 +129,7 @@ export function AppSidebar({
         <NavUser
           user={navUserData}
           onLogout={onLogout}
-          items={userMenu ?? []}
+          items={navUserItems}
         />
       </SidebarFooter>
     </Sidebar>

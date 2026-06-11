@@ -39,7 +39,7 @@ export const useResetPasswordForm = () => {
 
       setSuccess(true);
       toast.success(AUTH_MESSAGES.resetPasswordSuccess);
-    } catch (err: any) {
+    } catch (err: unknown) {
       const message = getAuthErrorMessage(err);
       setError(message);
       toast.error(message);

@@ -17,7 +17,6 @@ export function useRoomMessages(
       }
 
       return getRoomMessages(
-        workspaceId,
         roomId
       );
     },

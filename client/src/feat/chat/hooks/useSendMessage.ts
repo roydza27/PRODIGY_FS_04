@@ -44,7 +44,7 @@ export function useSendMessage(
         roomId,
         conversationId,
         senderId: {
-          _id: user.id || (user as any)._id,
+          _id: user.id,
           name: user.name,
           avatarUrl: user.avatarUrl,
         },

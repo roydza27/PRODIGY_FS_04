@@ -38,8 +38,9 @@ export const InviteMemberModal = ({ isOpen, onClose, workspaceId }: InviteMember
           setUserId("");
           onClose();
         },
-        onError: (error: any) => {
-          toast.error(error?.response?.data?.error || "Failed to invite member");
+        onError: (error: unknown) => {
+          const err = error as { response?: { data?: { error?: string } } };
+          toast.error(err?.response?.data?.error || "Failed to invite member");
         },
       }
     );

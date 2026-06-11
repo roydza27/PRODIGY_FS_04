@@ -60,10 +60,12 @@ export const createRoom = async (
     await incrementRoomCount(workspaceId);
 
     return newRoom;
-  } catch (error: any) {
-    if (error?.code === 11000) {
+  } catch (error: unknown) {
+    const err = error as { code?: number };
+    if (err?.code === 11000) {
       throw new Error(
-        "A room with this name already exists"
+        "A room with this name already exists",
+        { cause: error }
       );
     }
 
@@ -196,7 +198,7 @@ export const deleteRoom = async (
     );
   }
 
-  if ((room as any).isDefault) {
+  if ((room as { isDefault?: boolean }).isDefault) {
     throw new Error(
       "Default room cannot be deleted"
     );

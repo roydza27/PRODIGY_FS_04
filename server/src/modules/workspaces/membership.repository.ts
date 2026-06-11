@@ -2,7 +2,6 @@ import type {
   IMembership,
   CreateMembershipInput,
   UpdateMembershipInput,
-  MembershipWithUserInfo,
 } from "./membership.types";
 import { MembershipModel } from "./membership.model";
 

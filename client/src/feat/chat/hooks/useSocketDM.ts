@@ -13,7 +13,7 @@ export const useSocketDM = (
 ) => {
   const queryClient = useQueryClient();
   const currentUser = useAuthStore((state) => state.user);
-  const currentUserId = currentUser?.id || (currentUser as any)?._id;
+  const currentUserId = currentUser?.id;
 
   useEffect(() => {
     if (!conversationId) {
@@ -21,7 +21,9 @@ export const useSocketDM = (
     }
 
     const joinDM = () => {
-      socketService.joinDM(workspaceId, conversationId);
+      if (workspaceId) {
+        socketService.joinDM(workspaceId, conversationId);
+      }
       // Mark as seen when joining
       socketService.markDMSeen(conversationId);
     };

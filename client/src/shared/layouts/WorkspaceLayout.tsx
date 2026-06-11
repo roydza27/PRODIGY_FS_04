@@ -43,24 +43,20 @@ export default function WorkspaceLayout() {
           } as React.CSSProperties
         }
       >
-        <div className="flex flex-col h-screen w-full overflow-hidden bg-[#09090B]">
+        <div className="flex h-screen w-full flex-col overflow-hidden bg-[#09090B]">
           {/* 1. Global Header - Full Width */}
           <GlobalHeader />
 
-          <div className="flex flex-1 overflow-hidden">
+          <div className="flex min-h-0 flex-1 overflow-hidden">
             {/* The Left Navigation Area (Rail + Sidebar) is now unified within AppSidebar */}
-            <div className="flex flex-1 overflow-hidden relative">
-              <AppSidebar
-                onLogout={handleLogout}
-                sidebarData={workspaceSidebarData}
-              />
+            <AppSidebar
+              onLogout={handleLogout}
+              sidebarData={workspaceSidebarData}
+            />
 
-              <SidebarInset className="flex-1 overflow-hidden rounded-none border-none bg-[#111113] text-[#FAFAFA]">
-                <main className="h-full w-full overflow-hidden">
-                  <Outlet />
-                </main>
-              </SidebarInset>
-            </div>
+            <SidebarInset className="min-w-0 flex-1 overflow-hidden rounded-none border-none bg-[#111113] text-[#FAFAFA]">
+              <Outlet />
+            </SidebarInset>
           </div>
         </div>
       </SidebarProvider>

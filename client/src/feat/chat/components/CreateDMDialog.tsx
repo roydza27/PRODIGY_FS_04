@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Search, Loader2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -13,6 +13,7 @@ import {
 import { useGetWorkspaceMembers } from "@/feat/workspaces/api/workspace.queries";
 import { getOrCreateDM } from "../api/conversation.api";
 import { useAuthStore } from "@/app/stores/auth.store";
+import type { WorkspaceMember, WorkspaceUser } from "@/feat/workspaces/types/workspace.types";
 
 interface CreateDMDialogProps {
   workspaceId: string;
@@ -25,18 +26,18 @@ export default function CreateDMDialog({ workspaceId, trigger }: CreateDMDialogP
   const [isCreating, setIsCreating] = useState(false);
   
   const navigate = useNavigate();
-  const { workspaceSlug } = useParams();
   const queryClient = useQueryClient();
   const currentUser = useAuthStore((state) => state.user);
 
   const { data: members = [], isLoading } = useGetWorkspaceMembers(workspaceId, open);
 
-  const filteredMembers = members.filter((member: any) => {
-    const user = typeof member.userId === "string" ? null : member.userId;
+  const filteredMembers = (members as WorkspaceMember[]).filter((member) => {
+    const user = typeof member.userId === "string" ? null : (member.userId as WorkspaceUser);
     if (!user) return false;
     
     // Don't show current user
-    if (user._id === currentUser?.id || user._id === (currentUser as any)?._id) return false;
+    const currentUserId = currentUser?.id;
+    if (user._id === currentUserId) return false;
 
     const name = user.name.toLowerCase();
     const email = user.email.toLowerCase();
@@ -90,8 +91,8 @@ export default function CreateDMDialog({ workspaceId, trigger }: CreateDMDialogP
                 No members found
               </div>
             ) : (
-              filteredMembers.map((member: any) => {
-                const user = member.userId;
+              filteredMembers.map((member) => {
+                const user = member.userId as WorkspaceUser;
                 return (
                   <button
                     key={user._id}

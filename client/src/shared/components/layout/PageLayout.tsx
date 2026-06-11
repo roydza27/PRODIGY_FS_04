@@ -18,9 +18,9 @@ export function PageLayout({ children, variant = "constrained", className }: Pag
   return (
     <div
       className={cn(
-        "h-full w-full overflow-y-auto no-scrollbar",
-        variant === "constrained" && "max-w-[1600px] mx-auto px-6 py-8",
-        variant === "narrow" && "max-w-3xl mx-auto px-6 py-10",
+        "h-full w-full min-w-0 overflow-y-auto no-scrollbar",
+        variant === "constrained" && "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8",
+        variant === "narrow" && "max-w-3xl mx-auto px-4 sm:px-6 py-10",
         variant === "full" && "px-0 py-0",
         className
       )}

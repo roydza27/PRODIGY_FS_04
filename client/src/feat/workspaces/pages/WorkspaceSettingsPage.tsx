@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { 
-  Settings, 
-  ShieldAlert, 
   Trash2, 
   Save, 
   Building2,
@@ -19,6 +17,7 @@ import {
   useGetWorkspaceMembers 
 } from "../api/workspace.queries";
 import { useAuthStore } from "@/app/stores/auth.store";
+import type { WorkspaceMember, WorkspaceUser } from "@/feat/workspaces/types/workspace.types";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
@@ -42,7 +41,7 @@ export default function WorkspaceSettingsPage() {
   const { activeWorkspace, isLoading: workspaceLoading } = useActiveWorkspace();
   const workspaceId = activeWorkspace?._id || "";
   const currentUser = useAuthStore(state => state.user);
-  const currentUserId = currentUser?.id || (currentUser as any)?._id;
+  const currentUserId = currentUser?.id;
 
   const { data: members = [], isLoading: membersLoading } = useGetWorkspaceMembers(workspaceId);
   const { mutate: updateWorkspace, isPending: isUpdating } = useUpdateWorkspace(workspaceId);
@@ -54,14 +53,22 @@ export default function WorkspaceSettingsPage() {
   const [isEdited, setIsEdited] = useState(false);
 
   // Find current user's role
-  const myMembership = members.find(m => (m.userId?._id || m.userId) === currentUserId);
+  const myMembership = (members as WorkspaceMember[]).find(m => {
+    const userId = typeof m.userId === "string" ? m.userId : (m.userId as WorkspaceUser)?._id;
+    return userId === currentUserId;
+  });
   const isOwner = myMembership?.role === "owner";
 
   useEffect(() => {
     if (activeWorkspace) {
-      setName(activeWorkspace.name);
-      setDescription(activeWorkspace.description || "");
-      setIsEdited(false);
+      setTimeout(() => {
+        setName(prev => prev !== activeWorkspace.name ? activeWorkspace.name : prev);
+        setDescription(prev => {
+          const next = activeWorkspace.description || "";
+          return prev !== next ? next : prev;
+        });
+        setIsEdited(false);
+      }, 0);
     }
   }, [activeWorkspace]);
 
@@ -76,8 +83,9 @@ export default function WorkspaceSettingsPage() {
         toast.success("Workspace updated successfully");
         setIsEdited(false);
       },
-      onError: (err: any) => {
-        toast.error(err?.response?.data?.error || "Failed to update workspace");
+      onError: (err: unknown) => {
+        const error = err as { response?: { data?: { error?: string } } };
+        toast.error(error?.response?.data?.error || "Failed to update workspace");
       }
     });
   };
@@ -88,8 +96,9 @@ export default function WorkspaceSettingsPage() {
         toast.success("Workspace deleted successfully");
         navigate("/workspaces");
       },
-      onError: (err: any) => {
-        toast.error(err?.response?.data?.error || "Failed to delete workspace");
+      onError: (err: unknown) => {
+        const error = err as { response?: { data?: { error?: string } } };
+        toast.error(error?.response?.data?.error || "Failed to delete workspace");
       }
     });
   };
@@ -100,8 +109,9 @@ export default function WorkspaceSettingsPage() {
         toast.success(`You have left ${activeWorkspace?.name}`);
         navigate("/workspaces");
       },
-      onError: (err: any) => {
-        toast.error(err?.response?.data?.error || "Failed to leave workspace");
+      onError: (err: unknown) => {
+        const error = err as { response?: { data?: { error?: string } } };
+        toast.error(error?.response?.data?.error || "Failed to leave workspace");
       }
     });
   };
@@ -307,5 +317,3 @@ export default function WorkspaceSettingsPage() {
     </PageLayout>
   );
 }
-
-

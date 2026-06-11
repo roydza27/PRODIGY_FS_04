@@ -53,7 +53,7 @@ export function useSocketRoom(
         "string"
           ? message.roomId
           : (
-              message.roomId as {
+              message.roomId as unknown as {
                 _id?: string;
               }
             )?._id;

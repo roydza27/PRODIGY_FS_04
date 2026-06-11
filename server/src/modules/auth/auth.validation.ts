@@ -1,60 +1,36 @@
-import type {
-  GoogleLoginInput,
-  LoginInput,
-  RegisterInput,
-} from "./auth.types";
+import { z } from "zod";
 
-export function validateRegisterInput(data: RegisterInput) {
-  const { name, username, email, password } = data;
+export const registerSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters long"),
+  username: z.string().min(3, "Username must be at least 3 characters long"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters long"),
+  displayName: z.string().optional(),
+  avatarUrl: z.string().optional(),
+  bio: z.string().optional(),
+  statusMessage: z.string().optional(),
+});
 
-  if (!name || !username || !email || !password) {
-    return "Name, username, email, and password are required";
-  }
+export const loginSchema = z.object({
+  identifier: z.string().min(1, "Identifier is required"),
+  password: z.string().min(6, "Password must be at least 6 characters long"),
+});
 
-  if (name.trim().length < 2) {
-    return "Name must be at least 2 characters long";
-  }
+export const googleLoginSchema = z.object({
+  credential: z.string().min(1, "Google credential is required"),
+});
 
-  if (username.trim().length < 3) {
-    return "Username must be at least 3 characters long";
-  }
+export const forgotPasswordSchema = z.object({
+  email: z.string().email("Invalid email address"),
+});
 
-  if (password.length < 6) {
-    return "Password must be at least 6 characters long";
-  }
+export const resetPasswordSchema = z.object({
+  password: z.string().min(6, "Password must be at least 6 characters long"),
+  token: z.string().min(1, "Token is required"),
+});
 
-  return null;
-}
-
-export function validateLoginInput(data: LoginInput) {
-  const { identifier, password } = data;
-
-  if (!identifier || !password) {
-    return "Identifier and password are required";
-  }
-
-  if (password.length < 6) {
-    return "Password must be at least 6 characters long";
-  }
-
-  return null;
-}
-
-export function validateGoogleLoginInput(data: GoogleLoginInput) {
-  if (!data.credential) {
-    return "Google credential is required";
-  }
-
-  return null;
-}
-
-export function validateForgotPasswordInput(data: { email?: string }) {
-  if (!data.email) return "Email is required";
-  return null;
-}
-
-export function validateResetPasswordInput(data: { password?: string; token?: string }) {
-  if (!data.password || !data.token) return "Password and token are required";
-  if (data.password.length < 6) return "Password must be at least 6 characters long";
-  return null;
-}
+export type RegisterInput = z.infer<typeof registerSchema>;
+export type LoginInput = z.infer<typeof loginSchema>;
+export type GoogleLoginInput = z.infer<typeof googleLoginSchema>;
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;

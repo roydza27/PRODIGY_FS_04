@@ -1,13 +1,9 @@
 import {
-  IconHome,
   IconUsers,
-  IconUserPlus,
-  IconSettings,
   IconBuilding,
   IconUserCircle,
-  IconBell,
-  IconShield,
 } from "@tabler/icons-react";
+import type { SidebarData } from "../types/sidebar";
 
 export const workspaceSidebarData: SidebarData = {
   brandName: "RepoSense",

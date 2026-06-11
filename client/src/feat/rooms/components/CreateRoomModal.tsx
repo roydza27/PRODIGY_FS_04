@@ -11,7 +11,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { toast } from "sonner";
-import { useRooms } from "../hooks/useRooms";
+import { useCreateRoom } from "../hooks/useCreateRoom";
 
 interface CreateRoomModalProps {
   isOpen: boolean;
@@ -22,7 +22,8 @@ interface CreateRoomModalProps {
 export const CreateRoomModal = ({ isOpen, onClose, workspaceId }: CreateRoomModalProps) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const { createRoom, isLoading } = useRooms(workspaceId);
+  const createRoomMutation = useCreateRoom();
+  const isLoading = createRoomMutation.isPending;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +33,7 @@ export const CreateRoomModal = ({ isOpen, onClose, workspaceId }: CreateRoomModa
     }
 
     try {
-      await createRoom({ name, description });
+      await createRoomMutation.mutateAsync({ workspaceId, name, description });
       toast.success("Channel created successfully");
       setName("");
       setDescription("");
@@ -40,7 +41,7 @@ export const CreateRoomModal = ({ isOpen, onClose, workspaceId }: CreateRoomModa
       // Reload page to reflect new rooms easily (or rely on state from useRooms if hoisted)
       // Since useRooms state here is isolated, let's just dispatch an event or reload for simplicity
       window.location.reload(); 
-    } catch (error) {
+    } catch {
       // Error handled by hook toast
     }
   };

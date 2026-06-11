@@ -2,7 +2,6 @@ import { api } from "@/services/api";
 import type { Message } from "../types/message.types";
 
 export const getRoomMessages = async (
-  workspaceId: string,
   roomId: string
 ): Promise<Message[]> => {
   const { data } = await api.get(

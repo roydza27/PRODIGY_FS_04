@@ -41,7 +41,7 @@ export const useSignupForm = () => {
 
       toast.success(AUTH_MESSAGES.registerSuccess);
       navigate("/login", { replace: true });
-    } catch (err: any) {
+    } catch (err: unknown) {
       const message = getAuthErrorMessage(err);
       setError(message);
       toast.error(message);

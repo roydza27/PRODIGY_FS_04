@@ -9,7 +9,7 @@ export const findRoomsByWorkspaceId = async (
   workspaceId: string,
   status: "active" | "archived" | "all" = "active"
 ): Promise<IRoom[]> => {
-  const query: Record<string, any> = { workspaceId };
+  const query: Record<string, unknown> = { workspaceId };
 
   if (status !== "all") {
     query.status = status;
