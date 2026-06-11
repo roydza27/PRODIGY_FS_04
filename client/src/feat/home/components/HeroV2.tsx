@@ -1,7 +1,7 @@
 import { Button } from "@/shared/components/ui/button";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { MessageSquareMore, Users, Zap, Hash } from "lucide-react";
+import { Zap, Hash } from "lucide-react";
 
 export default function HeroV2() {
   return (

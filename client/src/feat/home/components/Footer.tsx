@@ -1,4 +1,4 @@
-import { MessageSquareMore, ArrowRight } from "lucide-react";
+import { MessageSquareMore } from "lucide-react";
 import { FiGithub, FiTwitter, FiLinkedin } from "react-icons/fi";
 import { Link } from "react-router-dom";
 

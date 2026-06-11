@@ -1,4 +1,4 @@
-import { Hash, MoreHorizontal, Lock, Globe } from "lucide-react";
+import { Hash, MoreHorizontal, Lock } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import {

@@ -1,7 +1,5 @@
 import { useParams } from "react-router-dom";
 
-import RoomSidebar from "../components/RoomSidebar";
-
 import { useRoom } from "../hooks/useRoom";
 
 import ChatHeader from "@/feat/chat/components/ChatHeader";
@@ -25,7 +23,7 @@ export default function RoomPage() {
 
         {room && (
           <>
-            <ChatHeader room={room} />
+            <ChatHeader roomName={room.name} />
 
             <div className="flex-1 overflow-hidden">
               <MessageList />

@@ -1,11 +1,3 @@
-import { Hash, Plus } from "lucide-react";
-
-import { Button } from "@/shared/components/ui/button";
-
-import { useActiveWorkspace } from "@/feat/workspaces/hooks/useActiveWorkspace";
-
-import CreateRoomDialog from "./CreateRoomDialog";
-
 export default function EmptyRoomState() {
   return (
     <div className="px-2 py-4 text-center rounded-lg bg-white/[0.02] border border-dashed border-white/5 mx-2">

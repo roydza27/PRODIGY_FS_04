@@ -1,5 +1,5 @@
 import { api } from "@/services/api";
-import type { Room, CreateRoomInput } from "../types";
+import type { Room, CreateRoomPayload } from "../types";
 
 export const roomsApi = {
   getWorkspaceRooms: async (workspaceId: string): Promise<Room[]> => {
@@ -7,7 +7,7 @@ export const roomsApi = {
     return data.data;
   },
 
-  createRoom: async (workspaceId: string, input: CreateRoomInput): Promise<Room> => {
+  createRoom: async (workspaceId: string, input: CreateRoomPayload): Promise<Room> => {
     const { data } = await api.post(`/api/workspaces/${workspaceId}/rooms`, input);
     return data.data;
   },
