@@ -19,7 +19,7 @@ class SocketService {
   /**
    * Broadcast an event to a specific room
    */
-  emitToRoom(room: string, event: string, data: any) {
+  emitToRoom(room: string, event: string, data: unknown) {
     if (this.io) {
       this.io.to(room).emit(event, data);
     }
@@ -28,7 +28,7 @@ class SocketService {
   /**
    * Broadcast an event to all connected clients
    */
-  emitGlobal(event: string, data: any) {
+  emitGlobal(event: string, data: unknown) {
     if (this.io) {
       this.io.emit(event, data);
     }

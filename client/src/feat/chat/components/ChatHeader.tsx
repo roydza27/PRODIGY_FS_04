@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { 
   IconHash, 
   IconSearch, 
@@ -165,6 +165,7 @@ export default function ChatHeader({
       <div className="flex items-center gap-1 text-muted-foreground/70">
         <button 
           title="Search"
+          aria-label="Search messages"
           className="flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-muted/50 hover:text-foreground active:scale-95"
         >
           <IconSearch size={20} stroke={1.5} />
@@ -172,6 +173,7 @@ export default function ChatHeader({
         
         <button 
           title="Menu"
+          aria-label="Open chat options"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           className={cn(
             "flex h-10 w-10 items-center justify-center rounded-full transition-colors active:scale-95",

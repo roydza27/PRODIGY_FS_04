@@ -3,17 +3,17 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useConversations } from "../hooks/useConversations";
 import { useAuthStore } from "@/app/stores/auth.store";
 import { usePresenceStore } from "@/app/stores/presence.store";
-import { useActiveWorkspace } from "@/feat/workspaces/hooks/useActiveWorkspace";
 
 import { cn } from "@/lib/utils";
 import { PresenceStatus } from "@/shared/components/ui/presence-status";
+import { useActiveWorkspace } from "@/feat/workspaces/hooks/useActiveWorkspace";
 
 export default function DMList() {
   const navigate = useNavigate();
 
   const { conversationId } = useParams();
 
-  const { activeWorkspace } = useActiveWorkspace();
+  useActiveWorkspace();
 
   const currentUser = useAuthStore(
     (state) => state.user
@@ -27,15 +27,15 @@ export default function DMList() {
   } = useConversations();
 
   const getOtherParticipant = (
-    participants: any[]
+    participants: { _id: string; name: string; avatarUrl?: string }[]
   ) => {
     if (!participants || !Array.isArray(participants)) return null;
 
+    const currentUserId = currentUser?.id;
     return (
       participants.find(
         (participant) =>
-          participant._id !== currentUser?.id &&
-          participant._id !== (currentUser as any)?._id
+          participant._id !== currentUserId
       ) ?? participants[0]
     );
   };

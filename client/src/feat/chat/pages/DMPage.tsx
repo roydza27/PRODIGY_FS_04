@@ -213,7 +213,7 @@ export default function DMPage() {
                   </div>
 
                   {/* Action Cards */}
-                  <div className="grid grid-cols-2 md:grid-cols-2 gap-4 w-full max-w-3xl">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl px-4">
                     <IntroCard 
                       icon={<IconUser size={20} />} 
                       label="View Profile" 

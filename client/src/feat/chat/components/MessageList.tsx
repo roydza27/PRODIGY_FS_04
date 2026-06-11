@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, UIEvent } from "react";
+import { useEffect, useRef, useState, type UIEvent, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { differenceInMinutes, isSameDay } from "date-fns";
 import { IconChevronDown } from "@tabler/icons-react";
@@ -7,15 +7,16 @@ import { useAuthStore } from "@/app/stores/auth.store";
 
 import Message from "./Message";
 import MessageDateDivider from "./MessageDateDivider";
-import { cn } from "@/lib/utils";
 
 import type { Message as MessageType } from "../types/message.types";
+
+import type { AuthUser } from "@/shared/types/auth";
 
 interface MessageListProps {
   messages?: MessageType[];
   isDM?: boolean;
   isTyping?: boolean; 
-  typingUser?: any;    
+  typingUser?: Partial<AuthUser> | null;    
 }
 
 export default function MessageList({
@@ -25,6 +26,7 @@ export default function MessageList({
   typingUser = null, 
 }: MessageListProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const scrollAnchorRef = useRef<HTMLDivElement>(null);
   
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -32,22 +34,22 @@ export default function MessageList({
   const prevMessageCountRef = useRef(messages.length);
 
   const currentUser = useAuthStore((state) => state.user);
-  const currentUserId = currentUser?.id || (currentUser as Record<string, unknown>)?._id;
+  const currentUserId = currentUser?.id;
 
   // ==========================================================================
   // SCROLL LOGIC
   // ==========================================================================
-  const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
-    if (scrollContainerRef.current) {
-      const { scrollHeight, clientHeight } = scrollContainerRef.current;
-      scrollContainerRef.current.scrollTo({
-        top: scrollHeight - clientHeight,
-        behavior,
-      });
+  const performScroll = useCallback((behavior: ScrollBehavior = "smooth") => {
+    if (scrollAnchorRef.current) {
+      scrollAnchorRef.current.scrollIntoView({ behavior });
     }
+  }, []);
+
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
+    performScroll(behavior);
     setUnreadCount(0);
     setShowScrollButton(false);
-  };
+  }, [performScroll]);
 
   const handleScroll = (e: UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
@@ -64,9 +66,8 @@ export default function MessageList({
 
   // Initial load auto-scroll
   useEffect(() => {
-    scrollToBottom("auto");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    performScroll("auto");
+  }, [performScroll]);
 
   // Handle incoming messages
   useEffect(() => {
@@ -90,7 +91,7 @@ export default function MessageList({
       }
     }
     prevMessageCountRef.current = messages.length;
-  }, [messages, showScrollButton, currentUserId]);
+  }, [messages, showScrollButton, currentUserId, scrollToBottom]);
 
   return (
     <div className="relative flex h-full w-full flex-col overflow-hidden">
@@ -173,7 +174,6 @@ export default function MessageList({
             })}
           </AnimatePresence>
 
-          {/* ADD THIS INLINE TYPING INDICATOR BLOCK */}
           <AnimatePresence>
             {isTyping && typingUser && (
               <motion.div
@@ -183,8 +183,6 @@ export default function MessageList({
                 className="flex w-full mt-2 mb-4"
               >
                 <div className="flex items-end gap-3">
-                  
-                  {/* Hide Avatar in DMs, Show in Channels/Rooms */}
                   {!isDM && (
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted/50">
                       {typingUser.avatarUrl ? (
@@ -196,8 +194,6 @@ export default function MessageList({
                       )}
                     </div>
                   )}
-                  
-                  {/* Bubble */}
                   <div className="flex h-[42px] items-center rounded-2xl rounded-bl-sm bg-muted/40 px-4 shadow-sm border border-border/10">
                     <div className="flex items-center gap-1.5 opacity-60">
                       <motion.div animate={{ y: [0, -4, 0] }} transition={{ duration: 0.6, repeat: Infinity, ease: "easeInOut" }} className="h-1.5 w-1.5 rounded-full bg-foreground" />
@@ -205,18 +201,15 @@ export default function MessageList({
                       <motion.div animate={{ y: [0, -4, 0] }} transition={{ duration: 0.6, repeat: Infinity, ease: "easeInOut", delay: 0.3 }} className="h-1.5 w-1.5 rounded-full bg-foreground" />
                     </div>
                   </div>
-
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
           
-          {/* Scroll anchor */}
-          <div ref={scrollContainerRef} className="h-4 w-full" />
+          <div ref={scrollAnchorRef} className="h-4 w-full" />
         </div>
       </div>
 
-      {/* Floating Scroll-to-Bottom Button */}
       <AnimatePresence>
         {showScrollButton && (
           <motion.button
@@ -228,8 +221,6 @@ export default function MessageList({
             className="absolute bottom-4 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-[#202c33] text-[#8696a0] shadow-xl border border-white/5 transition-colors hover:bg-[#2a3942] hover:text-[#d1d7db] active:scale-95"
           >
             <IconChevronDown size={22} stroke={2.5} className="mt-0.5" />
-            
-            {/* Unread Messages Badge */}
             <AnimatePresence>
               {unreadCount > 0 && (
                 <motion.div

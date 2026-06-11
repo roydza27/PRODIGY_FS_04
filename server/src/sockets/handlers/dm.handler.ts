@@ -115,10 +115,11 @@ export const registerDMHandlers = (
          * Verify user is a participant
          */
         const isParticipant = conversation.participants.some(
-          (participant: any) => {
+          (participant: unknown) => {
             const id =
-              participant?._id?.toString?.() ??
-              participant?.toString?.();
+              typeof participant === "string"
+                ? participant
+                : (participant as { _id?: { toString: () => string } })?._id?.toString();
 
             return id === userId;
           }

@@ -15,11 +15,12 @@ import MessageComposer from "../components/MessageComposer";
 import { MemberSidebar } from "@/shared/components/workspace/member-sidebar";
 
 import { PageLayout } from "@/shared/components/layout/PageLayout";
+import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export default function RoomChatPage() {
   const { roomId } = useParams<{ roomId: string }>();
-  const [showMembers, setShowMembers] = useState(true);
+  const [showMembers, setShowMembers] = useState(typeof window !== "undefined" ? window.innerWidth >= 1280 : true);
 
   const {
     activeWorkspace,
@@ -31,11 +32,13 @@ export default function RoomChatPage() {
   const {
     data: roomResponse,
     isLoading: roomLoading,
+    error: roomError
   } = useRoom(workspaceId, roomId);
 
   const {
     data: messages = [],
     isLoading: messagesLoading,
+    error: messagesError
   } = useRoomMessages(workspaceId, roomId);
 
   useSocketRoom(workspaceId, roomId);
@@ -46,6 +49,28 @@ export default function RoomChatPage() {
     return (
       <PageLayout variant="full" className="flex items-center justify-center bg-background text-muted-foreground">
         Invalid channel link
+      </PageLayout>
+    );
+  }
+
+  if (roomError || messagesError) {
+    return (
+      <PageLayout variant="full" className="flex items-center justify-center min-h-[70vh] px-6">
+        <div className="text-center space-y-5 max-w-sm">
+          <div className="mx-auto h-14 w-14 rounded-full bg-destructive/10 flex items-center justify-center text-destructive">
+            <IconUsers size={24} strokeWidth={2} />
+          </div>
+          <div className="space-y-1.5">
+            <h2 className="text-[17px] font-semibold text-foreground">Channel Sync Error</h2>
+            <p className="text-[13.5px] text-muted-foreground/70 leading-relaxed">We encountered a problem while synchronizing this channel. Please verify your connection.</p>
+          </div>
+          <Button 
+            onClick={() => window.location.reload()} 
+            className="h-9 rounded-xl bg-destructive hover:bg-destructive/90 px-5 text-[13px] font-medium transition-all"
+          >
+            Retry Connection
+          </Button>
+        </div>
       </PageLayout>
     );
   }
@@ -91,7 +116,7 @@ export default function RoomChatPage() {
       <div className="relative flex h-[60px] items-center justify-between border-b border-border/30 bg-background px-4 z-40">
         <ChatHeader 
           roomName={room.name} 
-          memberCount={room.memberCount}
+          memberCount={room.memberCount || 0}
           isDM={false}
         />
         <button
@@ -124,7 +149,7 @@ export default function RoomChatPage() {
                         roomName={room.name}
                         description={room.description}
                         isPrivate={room.isPrivate}
-                        memberCount={room.memberCount}
+                        memberCount={room.memberCount || 0}
                       />
                     </motion.div>
                   </AnimatePresence>
