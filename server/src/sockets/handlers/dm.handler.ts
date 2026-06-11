@@ -4,11 +4,67 @@ import { logger } from "../../utils/logger";
 
 import * as conversationService from "../../modules/conversations/conversation.service";
 import * as membershipRepository from "../../modules/workspaces/membership.repository";
+import * as messageRepository from "../../modules/messages/repositories/message.repository";
 
 export const registerDMHandlers = (
   io: Server,
   socket: Socket
 ) => {
+  /**
+   * Message Delivered
+   */
+  socket.on(
+    "dm:delivered",
+    async ({ messageId, conversationId }) => {
+      if (!messageId || !conversationId) return;
+
+      try {
+        const message = await messageRepository.updateMessageStatus(
+          messageId,
+          "delivered"
+        );
+
+        if (message) {
+          // Notify the sender
+          io.to(`dm:${conversationId}`).emit("message:status", {
+            messageId,
+            conversationId,
+            status: "delivered",
+          });
+        }
+      } catch (error) {
+        logger.error("[Socket] dm:delivered failed", error);
+      }
+    }
+  );
+
+  /**
+   * Message Seen
+   */
+  socket.on(
+    "dm:seen",
+    async ({ conversationId }) => {
+      if (!conversationId) return;
+
+      try {
+        const userId = socket.data.userId;
+
+        await messageRepository.markConversationAsSeen(
+          conversationId,
+          userId
+        );
+
+        // Notify all participants in the DM room
+        io.to(`dm:${conversationId}`).emit("message:seen:all", {
+          conversationId,
+          seenBy: userId,
+        });
+      } catch (error) {
+        logger.error("[Socket] dm:seen failed", error);
+      }
+    }
+  );
+
   /**
    * Join DM
    */
@@ -131,6 +187,36 @@ export const registerDMHandlers = (
           error
         );
       }
+    }
+  );
+
+  /**
+   * Typing Start
+   */
+  socket.on(
+    "dm:typing:start",
+    ({ conversationId }) => {
+      if (!conversationId) return;
+      const dmRoom = `dm:${conversationId}`;
+      socket.to(dmRoom).emit("dm:typing:start", {
+        conversationId,
+        userId: socket.data.userId,
+      });
+    }
+  );
+
+  /**
+   * Typing Stop
+   */
+  socket.on(
+    "dm:typing:stop",
+    ({ conversationId }) => {
+      if (!conversationId) return;
+      const dmRoom = `dm:${conversationId}`;
+      socket.to(dmRoom).emit("dm:typing:stop", {
+        conversationId,
+        userId: socket.data.userId,
+      });
     }
   );
 };

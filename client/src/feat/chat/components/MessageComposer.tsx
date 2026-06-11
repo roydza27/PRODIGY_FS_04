@@ -1,223 +1,197 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  IconBold,
-  IconCode,
-  IconItalic,
-  IconLink,
-  IconList,
-  IconListNumbers,
   IconMoodSmile,
   IconPlus,
   IconSend,
-  IconStrikethrough,
-  IconPaperclip,
   IconMicrophone,
-  IconPhoto
+  IconMarkdown,
 } from "@tabler/icons-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 import { useActiveWorkspace } from "@/feat/workspaces/hooks/useActiveWorkspace";
 import { useSendMessage } from "../hooks/useSendMessage";
-
-import { cn } from "@/lib/utils";
+import { socketService } from "@/services/socket/socket.service";
 
 interface MessageComposerProps {
+  workspaceId?: string;
   roomId?: string;
   conversationId?: string;
+  placeholderName?: string;
 }
 
-const TOOLBAR_ITEMS = [
-  { icon: IconBold, label: "Bold" },
-  { icon: IconItalic, label: "Italic" },
-  { icon: IconStrikethrough, label: "Strikethrough" },
-  { type: "divider" as const },
-  { icon: IconLink, label: "Add Link" },
-  { icon: IconList, label: "Bullet List" },
-  { icon: IconListNumbers, label: "Numbered List" },
-  { type: "divider" as const },
-  { icon: IconCode, label: "Code" },
-];
-
 export default function MessageComposer({
+  workspaceId: propWorkspaceId,
   roomId,
   conversationId,
+  placeholderName = "John",
 }: MessageComposerProps) {
   const [text, setText] = useState("");
   const [isFocused, setIsFocused] = useState(false);
+  
+  // NOTE: Removed the typingTimeoutRef completely
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const textareaRef =
-    useRef<HTMLTextAreaElement>(null);
-
-  const { activeWorkspace } =
-    useActiveWorkspace();
+  const { activeWorkspace } = useActiveWorkspace();
+  const workspaceId = propWorkspaceId || activeWorkspace?._id;
 
   const { sendMessage } = useSendMessage(
-    activeWorkspace?._id,
+    workspaceId,
     roomId,
     conversationId
   );
 
+  // Auto-resize logic
   useEffect(() => {
-    if (!textareaRef.current) {
-      return;
-    }
-
-    textareaRef.current.style.height =
-      "auto";
-
-    textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    if (!textareaRef.current) return;
+    textareaRef.current.style.height = "24px";
+    const scrollHeight = textareaRef.current.scrollHeight;
+    textareaRef.current.style.height = `${Math.min(scrollHeight, 200)}px`;
   }, [text]);
 
   const handleSend = () => {
     const trimmed = text.trim();
-
-    if (!trimmed) {
-      return;
-    }
+    if (!trimmed) return;
 
     sendMessage(trimmed);
+    
+    // Stop typing immediately when the message is sent
+    if (conversationId) {
+      socketService.emit("dm:typing:stop", { conversationId });
+    } else if (roomId) {
+      socketService.emit("room:typing:stop", { roomId });
+    }
 
     setText("");
-    
     if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = "24px";
+      textareaRef.current.focus();
+    }
+  };
+
+  const handleTextChange = (value: string) => {
+    setText(value);
+    
+    const isCurrentlyTyping = text.trim().length > 0;
+    const isNowTyping = value.trim().length > 0;
+
+    if (conversationId) {
+      // Start typing if there was no text and now there is text
+      if (!isCurrentlyTyping && isNowTyping) {
+        socketService.emit("dm:typing:start", { conversationId });
+      } 
+      // Stop typing only if text is completely cleared out
+      else if (isCurrentlyTyping && !isNowTyping) {
+        socketService.emit("dm:typing:stop", { conversationId });
+      }
+    } else if (roomId) {
+      // Start typing if there was no text and now there is text
+      if (!isCurrentlyTyping && isNowTyping) {
+        socketService.emit("room:typing:start", { roomId });
+      } 
+      // Stop typing only if text is completely cleared out
+      else if (isCurrentlyTyping && !isNowTyping) {
+        socketService.emit("room:typing:stop", { roomId });
+      }
     }
   };
 
   return (
-    <div className="px-4 pb-6 md:px-8">
+    <div className="relative w-full bg-background/80 backdrop-blur-xl border-t border-border/40 px-4 py-4 md:px-6">
       <div className="mx-auto max-w-5xl">
+        
+        {/* Main Input Container */}
         <div className={cn(
-          "relative flex flex-col overflow-hidden rounded-[24px] border border-border/50 bg-card/40 shadow-xl backdrop-blur-xl transition-all duration-300",
-          isFocused ? "border-primary/40 ring-4 ring-primary/5 shadow-primary/5 bg-card/60" : "hover:border-border hover:bg-card/50"
+          "relative flex items-end gap-2 rounded-[24px] border p-2 transition-all duration-300",
+          isFocused 
+            ? "border-primary/30 bg-muted/30 shadow-[0_0_20px_rgba(var(--primary),0.05)] ring-1 ring-primary/20" 
+            : "border-border/50 bg-muted/20"
         )}>
-          {/* Toolbar */}
-          <div className="flex items-center gap-0.5 border-b border-border/30 bg-muted/20 px-3 py-2">
-            {TOOLBAR_ITEMS.map((item, index) =>
-              item.type === "divider" ? (
-                <div
-                  key={index}
-                  className="mx-1.5 h-4 w-[1.5px] bg-border/40"
-                />
-              ) : (
-                <ToolbarButton
-                  key={index}
-                  icon={
-                    <item.icon size={17} stroke={2} />
-                  }
-                  label={item.label}
-                />
-              )
-            )}
-            
-            <div className="ml-auto flex items-center gap-1">
-              <ToolbarButton icon={<IconPhoto size={18} stroke={2} />} label="Images" />
-              <ToolbarButton icon={<IconPaperclip size={18} stroke={2} />} label="Files" />
-            </div>
+          
+          {/* Left Actions */}
+          <div className="flex items-center gap-1 pl-1 pb-1">
+            <button className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground/60 transition-colors hover:bg-primary/10 hover:text-primary">
+              <IconMoodSmile size={22} stroke={2} />
+            </button>
+            <button className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground/60 transition-colors hover:bg-primary/10 hover:text-primary">
+              <IconPlus size={22} stroke={2.5} />
+            </button>
           </div>
 
-          {/* Input Area */}
-          <div className="flex items-end gap-3 p-4">
-            <div className="flex items-center gap-1.5 pb-0.5">
-              <button
-                type="button"
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-muted/40 text-muted-foreground transition-all hover:bg-primary/10 hover:text-primary active:scale-90"
-              >
-                <IconPlus size={24} stroke={2} />
-              </button>
-            </div>
-
+          {/* Textarea Area */}
+          <div className="flex-1 px-2 py-2">
             <textarea
               ref={textareaRef}
               value={text}
-              onChange={(e) =>
-                setText(e.target.value)
-              }
+              onChange={(e) => handleTextChange(e.target.value)}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
               onKeyDown={(e) => {
-                if (
-                  e.key === "Enter" &&
-                  !e.shiftKey
-                ) {
+                if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
                   handleSend();
                 }
               }}
-              placeholder={roomId ? "Message channel..." : "Send a message..."}
-              className="max-h-[400px] min-h-[48px] flex-1 resize-none bg-transparent py-3 text-[15px] font-medium leading-relaxed placeholder:text-muted-foreground/40 focus:outline-none"
+              placeholder={roomId ? "Message in channel" : `Message @${placeholderName}`}
+              className="w-full resize-none bg-transparent text-[15px] font-medium leading-relaxed text-foreground placeholder:text-muted-foreground/40 focus:outline-none no-scrollbar min-h-[24px]"
+              rows={1}
             />
+          </div>
 
-            <div className="flex items-center gap-2 pb-0.5">
-              <ToolbarButton
-                icon={
-                  <IconMoodSmile size={24} stroke={2} />
-                }
-                label="Emoji"
-              />
-              
-              {!text.trim() && (
-                <ToolbarButton
-                  icon={
-                    <IconMicrophone size={24} stroke={2} />
-                  }
-                  label="Voice Message"
-                />
+          {/* Right Action (Send/Mic) */}
+          <div className="pr-1 pb-1">
+            <AnimatePresence mode="wait">
+              {!text.trim() ? (
+                <motion.button
+                  key="mic"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground/60 transition-colors hover:bg-primary/10 hover:text-primary"
+                >
+                  <IconMicrophone size={22} stroke={2} />
+                </motion.button>
+              ) : (
+                <motion.button
+                  key="send"
+                  initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
+                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  onClick={handleSend}
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95"
+                >
+                  <IconSend size={18} stroke={2.5} className="translate-x-0.5" />
+                </motion.button>
               )}
-
-              <button
-                type="button"
-                onClick={handleSend}
-                disabled={!text.trim()}
-                className={cn(
-                  "flex h-11 w-11 items-center justify-center rounded-2xl transition-all duration-500",
-                  text.trim()
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 scale-100 opacity-100 hover:bg-primary/90 hover:scale-105 active:scale-95"
-                    : "bg-muted/50 text-muted-foreground/30 scale-95 opacity-50 cursor-not-allowed"
-                )}
-              >
-                <IconSend 
-                  size={22} 
-                  stroke={2.5} 
-                  className={cn(
-                    "transition-all duration-500",
-                    text.trim() ? "translate-x-0.5 -translate-y-0.5 rotate-12" : ""
-                  )}
-                />
-              </button>
-            </div>
+            </AnimatePresence>
           </div>
         </div>
 
-        <div className="mt-3 flex justify-between px-4">
-          <div className="flex items-center gap-4">
-            <p className="flex items-center gap-1 text-[11px] font-bold text-muted-foreground/30">
-              <span className="h-1 w-1 rounded-full bg-emerald-500/40" />
-              Markdown supported
-            </p>
+        {/* Footer Info Area */}
+        <div className="mt-2 flex items-center justify-between px-4">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 group cursor-help">
+              <IconMarkdown size={14} className="text-muted-foreground/30 group-hover:text-primary/50 transition-colors" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30 group-hover:text-muted-foreground/60 transition-colors">
+                Markdown
+              </span>
+            </div>
+            <div className="h-1 w-1 rounded-full bg-border" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/20">
+              Shift + Enter for new line
+            </span>
           </div>
-          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30">
-            <span className="text-muted-foreground/50">Return</span> to send • <span className="text-muted-foreground/50">Shift + Return</span> for new line
-          </p>
+
+          <div className={cn(
+            "flex items-center gap-1.5 transition-opacity duration-300",
+            text.length > 0 ? "opacity-100" : "opacity-0"
+          )}>
+            <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">
+              Press Enter to send
+            </span>
+          </div>
         </div>
       </div>
     </div>
-  );
-}
-
-function ToolbarButton({
-  icon,
-  label,
-}: {
-  icon: React.ReactNode;
-  label: string;
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      className="flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground/60 transition-all hover:bg-muted hover:text-foreground active:scale-90"
-    >
-      {icon}
-    </button>
   );
 }

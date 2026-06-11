@@ -117,6 +117,19 @@ class SocketService {
     });
   }
 
+  markDMDelivered(messageId: string, conversationId: string) {
+    this.emit("dm:delivered", {
+      messageId,
+      conversationId,
+    });
+  }
+
+  markDMSeen(conversationId: string) {
+    this.emit("dm:seen", {
+      conversationId,
+    });
+  }
+
   sendMessage(
     payload: SendMessagePayload
   ) {

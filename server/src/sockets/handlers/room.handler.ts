@@ -169,4 +169,28 @@ export const registerRoomHandlers = (
       );
     }
   });
+
+  /**
+   * Room Typing Start
+   */
+  socket.on("room:typing:start", ({ roomId }) => {
+    if (!roomId) return;
+    const roomKey = `room:${roomId}`;
+    socket.to(roomKey).emit("room:typing:start", {
+      roomId,
+      userId: socket.data.userId,
+    });
+  });
+
+  /**
+   * Room Typing Stop
+   */
+  socket.on("room:typing:stop", ({ roomId }) => {
+    if (!roomId) return;
+    const roomKey = `room:${roomId}`;
+    socket.to(roomKey).emit("room:typing:stop", {
+      roomId,
+      userId: socket.data.userId,
+    });
+  });
 };
