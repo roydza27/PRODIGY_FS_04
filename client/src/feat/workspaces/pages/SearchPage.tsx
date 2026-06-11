@@ -6,10 +6,10 @@ import { Search, Users, Building2, ChevronRight, ArrowRight, Zap } from "lucide-
 import { useSearchUsers } from "@/feat/users/api/user.queries";
 import { useSearchWorkspaces } from "@/feat/workspaces/api/workspace.queries";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
-import { Badge } from "@/shared/components/ui/badge";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
-import { cn } from "@/lib/utils";
+import type { Workspace } from "../types/workspace.types";
+import type { AuthUser } from "@/shared/types/auth";
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
@@ -30,8 +30,7 @@ export default function SearchPage() {
   const isLoading = usersLoading || workspacesLoading;
 
   return (
-    /* REPLACED: Changed variant from "constrained" to "full" and set up edge-to-edge layout matching the platform */
-    <PageLayout variant="full" className="relative py-12 px-6 md:px-12 flex flex-col gap-10 min-h-screen bg-background text-foreground selection:bg-primary/20 text-left">
+    <PageLayout variant="constrained" className="relative py-10 flex flex-col gap-10 min-h-full bg-background text-foreground selection:bg-primary/20 text-left">
       
       {/* Premium Background Ambient Glows */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -107,7 +106,7 @@ export default function SearchPage() {
                       <h3 className="text-[12px] font-medium uppercase tracking-wider text-muted-foreground/70 flex items-center gap-2 px-1">
                         <Users className="h-4 w-4 text-muted-foreground/40" /> Engineers discovered
                       </h3>
-                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                         {users.map(u => <UserCard key={u._id} user={u} />)}
                       </div>
                     </motion.section>
@@ -122,18 +121,18 @@ export default function SearchPage() {
                       <h3 className="text-[12px] font-medium uppercase tracking-wider text-muted-foreground/70 flex items-center gap-2 px-1">
                         <Building2 className="h-4 w-4 text-muted-foreground/40" /> Workspaces discovered
                       </h3>
-                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                         {workspaces.map(w => <WorkspaceCard key={w._id} workspace={w} />)}
                       </div>
                     </motion.section>
                   )}
                 </TabsContent>
 
-                <TabsContent value="users" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 focus-visible:outline-none">
+                <TabsContent value="users" className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 focus-visible:outline-none">
                   {users?.map(u => <UserCard key={u._id} user={u} />)}
                 </TabsContent>
 
-                <TabsContent value="workspaces" className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 focus-visible:outline-none">
+                <TabsContent value="workspaces" className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 focus-visible:outline-none">
                   {workspaces?.map(w => <WorkspaceCard key={w._id} workspace={w} />)}
                 </TabsContent>
               </AnimatePresence>
@@ -157,7 +156,7 @@ export default function SearchPage() {
   );
 }
 
-function UserCard({ user }: { user: any }) {
+function UserCard({ user }: { user: Partial<AuthUser> & { _id: string } }) {
   const fallbackInitial = user.name?.charAt(0)?.toUpperCase() ?? "?";
   
   return (
@@ -183,7 +182,7 @@ function UserCard({ user }: { user: any }) {
   );
 }
 
-function WorkspaceCard({ workspace }: { workspace: any }) {
+function WorkspaceCard({ workspace }: { workspace: Workspace }) {
   return (
     <motion.div 
       whileHover={{ y: -2 }}

@@ -35,10 +35,10 @@ export const CreateWorkspaceModal = ({ isOpen, onClose }: CreateWorkspaceModalPr
     const result = createWorkspaceSchema.safeParse({ name, description });
 
     if (!result.success) {
-      const fieldErrors: any = {};
-      result.error.issues.forEach((err: any) => {
+      const fieldErrors: { [key: string]: string } = {};
+      result.error.issues.forEach((err) => {
         if (err.path[0]) {
-          fieldErrors[err.path[0]] = err.message;
+          fieldErrors[err.path[0].toString()] = err.message;
         }
       });
       setErrors(fieldErrors);
@@ -54,8 +54,9 @@ export const CreateWorkspaceModal = ({ isOpen, onClose }: CreateWorkspaceModalPr
           setDescription("");
           onClose();
         },
-        onError: (error: any) => {
-          toast.error(error?.response?.data?.error || "Failed to create workspace");
+        onError: (error: unknown) => {
+          const err = error as { response?: { data?: { error?: string } } };
+          toast.error(err?.response?.data?.error || "Failed to create workspace");
         },
       }
     );

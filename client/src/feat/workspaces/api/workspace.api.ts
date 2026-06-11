@@ -2,6 +2,7 @@ import { api } from "@/services/api";
 import type {
   Workspace,
   WorkspaceMember,
+  WorkspaceInvite,
   CreateWorkspacePayload,
   UpdateWorkspacePayload,
   InviteMemberPayload,
@@ -90,8 +91,8 @@ export const inviteMemberApi = async (
 /**
  * Get all pending invites for current user
  */
-export const getPendingInvitesApi = async (): Promise<any[]> => {
-  const response = await api.get<any>("/workspaces/invites");
+export const getPendingInvitesApi = async (): Promise<WorkspaceInvite[]> => {
+  const response = await api.get<{ data: WorkspaceInvite[] }>("/workspaces/invites");
   return response.data.data;
 };
 
@@ -106,7 +107,7 @@ export const acceptInviteApi = async (workspaceId: string): Promise<void> => {
  * Decline workspace invite
  */
 export const declineInviteApi = async (workspaceId: string): Promise<void> => {
-  await api.post<any>(`/workspaces/${workspaceId}/decline-invite`);
+  await api.post(`/workspaces/${workspaceId}/decline-invite`);
 };
 
 /**

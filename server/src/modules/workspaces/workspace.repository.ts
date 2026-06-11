@@ -14,7 +14,7 @@ export const findWorkspacesByMemberUserId = async (
   userId: string,
   status: "active" | "archived" | "all" = "active"
 ): Promise<IWorkspace[]> => {
-  const query: Record<string, any> = { userId };
+  const query: Record<string, unknown> = { userId };
 
   if (status !== "all") {
     query.status = status;
@@ -33,7 +33,7 @@ export const findWorkspacesByUserId = async (
   userId: string,
   status: "active" | "archived" | "all" = "active"
 ): Promise<IWorkspace[]> => {
-  const query: Record<string, any> = { ownerId: userId };
+  const query: Record<string, unknown> = { ownerId: userId };
 
   if (status !== "all") {
     query.status = status;
@@ -66,7 +66,7 @@ export const updateWorkspace = async (
   workspaceId: string,
   input: UpdateWorkspaceInput
 ): Promise<IWorkspace | null> => {
-  const updateData: Record<string, any> = {};
+  const updateData: Record<string, unknown> = {};
 
   if (input.name !== undefined) {
     updateData.name = input.name.trim();

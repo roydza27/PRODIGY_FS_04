@@ -10,10 +10,8 @@ import {
   Bell, 
   Zap 
 } from "lucide-react";
-import { motion } from "framer-motion";
 
 import { useGetWorkspaces, useGetPendingInvites } from "../api/workspace.queries";
-import { useAuthStore } from "@/app/stores/auth.store";
 
 import { PageLayout } from "@/shared/components/layout/PageLayout";
 import { Button } from "@/shared/components/ui/button";
@@ -23,8 +21,7 @@ import { CreateWorkspaceModal } from "../components/CreateWorkspaceModal";
 import { JoinWorkspaceModal } from "../components/JoinWorkspaceModal";
 
 export default function WorkspaceListPage() {
-  const user = useAuthStore((state) => state.user);
-  const { data: workspaces = [], isLoading: workspacesLoading } = useGetWorkspaces();
+  const { data: workspaces = [], isLoading: workspacesLoading, error } = useGetWorkspaces();
   const { data: invites = [] } = useGetPendingInvites();
   
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -38,15 +35,52 @@ export default function WorkspaceListPage() {
   const recentWorkspaces = workspaces?.slice(0, 3) || [];
   const pendingInvitesCount = invites?.length || 0;
 
-  if (workspacesLoading) {
-    {/* REPLACED: Changed variant to full for loading state */}
+  if (error) {
     return (
-      <PageLayout variant="full" className="p-6 md:p-12 flex flex-col gap-8">
-        <div className="h-40 w-full rounded-2xl bg-white/[0.02] animate-pulse" />
-        <div className="grid gap-6 md:grid-cols-3">
-          <div className="h-28 w-full rounded-xl bg-white/[0.02] animate-pulse" />
-          <div className="h-28 w-full rounded-xl bg-white/[0.02] animate-pulse" />
-          <div className="h-28 w-full rounded-xl bg-white/[0.02] animate-pulse" />
+      <PageLayout variant="full" className="flex items-center justify-center min-h-[70vh] px-6">
+        <div className="text-center space-y-5 max-w-sm">
+          <div className="mx-auto h-14 w-14 rounded-full bg-destructive/10 flex items-center justify-center text-destructive">
+            <Building2 size={24} strokeWidth={2} />
+          </div>
+          <div className="space-y-1.5">
+            <h2 className="text-[17px] font-semibold text-foreground">Failed to Load Workspaces</h2>
+            <p className="text-[13.5px] text-muted-foreground/70 leading-relaxed">We encountered a problem while retrieving your workspaces. Please verify your connection.</p>
+          </div>
+          <Button 
+            onClick={() => window.location.reload()} 
+            className="h-9 rounded-xl bg-destructive hover:bg-destructive/90 px-5 text-[13px] font-medium transition-all"
+          >
+            Retry Connection
+          </Button>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  if (workspacesLoading) {
+    return (
+      <PageLayout variant="full" className="py-12 px-6 md:px-12 flex flex-col gap-10">
+        <Skeleton className="h-[240px] w-full rounded-2xl bg-card/30" />
+        
+        <div className="space-y-4">
+          <Skeleton className="h-5 w-48 rounded-lg" />
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-[100px] w-full rounded-2xl bg-card/30" />
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <Skeleton className="h-5 w-40 rounded-lg" />
+            <Skeleton className="h-9 w-64 rounded-xl" />
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Skeleton key={i} className="h-[140px] w-full rounded-2xl bg-card/30" />
+            ))}
+          </div>
         </div>
       </PageLayout>
     );
@@ -109,7 +143,7 @@ export default function WorkspaceListPage() {
 
       {/* Recent Workspaces / Environments Activity */}
       {recentWorkspaces.length > 0 && !search && (
-        <section className="space-y-4 relative z-10">
+        <section className="space-y-4 relative z-10 w-full">
           <h2 className="flex items-center gap-2 text-[12px] font-medium uppercase tracking-wider text-muted-foreground/70 px-1">
             <Clock className="h-4 w-4 text-muted-foreground/40" /> Recent Environments
           </h2>
@@ -151,7 +185,7 @@ export default function WorkspaceListPage() {
         </div>
 
         {/* Unified Responsive Grid (Now stretches out fluidly matching the workspace view) */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           
           {filteredWorkspaces.map((workspace) => (
             <Link 

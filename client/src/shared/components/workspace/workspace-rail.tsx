@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { useActiveWorkspace } from "@/feat/workspaces/hooks/useActiveWorkspace";
 import { useWorkspaceStore } from "@/feat/workspaces/store/workspace.store";
 import { CreateWorkspaceModal } from "@/feat/workspaces/components/CreateWorkspaceModal";
+import type { Workspace } from "@/feat/workspaces/types/workspace.types";
 import {
   Tooltip,
   TooltipContent,
@@ -24,7 +25,7 @@ export function WorkspaceRail() {
   const isHomeActive =
     location.pathname.startsWith("/workspaces");
 
-  const handleWorkspaceSwitch = (workspace: any) => {
+  const handleWorkspaceSwitch = (workspace: Workspace) => {
     setActiveWorkspaceId(workspace._id);
     navigate(`/w/${workspace.slug}`);
   };
@@ -34,7 +35,7 @@ export function WorkspaceRail() {
   };
 
   return (
-    <div className="flex h-full w-[80px] shrink-0 flex-col items-center border-r border-white/5 bg-[#09090B] py-4 text-[#FAFAFA]">
+    <div className="flex h-full w-(--sidebar-width-icon) shrink-0 flex-col items-center border-r border-white/5 bg-[#09090B] py-4 text-[#FAFAFA]">
       <div className="flex w-full flex-1 flex-col items-center gap-3 overflow-y-auto no-scrollbar">
         {/* Home Button */}
         <RailItem

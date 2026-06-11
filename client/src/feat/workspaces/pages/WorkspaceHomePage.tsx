@@ -1,13 +1,11 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { 
   Hash, 
   Users, 
   MessageSquare, 
   Plus, 
-  ArrowRight, 
-  LayoutDashboard,
   Zap,
   Activity,
   ChevronRight,
@@ -54,16 +52,16 @@ export default function WorkspaceHomePage() {
 
   return (
     <PageLayout variant="full" className="h-full overflow-hidden bg-background">
-      <div className="h-full w-full overflow-y-auto no-scrollbar scroll-smooth">
+      <div className="h-full w-full overflow-y-auto no-scrollbar scroll-smooth text-left">
         
         {/* Dynamic Header Section */}
-        <section className="relative px-4 py-10 md:px-12 md:py-20 overflow-hidden border-b border-white/5 bg-gradient-to-b from-primary/[0.02] to-transparent">
+        <section className="relative px-4 py-8 md:px-8 md:py-16 lg:px-12 lg:py-20 overflow-hidden border-b border-white/5 bg-gradient-to-b from-primary/[0.02] to-transparent">
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute -top-24 -left-20 h-[500px] w-[500px] rounded-full bg-primary/5 blur-[120px] animate-pulse" />
             <div className="absolute top-40 -right-20 h-[400px] w-[400px] rounded-full bg-emerald-500/5 blur-[100px]" />
           </div>
 
-          <div className="relative z-10 flex flex-col gap-8 md:flex-row md:items-end md:justify-between max-w-[1600px] mx-auto">
+          <div className="relative z-10 flex flex-col gap-8 md:flex-row md:items-end md:justify-between max-w-7xl mx-auto">
             <div className="flex flex-col gap-6">
               <motion.div 
                 initial={{ opacity: 0, scale: 0.8 }}
@@ -116,10 +114,10 @@ export default function WorkspaceHomePage() {
           </div>
         </section>
 
-        <div className="max-w-[1600px] mx-auto px-4 py-12 md:px-12 grid gap-12">
+        <div className="max-w-7xl mx-auto px-4 py-8 md:px-8 md:py-12 lg:px-12 grid gap-12">
           
           {/* Dashboard Stats */}
-          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             <ModernStatCard 
               label="Total Channels" 
               value={rooms.length} 
@@ -321,7 +319,7 @@ function ModernStatCard({ label, value, icon, color, bg }: { label: string; valu
         </p>
       </div>
       <div className="absolute top-0 right-0 -mr-4 -mt-4 opacity-[0.02] pointer-events-none">
-        {React.cloneElement(icon as React.ReactElement, { size: 100 })}
+        {React.cloneElement(icon as React.ReactElement<{ size?: number }>, { size: 100 })}
       </div>
     </motion.div>
   );

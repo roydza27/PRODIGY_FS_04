@@ -8,7 +8,6 @@ import {
   IconUserCircle,
   IconCrown,
   IconFilter,
-  IconSortAscending,
   IconUser
 } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -24,6 +23,7 @@ import {
 import { useAuthStore } from "@/app/stores/auth.store";
 import { usePresenceStore } from "@/app/stores/presence.store";
 import { formatLastSeen } from "@/utils/date";
+import type { WorkspaceMember, WorkspaceUser } from "@/feat/workspaces/types/workspace.types";
 
 import { PageLayout } from "@/shared/components/layout/PageLayout";
 import { Button } from "@/shared/components/ui/button";
@@ -67,7 +67,7 @@ export default function WorkspaceMembersPage() {
   const { mutate: updateRole } = useUpdateMemberRole(workspaceId);
   
   const currentUser = useAuthStore(state => state.user);
-  const currentUserId = currentUser?.id || (currentUser as any)?._id;
+  const currentUserId = currentUser?.id;
   const onlineUsers = usePresenceStore(state => state.onlineUsers);
   const lastSeenMap = usePresenceStore(state => state.lastSeen);
 
@@ -80,11 +80,14 @@ export default function WorkspaceMembersPage() {
   // Dialog States
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<any>(null);
+  const [selectedMember, setSelectedMember] = useState<WorkspaceMember | null>(null);
   const [newRole, setNewRole] = useState<"owner" | "admin" | "member">("member");
 
   // Get current user's role in this workspace
-  const myMember = members.find(m => (m.userId?._id || m.userId) === currentUserId);
+  const myMember = (members as WorkspaceMember[]).find(m => {
+    const userId = typeof m.userId === "string" ? m.userId : (m.userId as WorkspaceUser)?._id;
+    return userId === currentUserId;
+  });
   const myRole = myMember?.role || "member";
   const isOwner = myRole === "owner";
   const isAdmin = myRole === "admin";
@@ -92,8 +95,9 @@ export default function WorkspaceMembersPage() {
 
   // Filtered and Sorted Members
   const filteredMembers = useMemo(() => {
-    return members.filter(member => {
-      const user = member.userId as any;
+    return (members as WorkspaceMember[]).filter(member => {
+      const user = member.userId as WorkspaceUser;
+      const userId = typeof user === "string" ? user : user?._id;
       const userName = user?.name || "";
       const userUsername = user?.username || "";
       const userEmail = user?.email || "";
@@ -107,13 +111,15 @@ export default function WorkspaceMembersPage() {
       if (!searchMatch) return false;
 
       // Filter
-      if (filter === "online") return onlineUsers.has(user?._id || user);
+      if (filter === "online") return onlineUsers.has(userId);
       if (filter !== "all") return member.role === filter;
       
       return true;
     }).sort((a, b) => {
-      const aId = a.userId?._id || a.userId;
-      const bId = b.userId?._id || b.userId;
+      const aUser = a.userId as WorkspaceUser;
+      const bUser = b.userId as WorkspaceUser;
+      const aId = typeof aUser === "string" ? (aUser as unknown as string) : aUser?._id;
+      const bId = typeof bUser === "string" ? (bUser as unknown as string) : bUser?._id;
       
       // 1. Role (Owner > Admin > Member)
       const roleOrder = { owner: 0, admin: 1, member: 2 };
@@ -127,7 +133,7 @@ export default function WorkspaceMembersPage() {
       if (aOnline !== bOnline) return aOnline ? -1 : 1;
       
       // 3. Alphabetical
-      return (a.userId?.name || "").localeCompare(b.userId?.name || "");
+      return (aUser?.name || "").localeCompare(bUser?.name || "");
     });
   }, [members, search, filter, onlineUsers]);
 
@@ -141,8 +147,9 @@ export default function WorkspaceMembersPage() {
         setInviteEmail("");
         setIsInviteOpen(false);
       },
-      onError: (err: any) => {
-        toast.error(err?.response?.data?.error || "Failed to send invitation");
+      onError: (err: unknown) => {
+        const error = err as { response?: { data?: { error?: string } } };
+        toast.error(error?.response?.data?.error || "Failed to send invitation");
       }
     });
   };
@@ -150,14 +157,17 @@ export default function WorkspaceMembersPage() {
   const handleUpdateRole = () => {
     if (!selectedMember) return;
     
-    updateRole({ memberId: selectedMember.userId?._id || selectedMember.userId, role: newRole }, {
+    const user = selectedMember.userId as WorkspaceUser;
+    const memberId = typeof user === "string" ? user : user?._id;
+    updateRole({ memberId, role: newRole }, {
       onSuccess: () => {
-        toast.success(`Role updated for ${selectedMember.userId?.name}`);
+        toast.success(`Role updated for ${user?.name}`);
         setRoleDialogOpen(false);
         setSelectedMember(null);
       },
-      onError: (err: any) => {
-        toast.error(err?.response?.data?.error || "Failed to update role");
+      onError: (err: unknown) => {
+        const error = err as { response?: { data?: { error?: string } } };
+        toast.error(error?.response?.data?.error || "Failed to update role");
       }
     });
   };
@@ -165,14 +175,17 @@ export default function WorkspaceMembersPage() {
   const handleRemoveMember = () => {
     if (!selectedMember) return;
     
-    removeMember(selectedMember.userId?._id || selectedMember.userId, {
+    const user = selectedMember.userId as WorkspaceUser;
+    const memberId = typeof user === "string" ? user : user?._id;
+    removeMember(memberId, {
       onSuccess: () => {
-        toast.success(`${selectedMember.userId?.name} removed from workspace`);
+        toast.success(`${user?.name} removed from workspace`);
         setRemoveDialogOpen(false);
         setSelectedMember(null);
       },
-      onError: (err: any) => {
-        toast.error(err?.response?.data?.error || "Failed to remove member");
+      onError: (err: unknown) => {
+        const error = err as { response?: { data?: { error?: string } } };
+        toast.error(error?.response?.data?.error || "Failed to remove member");
       }
     });
   };
@@ -263,8 +276,8 @@ export default function WorkspaceMembersPage() {
           <div className="space-y-3">
             <AnimatePresence mode="popLayout">
               {filteredMembers.map((member) => {
-                const user = member.userId as any;
-                const userId = user?._id || user;
+                const user = member.userId as WorkspaceUser;
+                const userId = user?._id || (user as unknown as string);
                 const isOnline = onlineUsers.has(userId);
                 const isMe = userId === currentUserId;
                 const lastSeenAt = lastSeenMap[userId] || user?.lastSeenAt;
@@ -447,7 +460,7 @@ export default function WorkspaceMembersPage() {
           <DialogHeader className="mb-6">
             <DialogTitle className="text-2xl font-black tracking-tight">Change Role</DialogTitle>
             <DialogDescription className="text-[15px] font-medium text-muted-foreground leading-relaxed">
-              Updating role for <span className="font-black text-foreground">{selectedMember?.userId?.name}</span>.
+              Updating role for <span className="font-black text-foreground">{(selectedMember?.userId as WorkspaceUser)?.name}</span>.
             </DialogDescription>
           </DialogHeader>
           
@@ -456,7 +469,7 @@ export default function WorkspaceMembersPage() {
               <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/60 ml-1">
                 Select New Role
               </label>
-              <Select value={newRole} onValueChange={(v) => setNewRole(v as any)}>
+              <Select value={newRole} onValueChange={(v) => setNewRole(v as "owner" | "admin" | "member")}>
                 <SelectTrigger className="h-14 rounded-2xl border-border/40 bg-muted/30 px-5 text-base font-bold">
                   <SelectValue />
                 </SelectTrigger>
@@ -494,7 +507,7 @@ export default function WorkspaceMembersPage() {
           <DialogHeader className="mb-6 text-center sm:text-left">
             <DialogTitle className="text-2xl font-black tracking-tight text-destructive">Remove Member?</DialogTitle>
             <DialogDescription className="text-[15px] font-medium text-muted-foreground leading-relaxed">
-              Are you sure you want to remove <span className="font-black text-foreground">{selectedMember?.userId?.name}</span> from this workspace? 
+              Are you sure you want to remove <span className="font-black text-foreground">{(selectedMember?.userId as WorkspaceUser)?.name}</span> from this workspace? 
               This action cannot be undone and they will lose all access immediately.
             </DialogDescription>
           </DialogHeader>

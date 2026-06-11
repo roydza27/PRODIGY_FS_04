@@ -4,6 +4,7 @@ import * as React from "react";
 
 import { useActiveWorkspace } from "@/feat/workspaces/hooks/useActiveWorkspace";
 import { useGetWorkspaceMembers } from "@/feat/workspaces/api/workspace.queries";
+import type { WorkspaceMember, WorkspaceUser } from "@/feat/workspaces/types/workspace.types";
 
 import { SidebarSection } from "@/shared/components/layout/sidebar-section";
 import { SidebarNavItem } from "@/shared/components/layout/sidebar-nav-item";
@@ -33,7 +34,7 @@ import {
 export function SidebarRight(
   props: React.ComponentProps<typeof Sidebar>
 ) {
-  const { activeWorkspace, isLoading } =
+  const { activeWorkspace } =
     useActiveWorkspace();
 
   const workspaceId = activeWorkspace?._id;
@@ -86,8 +87,8 @@ export function SidebarRight(
               No members found
             </div>
           ) : (
-            members.map((member: any) => {
-              const user = member.userId;
+            (members as WorkspaceMember[]).map((member) => {
+              const user = member.userId as WorkspaceUser;
 
               const displayName =
                 user?.displayName ||

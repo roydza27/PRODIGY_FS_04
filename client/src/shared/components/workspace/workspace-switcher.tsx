@@ -18,12 +18,13 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/shared/components/ui/sidebar"
+import { useSidebar } from "@/shared/components/ui/sidebar-context"
 import { useWorkspaceStore } from "@/feat/workspaces/store/workspace.store"
 import { useActiveWorkspace } from "@/feat/workspaces/hooks/useActiveWorkspace"
 import { useAuthStore } from "@/app/stores/auth.store"
 import { CreateWorkspaceModal } from "@/feat/workspaces/components/CreateWorkspaceModal"
+import type { Workspace } from "@/feat/workspaces/types/workspace.types";
 
 export function WorkspaceSwitcher() {
   const navigate = useNavigate();
@@ -78,7 +79,7 @@ export function WorkspaceSwitcher() {
             {/* Fixed the Trigger to use asChild */}
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton 
-                size="sg" 
+                size="lg" 
                 className="w-full justify-between hover:bg-white/5 aria-expanded:bg-white/5 aria-expanded:text-foreground text-muted-foreground transition-colors rounded-xl"
               >
                 <div className="flex items-center gap-3">

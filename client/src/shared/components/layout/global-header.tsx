@@ -2,23 +2,14 @@
 
 import React from "react";
 import {
-  Bell,
   Inbox,
   HelpCircle,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { useAuthStore } from "@/app/stores/auth.store";
 import { SidebarTrigger } from "@/shared/components/ui/sidebar";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/shared/components/ui/avatar";
 
 export function GlobalHeader() {
-  const user = useAuthStore((state) => state.user);
-
   return (
     <header className="h-12 w-full shrink-0 border-b border-white/5 bg-[#09090B] px-3 flex items-center justify-between z-50">
       {/* Left */}

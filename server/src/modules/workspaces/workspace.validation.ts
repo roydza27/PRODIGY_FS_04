@@ -1,118 +1,37 @@
-export interface CreateWorkspacePayload {
-  name: string;
-  description?: string;
-  iconUrl?: string;
-  visibility?: "invite-only" | "public";
-}
+import { z } from "zod";
 
-export interface UpdateWorkspacePayload {
-  name?: string;
-  description?: string;
-  iconUrl?: string;
-}
+export const createWorkspaceSchema = z.object({
+  name: z.string().min(2, "Workspace name must be at least 2 characters"),
+  description: z.string().optional(),
+  iconUrl: z.string().optional(),
+  visibility: z.enum(["invite-only", "public"]).default("invite-only"),
+});
 
-export interface InviteMemberPayload {
-  userId?: string;
-  email?: string;
-  role?: "admin" | "member";
-}
+export const updateWorkspaceSchema = z.object({
+  name: z.string().min(2, "Workspace name must be at least 2 characters").optional(),
+  description: z.string().optional(),
+  iconUrl: z.string().optional(),
+});
 
-export interface UpdateMemberRolePayload {
-  role: "owner" | "admin" | "member";
-}
+export const inviteMemberSchema = z.object({
+  userId: z.string().optional(),
+  email: z.string().email("Invalid email format").optional(),
+  role: z.enum(["admin", "member"]).default("member"),
+}).refine(data => data.userId || data.email, {
+  message: "User ID or Email is required",
+  path: ["userId"],
+});
 
-export interface RemoveMemberPayload {
-  memberId: string;
-}
+export const updateMemberRoleSchema = z.object({
+  role: z.enum(["owner", "admin", "member"]),
+});
 
-// Basic validation functions
-export const validateCreateWorkspace = (data: any): CreateWorkspacePayload => {
-  if (!data.name || typeof data.name !== "string" || data.name.trim().length < 2) {
-    throw "Workspace name must be at least 2 characters";
-  }
+export const removeMemberSchema = z.object({
+  memberId: z.string().min(1, "Member ID is required"),
+});
 
-  if (data.description && typeof data.description !== "string") {
-    throw "Description must be a string";
-  }
-
-  if (data.iconUrl && typeof data.iconUrl !== "string") {
-    throw "Icon URL must be a string";
-  }
-
-  if (data.visibility && !["invite-only", "public"].includes(data.visibility)) {
-    throw "Visibility must be 'invite-only' or 'public'";
-  }
-
-  return {
-    name: data.name.trim(),
-    description: data.description?.trim(),
-    iconUrl: data.iconUrl?.trim(),
-    visibility: data.visibility || "invite-only",
-  };
-};
-
-export const validateUpdateWorkspace = (data: any): UpdateWorkspacePayload => {
-  const result: UpdateWorkspacePayload = {};
-
-  if (data.name !== undefined) {
-    if (typeof data.name !== "string" || data.name.trim().length < 2) {
-      throw "Workspace name must be at least 2 characters";
-    }
-    result.name = data.name.trim();
-  }
-
-  if (data.description !== undefined) {
-    if (typeof data.description !== "string") {
-      throw "Description must be a string";
-    }
-    result.description = data.description.trim();
-  }
-
-  if (data.iconUrl !== undefined) {
-    if (typeof data.iconUrl !== "string") {
-      throw "Icon URL must be a string";
-    }
-    result.iconUrl = data.iconUrl.trim();
-  }
-
-  return result;
-};
-
-export const validateInviteMember = (data: any): InviteMemberPayload => {
-  if (!data.userId && !data.email) {
-    throw "User ID or Email is required";
-  }
-
-  if (data.email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(data.email)) {
-      throw "Invalid email format";
-    }
-  }
-
-  if (data.role && !["admin", "member"].includes(data.role)) {
-    throw "Role must be 'admin' or 'member'";
-  }
-
-  return {
-    userId: data.userId,
-    email: data.email?.toLowerCase().trim(),
-    role: data.role || "member",
-  };
-};
-
-export const validateUpdateMemberRole = (data: any): UpdateMemberRolePayload => {
-  if (!data.role || !["owner", "admin", "member"].includes(data.role)) {
-    throw "Role must be 'owner', 'admin', or 'member'";
-  }
-
-  return { role: data.role };
-};
-
-export const validateRemoveMember = (data: any): RemoveMemberPayload => {
-  if (!data.memberId || typeof data.memberId !== "string") {
-    throw "Member ID is required";
-  }
-
-  return { memberId: data.memberId };
-};
+export type CreateWorkspacePayload = z.infer<typeof createWorkspaceSchema>;
+export type UpdateWorkspacePayload = z.infer<typeof updateWorkspaceSchema>;
+export type InviteMemberPayload = z.infer<typeof inviteMemberSchema>;
+export type UpdateMemberRolePayload = z.infer<typeof updateMemberRoleSchema>;
+export type RemoveMemberPayload = z.infer<typeof removeMemberSchema>;

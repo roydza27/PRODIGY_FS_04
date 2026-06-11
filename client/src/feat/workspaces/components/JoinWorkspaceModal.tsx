@@ -35,8 +35,9 @@ export const JoinWorkspaceModal = ({ isOpen, onClose }: JoinWorkspaceModalProps)
         setWorkspaceId("");
         onClose();
       },
-      onError: (error: any) => {
-        toast.error(error?.response?.data?.error || "Failed to join workspace");
+      onError: (error: unknown) => {
+        const err = error as { response?: { data?: { error?: string } } };
+        toast.error(err?.response?.data?.error || "Failed to join workspace");
       },
     });
   };

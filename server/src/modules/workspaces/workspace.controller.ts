@@ -1,6 +1,11 @@
 import type { Response } from "express";
 import * as workspaceService from "./workspace.service";
-import * as validation from "./workspace.validation";
+import { 
+  createWorkspaceSchema, 
+  inviteMemberSchema, 
+  updateMemberRoleSchema, 
+  updateWorkspaceSchema 
+} from "./workspace.validation";
 import type { AuthRequest } from "../../types/express";
 import { socketService } from "../../services/socket.service";
 
@@ -15,7 +20,7 @@ export const createWorkspace = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const payload = validation.validateCreateWorkspace(req.body);
+    const payload = createWorkspaceSchema.parse(req.body);
     const workspace = await workspaceService.createWorkspace(userId, payload);
 
     return res.status(201).json({
@@ -141,7 +146,7 @@ export const updateWorkspace = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: "Only owner can update workspace" });
     }
 
-    const payload = validation.validateUpdateWorkspace(req.body);
+    const payload = updateWorkspaceSchema.parse(req.body);
     const updated = await workspaceService.updateWorkspace(workspaceId, payload);
 
     return res.status(200).json({
@@ -233,7 +238,7 @@ export const inviteMember = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: "Only owner or admin can invite members" });
     }
 
-    const payload = validation.validateInviteMember(req.body);
+    const payload = inviteMemberSchema.parse(req.body);
 
     const membership = await workspaceService.inviteMember(
       workspaceId,
@@ -432,7 +437,7 @@ export const updateMemberRole = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const { role: newRole } = validation.validateUpdateMemberRole(req.body);
+    const { role: newRole } = updateMemberRoleSchema.parse(req.body);
 
     // Get current roles
     const invokerRole = await workspaceService.getUserRole(workspaceId, userId);

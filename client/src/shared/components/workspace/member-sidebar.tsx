@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avat
 import { PresenceStatus } from "@/shared/components/ui/presence-status";
 import { cn } from "@/lib/utils";
 import { formatLastSeen } from "@/utils/date";
+import type { WorkspaceMember, WorkspaceUser } from "@/feat/workspaces/types/workspace.types";
 
 interface MemberSidebarProps {
   workspaceId: string;
@@ -16,9 +17,11 @@ export function MemberSidebar({ workspaceId }: MemberSidebarProps) {
   const lastSeenMap = usePresenceStore((state) => state.lastSeen);
 
   const sortedMembers = React.useMemo(() => {
-    return [...members].sort((a, b) => {
-      const aId = typeof a.userId === "string" ? a.userId : (a.userId as any)?._id;
-      const bId = typeof b.userId === "string" ? b.userId : (b.userId as any)?._id;
+    return [...(members as WorkspaceMember[])].sort((a, b) => {
+      const aUser = a.userId as WorkspaceUser;
+      const bUser = b.userId as WorkspaceUser;
+      const aId = typeof aUser === "string" ? (aUser as unknown as string) : aUser?._id;
+      const bId = typeof bUser === "string" ? (bUser as unknown as string) : bUser?._id;
       
       const aOnline = onlineUsers.has(aId);
       const bOnline = onlineUsers.has(bId);
@@ -26,8 +29,8 @@ export function MemberSidebar({ workspaceId }: MemberSidebarProps) {
       if (aOnline && !bOnline) return -1;
       if (!aOnline && bOnline) return 1;
       
-      const aName = (a.userId as any)?.name || "";
-      const bName = (b.userId as any)?.name || "";
+      const aName = aUser?.name || "";
+      const bName = bUser?.name || "";
       return aName.localeCompare(bName);
     });
   }, [members, onlineUsers]);
@@ -48,13 +51,14 @@ export function MemberSidebar({ workspaceId }: MemberSidebarProps) {
     );
   }
 
-  const onlineCount = members.filter(m => {
-    const id = typeof m.userId === "string" ? m.userId : (m.userId as any)?._id;
+  const onlineCount = (members as WorkspaceMember[]).filter(m => {
+    const user = m.userId as WorkspaceUser;
+    const id = typeof user === "string" ? user : user?._id;
     return onlineUsers.has(id);
   }).length;
 
   return (
-    <div className="flex h-full w-64 flex-col border-l border-border/30 bg-background/50">
+    <div className="flex h-full w-64 shrink-0 flex-col border-l border-border/30 bg-background/50">
       <div className="p-4 border-b border-border/30">
         <h3 className="text-[12px] font-black uppercase tracking-widest text-muted-foreground/60">
           Members — {onlineCount}/{members.length}
@@ -64,8 +68,8 @@ export function MemberSidebar({ workspaceId }: MemberSidebarProps) {
       <div className="flex-1 overflow-y-auto no-scrollbar p-2">
         <div className="space-y-1 text-left">
           {sortedMembers.map((member) => {
-            const user = member.userId as any;
-            const userId = user?._id || user;
+            const user = member.userId as WorkspaceUser;
+            const userId = typeof user === "string" ? user : user?._id;
             const isOnline = onlineUsers.has(userId);
             const lastSeenAt = lastSeenMap[userId] || user?.lastSeenAt;
 

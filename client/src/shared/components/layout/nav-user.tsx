@@ -19,7 +19,7 @@ import { PresenceStatus } from "@/shared/components/ui/presence-status";
 type NavUserItem = {
   label: string;
   url: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon?: React.ComponentType<{ className?: string }>;
 };
 
 type NavUserProps = {
@@ -33,7 +33,7 @@ type NavUserProps = {
 };
 
 export function NavUser({ user, onLogout, items = [] }: NavUserProps) {
-  const userId = useAuthStore(state => state.user?.id || (state.user as any)?._id);
+  const userId = useAuthStore(state => state.user?.id || "");
   const isOnline = usePresenceStore(state => state.onlineUsers.has(userId));
 
   return (
@@ -113,7 +113,7 @@ export function NavUser({ user, onLogout, items = [] }: NavUserProps) {
                 className="cursor-pointer focus:bg-white/10 focus:text-white"
               >
                 <Link to={item.url} className="flex items-center gap-2">
-                  <Icon className="size-4 shrink-0" />
+                  {Icon && <Icon className="size-4 shrink-0" />}
                   <span>{item.label}</span>
                 </Link>
               </DropdownMenuItem>
