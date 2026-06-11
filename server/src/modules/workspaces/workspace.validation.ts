@@ -12,7 +12,8 @@ export interface UpdateWorkspacePayload {
 }
 
 export interface InviteMemberPayload {
-  userId: string;
+  userId?: string;
+  email?: string;
   role?: "admin" | "member";
 }
 
@@ -78,8 +79,15 @@ export const validateUpdateWorkspace = (data: any): UpdateWorkspacePayload => {
 };
 
 export const validateInviteMember = (data: any): InviteMemberPayload => {
-  if (!data.userId || typeof data.userId !== "string") {
-    throw "User ID is required";
+  if (!data.userId && !data.email) {
+    throw "User ID or Email is required";
+  }
+
+  if (data.email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(data.email)) {
+      throw "Invalid email format";
+    }
   }
 
   if (data.role && !["admin", "member"].includes(data.role)) {
@@ -88,6 +96,7 @@ export const validateInviteMember = (data: any): InviteMemberPayload => {
 
   return {
     userId: data.userId,
+    email: data.email?.toLowerCase().trim(),
     role: data.role || "member",
   };
 };

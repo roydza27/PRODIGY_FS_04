@@ -7,7 +7,7 @@ import type {
 } from "../types/workspace.types";
 
 // Query keys
-const workspaceKeys = {
+export const workspaceKeys = {
   all: ["workspaces"] as const,
   lists: () => [...workspaceKeys.all, "list"] as const,
   list: (userId: string) => [...workspaceKeys.lists(), { userId }] as const,
@@ -61,7 +61,7 @@ export const useGetWorkspace = (workspaceId: string, enabled = true) => {
   return useQuery({
     queryKey: workspaceKeys.detail(workspaceId),
     queryFn: () => workspaceApi.getWorkspaceApi(workspaceId),
-    enabled,
+    enabled: enabled && !!workspaceId,
     staleTime: 5 * 60 * 1000,
   });
 };
@@ -73,7 +73,7 @@ export const useGetWorkspaceMembers = (workspaceId: string, enabled = true) => {
   return useQuery({
     queryKey: workspaceKeys.membersList(workspaceId),
     queryFn: () => workspaceApi.getWorkspaceMembersApi(workspaceId),
-    enabled,
+    enabled: enabled && !!workspaceId,
     staleTime: 2 * 60 * 1000,
   });
 };
@@ -176,6 +176,34 @@ export const useUpdateMemberRole = (workspaceId: string) => {
       workspaceApi.updateMemberRoleApi(workspaceId, memberId, role),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: workspaceKeys.membersList(workspaceId) });
+    },
+  });
+};
+
+/**
+ * Mutation: Leave workspace
+ */
+export const useLeaveWorkspace = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (workspaceId: string) => workspaceApi.leaveWorkspaceApi(workspaceId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: workspaceKeys.lists() });
+    },
+  });
+};
+
+/**
+ * Mutation: Delete workspace
+ */
+export const useDeleteWorkspace = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ workspaceId }: { workspaceId: string }) => workspaceApi.deleteWorkspaceApi(workspaceId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: workspaceKeys.lists() });
     },
   });
 };

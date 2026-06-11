@@ -28,16 +28,6 @@ export const workspaceSidebarData: SidebarData = {
       url: "/members",
       icon: IconUsers,
     },
-    {
-      title: "Invites",
-      url: "/invites",
-      icon: IconUserPlus,
-    },
-    {
-      title: "Permissions",
-      url: "/permissions",
-      icon: IconShield,
-    },
   ],
 
   userMenu: [

@@ -15,9 +15,16 @@ router.get("/search", workspaceController.searchWorkspaces);
 router.get("/invites", workspaceController.getPendingInvites);
 router.get("/:workspaceId", workspaceController.getWorkspace);
 router.patch("/:workspaceId", workspaceController.updateWorkspace);
+router.delete("/:workspaceId", workspaceController.deleteWorkspace);
+router.post("/:workspaceId/leave", workspaceController.leaveWorkspace);
 
-// Members
+// Members & Invites
 router.get("/:workspaceId/members", workspaceController.getMembers);
+router.post("/:workspaceId/members/invite", workspaceController.inviteMember);
+router.delete("/:workspaceId/members/:memberId", workspaceController.removeMember);
+router.patch("/:workspaceId/members/:memberId", workspaceController.updateMemberRole);
+
+// Legacy/Compatibility Invite Actions (kept for safety if frontend uses them)
 router.post("/:workspaceId/invite", workspaceController.inviteMember);
 router.post("/:workspaceId/accept-invite", workspaceController.acceptInvite);
 router.post("/:workspaceId/decline-invite", workspaceController.declineInvite);

@@ -15,8 +15,6 @@ import type {
   GetMembersResponse,
   InviteMemberResponse,
   AcceptInviteResponse,
-  RemoveMemberResponse,
-  UpdateMemberRoleResponse,
 } from "../types/workspace.api-types";
 
 /**
@@ -86,7 +84,7 @@ export const inviteMemberApi = async (
   workspaceId: string,
   payload: InviteMemberPayload
 ): Promise<void> => {
-  await api.post<InviteMemberResponse>(`/workspaces/${workspaceId}/invite`, payload);
+  await api.post<InviteMemberResponse>(`/workspaces/${workspaceId}/members/invite`, payload);
 };
 
 /**
@@ -118,7 +116,14 @@ export const removeMemberApi = async (
   workspaceId: string,
   memberId: string
 ): Promise<void> => {
-  await api.post<RemoveMemberResponse>(`/workspaces/${workspaceId}/remove-member`, { memberId });
+  await api.delete(`/workspaces/${workspaceId}/members/${memberId}`);
+};
+
+/**
+ * Leave workspace
+ */
+export const leaveWorkspaceApi = async (workspaceId: string): Promise<void> => {
+  await api.post(`/workspaces/${workspaceId}/leave`);
 };
 
 /**
@@ -129,8 +134,15 @@ export const updateMemberRoleApi = async (
   memberId: string,
   role: "owner" | "admin" | "member"
 ): Promise<void> => {
-  await api.patch<UpdateMemberRoleResponse>(
-    `/workspaces/${workspaceId}/members/role`,
-    { memberId, role }
+  await api.patch(
+    `/workspaces/${workspaceId}/members/${memberId}`,
+    { role }
   );
+};
+
+/**
+ * Delete workspace
+ */
+export const deleteWorkspaceApi = async (workspaceId: string): Promise<void> => {
+  await api.delete(`/workspaces/${workspaceId}`);
 };

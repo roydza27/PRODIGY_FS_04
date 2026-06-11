@@ -2,6 +2,7 @@ import type { Response } from "express";
 import * as workspaceService from "./workspace.service";
 import * as validation from "./workspace.validation";
 import type { AuthRequest } from "../../types/express";
+import { socketService } from "../../services/socket.service";
 
 /**
  * POST /api/workspaces
@@ -153,6 +154,36 @@ export const updateWorkspace = async (req: AuthRequest, res: Response) => {
 };
 
 /**
+ * DELETE /api/workspaces/:workspaceId
+ * Delete workspace (owner only)
+ */
+export const deleteWorkspace = async (req: AuthRequest, res: Response) => {
+  try {
+    const workspaceId = req.params.workspaceId as string;
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    // Check if user is owner
+    const role = await workspaceService.getUserRole(workspaceId, userId);
+    if (role !== "owner") {
+      return res.status(403).json({ error: "Only owner can delete workspace" });
+    }
+
+    await workspaceService.deleteWorkspace(workspaceId);
+
+    return res.status(200).json({
+      success: true,
+      data: { message: "Workspace deleted successfully" },
+    });
+  } catch (error) {
+    return res.status(400).json({ error: String(error) });
+  }
+};
+
+/**
  * GET /api/workspaces/:workspaceId/members
  * Get workspace members
  */
@@ -204,13 +235,19 @@ export const inviteMember = async (req: AuthRequest, res: Response) => {
 
     const payload = validation.validateInviteMember(req.body);
 
-
     const membership = await workspaceService.inviteMember(
       workspaceId,
-      payload.userId,
       userId,
-      payload.role
+      payload
     );
+
+    // Notify specific user if possible
+    if (membership.userId) {
+      socketService.emitToRoom(`user:${membership.userId}`, "workspace:invited", {
+        workspaceId,
+        invitedBy: userId
+      });
+    }
 
     return res.status(201).json({
       success: true,
@@ -235,6 +272,12 @@ export const acceptInvite = async (req: AuthRequest, res: Response) => {
     }
 
     const membership = await workspaceService.acceptInvite(workspaceId, userId);
+
+    // Notify workspace members that someone joined
+    socketService.emitToRoom(`workspace:${workspaceId}`, "workspace:member-joined", {
+      workspaceId,
+      userId
+    });
 
     return res.status(200).json({
       success: true,
@@ -270,33 +313,56 @@ export const declineInvite = async (req: AuthRequest, res: Response) => {
 };
 
 /**
- * POST /api/workspaces/:workspaceId/remove-member
+ * DELETE /api/workspaces/:workspaceId/members/:memberId
  * Remove member from workspace (owner/admin only)
  */
 export const removeMember = async (req: AuthRequest, res: Response) => {
   try {
     const workspaceId = req.params.workspaceId as string;
     const userId = req.user?.userId;
+    const memberId = req.params.memberId as string;
 
     if (!userId) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const { memberId } = validation.validateRemoveMember(req.body);
-
-    // Check permission
-    const role = await workspaceService.getUserRole(workspaceId, userId);
-    if (!role || !["owner", "admin"].includes(role)) {
+    // Check invoker permission
+    const invokerRole = await workspaceService.getUserRole(workspaceId, userId);
+    if (!invokerRole || !["owner", "admin"].includes(invokerRole)) {
       return res.status(403).json({ error: "Only owner or admin can remove members" });
     }
 
+    // Target member check
+    const targetRole = await workspaceService.getUserRole(workspaceId, memberId);
+    if (!targetRole) {
+      return res.status(404).json({ error: "Member not found" });
+    }
+
     // Cannot remove owner
-    const memberRole = await workspaceService.getUserRole(workspaceId, memberId);
-    if (memberRole === "owner") {
+    if (targetRole === "owner") {
       return res.status(403).json({ error: "Cannot remove workspace owner" });
     }
 
+    // Admins cannot remove other admins (only owners can)
+    if (invokerRole === "admin" && targetRole === "admin") {
+      return res.status(403).json({ error: "Admins cannot remove other admins" });
+    }
+
+    // Cannot remove yourself accidentally
+    if (userId === memberId) {
+      return res.status(400).json({ error: "Use leave workspace instead" });
+    }
+
     await workspaceService.removeMember(workspaceId, memberId);
+
+    // Notify workspace and specific user
+    socketService.emitToRoom(`workspace:${workspaceId}`, "workspace:member-removed", {
+      workspaceId,
+      userId: memberId
+    });
+    socketService.emitToRoom(`user:${memberId}`, "workspace:removed", {
+      workspaceId
+    });
 
     return res.status(200).json({
       success: true,
@@ -309,10 +375,10 @@ export const removeMember = async (req: AuthRequest, res: Response) => {
 
 
 /**
- * PATCH /api/workspaces/:workspaceId/members/role
- * Update member role (owner only)
+ * POST /api/workspaces/:workspaceId/leave
+ * User leaves workspace
  */
-export const updateMemberRole = async (req: AuthRequest, res: Response) => {
+export const leaveWorkspace = async (req: AuthRequest, res: Response) => {
   try {
     const workspaceId = req.params.workspaceId as string;
     const userId = req.user?.userId;
@@ -321,16 +387,87 @@ export const updateMemberRole = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    // Expect memberId AND role in body
-    const { memberId, role: newRole } = req.body;
-    if (!memberId || !newRole || !["owner", "admin", "member"].includes(newRole)) {
-      return res.status(400).json({ error: "Member ID and valid role required" });
+    // Check role - owners cannot leave without transferring ownership
+    const role = await workspaceService.getUserRole(workspaceId, userId);
+
+    if (!role) {
+      return res.status(404).json({ error: "Membership not found" });
     }
 
-    // Only owner can change roles
-    const userRole = await workspaceService.getUserRole(workspaceId, userId);
-    if (userRole !== "owner") {
-      return res.status(403).json({ error: "Only owner can change member roles" });
+    if (role === "owner") {
+      return res.status(400).json({ 
+        error: "Owners cannot leave the workspace. Transfer ownership or delete the workspace instead." 
+      });
+    }
+
+    await workspaceService.removeMember(workspaceId, userId);
+
+    // Notify workspace
+    socketService.emitToRoom(`workspace:${workspaceId}`, "workspace:member-removed", {
+      workspaceId,
+      userId
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: { message: "Successfully left the workspace" },
+    });
+  } catch (error) {
+    return res.status(400).json({ error: String(error) });
+  }
+};
+
+
+/**
+ * PATCH /api/workspaces/:workspaceId/members/:memberId
+ * Update member role (owner/admin only)
+ */
+export const updateMemberRole = async (req: AuthRequest, res: Response) => {
+  try {
+    const workspaceId = req.params.workspaceId as string;
+    const userId = req.user?.userId;
+    const memberId = req.params.memberId as string;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const { role: newRole } = validation.validateUpdateMemberRole(req.body);
+
+    // Get current roles
+    const invokerRole = await workspaceService.getUserRole(workspaceId, userId);
+    const targetRole = await workspaceService.getUserRole(workspaceId, memberId);
+
+    if (!invokerRole) {
+      return res.status(403).json({ error: "Access denied" });
+    }
+
+    if (!targetRole) {
+      return res.status(404).json({ error: "Member not found" });
+    }
+
+    // Owners can do anything (except demote themselves without transferring ownership)
+    if (invokerRole === "owner") {
+      if (userId === memberId && newRole !== "owner") {
+        return res.status(400).json({ error: "Transfer ownership before changing your role" });
+      }
+    } 
+    // Admins can manage Member roles
+    else if (invokerRole === "admin") {
+      // Cannot manage Owner
+      if (targetRole === "owner") {
+        return res.status(403).json({ error: "Cannot modify Owner role" });
+      }
+      // Cannot promote to Owner
+      if (newRole === "owner") {
+        return res.status(403).json({ error: "Only Owner can promote to Owner" });
+      }
+      // Cannot manage other Admins
+      if (targetRole === "admin") {
+        return res.status(403).json({ error: "Only Owner can modify Admin roles" });
+      }
+    } else {
+      return res.status(403).json({ error: "Only Owner or Admin can manage roles" });
     }
 
     const membership = await workspaceService.updateMemberRole(
@@ -338,6 +475,13 @@ export const updateMemberRole = async (req: AuthRequest, res: Response) => {
       memberId,
       newRole
     );
+
+    // Notify workspace
+    socketService.emitToRoom(`workspace:${workspaceId}`, "workspace:member-updated", {
+      workspaceId,
+      userId: memberId,
+      role: newRole
+    });
 
     return res.status(200).json({
       success: true,

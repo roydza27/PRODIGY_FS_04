@@ -16,6 +16,7 @@ import ResetPasswordPage from "@/feat/auth/pages/ResetPasswordPage";
 import WorkspaceListPage from "@/feat/workspaces/pages/WorkspaceListPage";
 import WorkspaceHomePage from "@/feat/workspaces/pages/WorkspaceHomePage";
 import WorkspaceSettingsPage from "@/feat/workspaces/pages/WorkspaceSettingsPage";
+import WorkspaceMembersPage from "@/feat/workspaces/pages/WorkspaceMembersPage";
 
 import InvitesPage from "@/feat/workspaces/pages/InvitesPage";
 import SearchPage from "@/feat/workspaces/pages/SearchPage";
@@ -87,6 +88,11 @@ export default function AppRouter() {
           <Route
             path="/w/:workspaceSlug/settings"
             element={<WorkspaceSettingsPage />}
+          />
+
+          <Route
+            path="/w/:workspaceSlug/members"
+            element={<WorkspaceMembersPage />}
           />
         </Route>
       </Route>
