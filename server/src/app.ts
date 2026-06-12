@@ -6,6 +6,8 @@ import workspaceRouter from "./modules/workspaces/workspace.routes";
 import conversationGlobalRouter from "./modules/conversations/conversation-global.routes";
 import userRouter from "./modules/users/user.routes";
 import { messageRoutes } from "./modules/messages";
+import uploadRouter from "./modules/upload/upload.routes";
+import path from "path";
 
 const app = express();
 
@@ -17,6 +19,8 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -36,5 +40,6 @@ app.use("/api/conversations", conversationGlobalRouter);
 app.use("/api/users", userRouter);
 app.use("/api/workspaces", workspaceRouter);
 app.use("/api/messages", messageRoutes);
+app.use("/api/upload", uploadRouter);
 
 export default app;
