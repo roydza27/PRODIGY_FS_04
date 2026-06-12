@@ -3,6 +3,7 @@ import { OAuth2Client } from "google-auth-library";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import { env } from "../../config/env";
+import { logger } from "../../utils/logger";
 import { signAccessToken } from "../../services/jwt.service";
 import { UserModel } from "../users/user.model";
 import type { UserDocument } from "../users/user.types";
@@ -270,9 +271,9 @@ export const forgotPassword = async (email: string): Promise<void> => {
   // 6. Send the Email
   try {
     await transporter.sendMail(mailOptions);
-    console.log(`[Success] Recovery email sent to: ${user.email}`);
+    logger.info(`Recovery email sent to: ${user.email}`);
   } catch (error) {
-    console.error("SMTP Error: ", error);
+    logger.error("SMTP Error: ", error as Error);
     throw new Error("Failed to send recovery email. Please try again later.", { cause: error });
   }
 };

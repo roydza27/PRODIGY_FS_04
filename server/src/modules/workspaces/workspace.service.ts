@@ -71,7 +71,7 @@ export const getPendingInvites = async (userId: string) => {
 export const getWorkspace = async (workspaceId: string) => {
   const workspace = await workspaceRepository.findWorkspaceById(workspaceId);
   if (!workspace) {
-    throw "Workspace not found";
+    throw new Error("Workspace not found");
   }
   return workspace;
 };
@@ -96,23 +96,23 @@ export const inviteMember = async (
   if (!userId && input.email) {
     const user = await userService.findUserByEmail(input.email);
     if (!user) {
-      throw "User not found with this email";
+      throw new Error("User not found with this email");
     }
     userId = user._id.toString();
   }
 
   if (!userId) {
-    throw "User ID or Email is required";
+    throw new Error("User ID or Email is required");
   }
 
   const existing = await membershipRepository.findMembership(workspaceId, userId);
 
   if (existing?.status === "active") {
-    throw "User is already a member of this workspace";
+    throw new Error("User is already a member of this workspace");
   }
 
   if (existing?.status === "invited") {
-    throw "User has already been invited";
+    throw new Error("User has already been invited");
   }
 
   const role = input.role || "member";
@@ -129,7 +129,7 @@ export const inviteMember = async (
     );
 
     if (!updated) {
-      throw "Failed to reinvite user";
+      throw new Error("Failed to reinvite user");
     }
 
     return updated;
@@ -151,15 +151,15 @@ export const acceptInvite = async (workspaceId: string, userId: string) => {
   const membership = await membershipRepository.findMembership(workspaceId, userId);
 
   if (!membership) {
-    throw "No invitation found for this workspace";
+    throw new Error("No invitation found for this workspace");
   }
 
   if (membership.status === "active") {
-    throw "You are already a member of this workspace";
+    throw new Error("You are already a member of this workspace");
   }
 
   if (membership.status === "blocked") {
-    throw "You are blocked from this workspace";
+    throw new Error("You are blocked from this workspace");
   }
 
   const updated = await membershipRepository.updateMembershipByUserAndWorkspace(
@@ -169,7 +169,7 @@ export const acceptInvite = async (workspaceId: string, userId: string) => {
   );
 
   if (!updated) {
-    throw "Failed to accept invitation";
+    throw new Error("Failed to accept invitation");
   }
 
   await workspaceRepository.recalculateMemberCount(workspaceId);
@@ -184,7 +184,7 @@ export const declineInvite = async (workspaceId: string, userId: string) => {
   const membership = await membershipRepository.findMembership(workspaceId, userId);
 
   if (!membership || membership.status !== "invited") {
-    throw "No pending invitation found for this workspace";
+    throw new Error("No pending invitation found for this workspace");
   }
 
   return membershipRepository.removeMembership(workspaceId, userId);
@@ -197,7 +197,7 @@ export const removeMember = async (workspaceId: string, userId: string) => {
   const existing = await membershipRepository.findMembership(workspaceId, userId);
 
   if (!existing) {
-    throw "Member not found in workspace";
+    throw new Error("Member not found in workspace");
   }
 
   const wasActive = existing.status === "active";
@@ -205,7 +205,7 @@ export const removeMember = async (workspaceId: string, userId: string) => {
   const membership = await membershipRepository.removeMembership(workspaceId, userId);
 
   if (!membership) {
-    throw "Failed to remove member";
+    throw new Error("Failed to remove member");
   }
 
   if (wasActive) {
@@ -230,7 +230,7 @@ export const updateMemberRole = async (
   );
 
   if (!updated) {
-    throw "Member not found";
+    throw new Error("Member not found");
   }
 
   return updated;
@@ -246,7 +246,7 @@ export const updateWorkspace = async (
   const updated = await workspaceRepository.updateWorkspace(workspaceId, input);
 
   if (!updated) {
-    throw "Workspace not found";
+    throw new Error("Workspace not found");
   }
 
   return updated;
@@ -260,7 +260,7 @@ export const deleteWorkspace = async (workspaceId: string) => {
   const deleted = await workspaceRepository.deleteWorkspace(workspaceId);
 
   if (!deleted) {
-    throw "Workspace not found";
+    throw new Error("Workspace not found");
   }
 
   return deleted;
