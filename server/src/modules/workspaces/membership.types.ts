@@ -12,7 +12,7 @@ export interface IMembership {
   removedAt?: Date | null;
   nickname?: string;
   lastSeenAt?: Date | null;
-  lastReadAt?: Date | null;
+  roomLastRead?: Record<string, Date>;
   mutedUntil?: Date | null;
   createdAt: Date;
   updatedAt: Date;

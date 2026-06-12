@@ -129,7 +129,7 @@ export const getWorkspace = async (req: AuthRequest, res: Response) => {
 
 /**
  * PATCH /api/workspaces/:workspaceId
- * Update workspace (owner only)
+ * Update workspace (admin+ only)
  */
 export const updateWorkspace = async (req: AuthRequest, res: Response) => {
   try {
@@ -140,10 +140,10 @@ export const updateWorkspace = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    // Check if user is owner
+    // Check if user is owner or admin
     const role = await workspaceService.getUserRole(workspaceId, userId);
-    if (role !== "owner") {
-      return res.status(403).json({ error: "Only owner can update workspace" });
+    if (!role || !["owner", "admin"].includes(role)) {
+      return res.status(403).json({ error: "Only owner or admin can update workspace settings" });
     }
 
     const payload = updateWorkspaceSchema.parse(req.body);

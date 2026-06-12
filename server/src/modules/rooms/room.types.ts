@@ -10,6 +10,8 @@ export interface IRoom extends Document {
   isDefault: boolean;
   createdBy: Types.ObjectId;
   status: "active" | "archived";
+  lastMessageAt?: Date;
+  lastMessage?: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }

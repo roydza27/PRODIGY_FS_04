@@ -35,6 +35,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/shared/components/ui/alert-dialog";
+import { cn } from "@/lib/utils";
 
 export default function WorkspaceSettingsPage() {
   const navigate = useNavigate();
@@ -50,6 +51,8 @@ export default function WorkspaceSettingsPage() {
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
+  const [visibility, setVisibility] = useState<"public" | "private">("private");
   const [isEdited, setIsEdited] = useState(false);
 
   // Find current user's role
@@ -58,6 +61,7 @@ export default function WorkspaceSettingsPage() {
     return userId === currentUserId;
   });
   const isOwner = myMembership?.role === "owner";
+  const isAdmin = myMembership?.role === "admin" || isOwner;
 
   useEffect(() => {
     if (activeWorkspace) {
@@ -67,18 +71,31 @@ export default function WorkspaceSettingsPage() {
           const next = activeWorkspace.description || "";
           return prev !== next ? next : prev;
         });
+        setLogoUrl(prev => {
+          const next = (activeWorkspace as Record<string, unknown>).logoUrl as string || "";
+          return prev !== next ? next : prev;
+        });
+        setVisibility(prev => {
+          const next = (activeWorkspace as Record<string, unknown>).visibility as "public" | "private" || "private";
+          return prev !== next ? next : prev;
+        });
         setIsEdited(false);
       }, 0);
     }
   }, [activeWorkspace]);
 
   const handleUpdate = () => {
+    if (!isAdmin) {
+      toast.error("You do not have permission to update settings");
+      return;
+    }
+
     if (!name.trim()) {
       toast.error("Workspace name is required");
       return;
     }
 
-    updateWorkspace({ name, description }, {
+    updateWorkspace({ name, description, logoUrl, visibility } as Parameters<typeof updateWorkspace>[0], {
       onSuccess: () => {
         toast.success("Workspace updated successfully");
         setIsEdited(false);
@@ -91,6 +108,11 @@ export default function WorkspaceSettingsPage() {
   };
 
   const handleDelete = () => {
+    if (!isOwner) {
+      toast.error("Only the owner can delete the workspace");
+      return;
+    }
+
     deleteWorkspace({ workspaceId }, {
       onSuccess: () => {
         toast.success("Workspace deleted successfully");
@@ -168,6 +190,7 @@ export default function WorkspaceSettingsPage() {
               </label>
               <Input 
                 value={name} 
+                disabled={!isAdmin}
                 onChange={(e) => {
                   setName(e.target.value);
                   setIsEdited(true);
@@ -183,6 +206,7 @@ export default function WorkspaceSettingsPage() {
               </label>
               <Textarea 
                 value={description}
+                disabled={!isAdmin}
                 onChange={(e) => {
                   setDescription(e.target.value);
                   setIsEdited(true);
@@ -192,13 +216,72 @@ export default function WorkspaceSettingsPage() {
               />
             </div>
 
-            <div className="flex justify-end pt-2">
+            <div className="space-y-4">
+              <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/60 ml-1">
+                Workspace Identity (Logo)
+              </label>
+              <div className="flex items-center gap-6 p-4 rounded-2xl border border-border/20 bg-muted/20">
+                <div className="h-20 w-20 shrink-0 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/10 overflow-hidden shadow-inner">
+                  {logoUrl ? (
+                    <img src={logoUrl} alt="Preview" className="h-full w-full object-cover" onError={() => setLogoUrl("")} />
+                  ) : (
+                    <span className="text-3xl font-black text-primary/40">{name?.charAt(0)?.toUpperCase() || "W"}</span>
+                  )}
+                </div>
+                <div className="flex-1 space-y-2">
+                  <Input 
+                    value={logoUrl} 
+                    disabled={!isAdmin}
+                    onChange={(e) => {
+                      setLogoUrl(e.target.value);
+                      setIsEdited(true);
+                    }}
+                    placeholder="https://example.com/logo.png"
+                    className="h-10 rounded-xl border-border/40 bg-background/50 px-4 text-[13px] font-bold focus:ring-primary/20"
+                  />
+                  <p className="text-[10px] font-medium text-muted-foreground/40 px-1 uppercase tracking-tighter">Enter a direct image URL (PNG, JPG, SVG)</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/60 ml-1">
+                Visibility
+              </label>
+              <div className="flex gap-4 p-1 rounded-2xl bg-muted/20 border border-border/20 w-fit">
+                {["private", "public"].map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    disabled={!isAdmin}
+                    onClick={() => {
+                      setVisibility(v as "public" | "private");
+                      setIsEdited(true);
+                    }}
+                    className={cn(
+                      "px-6 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all",
+                      visibility === v 
+                        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" 
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-4">
               <Button 
-                disabled={!isEdited || isUpdating}
+                disabled={!isEdited || isUpdating || !isAdmin}
                 onClick={handleUpdate}
                 className="rounded-xl h-11 px-8 font-black shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-30 disabled:scale-100"
               >
-                <Save className="mr-2 h-4 w-4" strokeWidth={2.5} />
+                {isUpdating ? (
+                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                ) : (
+                  <Save className="mr-2 h-4 w-4" strokeWidth={2.5} />
+                )}
                 {isUpdating ? "Saving..." : "Save Changes"}
               </Button>
             </div>
