@@ -1,14 +1,22 @@
 import { io, Socket } from "socket.io-client";
 
-const SOCKET_URL =
-  import.meta.env.VITE_SOCKET_URL ??
-  "http://localhost:5000";
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL;
+
+if (!SOCKET_URL) {
+  throw new Error("VITE_SOCKET_URL is not defined");
+}
 
 export interface SendMessagePayload {
   workspaceId?: string;
   roomId?: string;
   conversationId?: string;
   text: string;
+  attachments?: Array<{
+    url: string;
+    name: string;
+    type: string;
+    size: number;
+  }>;
 }
 
 class SocketService {
@@ -140,10 +148,12 @@ class SocketService {
   sendMessage(
     payload: SendMessagePayload
   ) {
-    console.log(
-      "[CLIENT] Sending",
-      payload
-    );
+    if (import.meta.env.DEV) {
+      console.log(
+        "[CLIENT] Sending",
+        payload
+      );
+    }
 
     if (!this.socket.connected) {
       console.warn(

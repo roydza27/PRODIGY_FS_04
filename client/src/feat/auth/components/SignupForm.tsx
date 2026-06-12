@@ -5,6 +5,10 @@ import { Link } from "react-router-dom";
 import GoogleLoginButton from "./GoogleLoginButton";
 import AuthCard from "./AuthCard";
 import { useSignupForm } from "../hooks/useSignupForm";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { Checkbox } from "@/shared/components/ui/checkbox";
+import { Label } from "@/shared/components/ui/label";
 
 export default function SignupForm() {
   const { signup, loading, error } = useSignupForm();
@@ -30,143 +34,113 @@ export default function SignupForm() {
   };
 
   return (
-    <AuthCard
-      title="Create an account"
-      description="Sign up to get instant access to your dashboard."
-    >
-      <form className="space-y-6" onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="name" className="mb-2 block text-left text-sm font-medium text-zinc-400">
-            Name
-          </label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            placeholder="John Doe"
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full rounded-2xl border border-white/10 bg-black/30 px-3 py-2.5 text-sm text-white outline-none placeholder:text-zinc-600 focus:ring-2 focus:ring-[#DB4444]/60"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="username" className="mb-2 block text-left text-sm font-medium text-zinc-400">
-            Username
-          </label>
-          <input
-            type="text"
-            id="username"
-            name="username"
-            placeholder="johndoe123"
-            required
-            value={username}
-            onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s+/g, ""))}
-            className="w-full rounded-2xl border border-white/10 bg-black/30 px-3 py-2.5 text-sm text-white outline-none placeholder:text-zinc-600 focus:ring-2 focus:ring-[#DB4444]/60"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="email" className="mb-2 block text-left text-sm font-medium text-zinc-400">
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            placeholder="john@example.com"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-2xl border border-white/10 bg-black/30 px-3 py-2.5 text-sm text-white outline-none placeholder:text-zinc-600 focus:ring-2 focus:ring-[#DB4444]/60"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="password" className="mb-2 block text-left text-sm font-medium text-zinc-400">
-            Password
-          </label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            placeholder="••••••••"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-2xl border border-white/10 bg-black/30 px-3 py-2.5 text-sm text-white outline-none placeholder:text-zinc-600 focus:ring-2 focus:ring-[#DB4444]/60"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="confirm-password" className="mb-2 block text-left text-sm font-medium text-zinc-400">
-            Confirm password
-          </label>
-          <input
-            type="password"
-            id="confirm-password"
-            name="confirm-password"
-            placeholder="••••••••"
-            required
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full rounded-2xl border border-white/10 bg-black/30 px-3 py-2.5 text-sm text-white outline-none placeholder:text-zinc-600 focus:ring-2 focus:ring-[#DB4444]/60"
-          />
-        </div>
-
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          <label className="flex cursor-pointer items-center">
-            <input
-              id="tmc"
-              name="tmc"
-              type="checkbox"
-              checked={acceptTerms}
-              onChange={(e) => setAcceptTerms(e.target.checked)}
-              className="h-4 w-4 rounded border-white/10 bg-black/30 text-[#DB4444] focus:ring-[#DB4444]/60"
+    <div className="w-full max-w-sm mx-auto">
+      <AuthCard
+        title="Create an account"
+        description="Join our professional community today."
+      >
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          <div className="space-y-2">
+            <Label htmlFor="name">Full Name</Label>
+            <Input
+              type="text"
+              id="name"
+              placeholder="John Doe"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
-            <span className="ml-3 text-sm text-zinc-400">I accept the</span>
-          </label>
+          </div>
 
-          <a
-            href="/terms"
-            className="text-sm font-medium text-zinc-200 transition-colors hover:text-white hover:underline"
-          >
-            Terms and Conditions
-          </a>
-        </div>
+          <div className="space-y-2">
+            <Label htmlFor="username">Username</Label>
+            <Input
+              type="text"
+              id="username"
+              placeholder="johndoe123"
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s+/g, ""))}
+            />
+          </div>
 
-        {error ? <p className="text-center text-sm text-red-400">{error}</p> : null}
+          <div className="space-y-2">
+            <Label htmlFor="email">Email address</Label>
+            <Input
+              type="email"
+              id="email"
+              placeholder="name@example.com"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
 
-        <div className="space-y-4">
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-2xl bg-[#DB4444] px-4 py-2.5 text-sm font-semibold tracking-wide text-white transition-colors hover:bg-[#c53a3a] focus:outline-none focus:ring-2 focus:ring-[#DB4444]/60 disabled:opacity-60"
-          >
-            {loading ? "Creating account..." : "Create an account"}
-          </button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                type="password"
+                id="password"
+                placeholder="••••••••"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">Confirm</Label>
+              <Input
+                type="password"
+                id="confirm-password"
+                placeholder="••••••••"
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
+          </div>
 
-          <div className="relative flex items-center justify-center py-2">
-            <div className="absolute w-full border-t border-white/5" />
-            <span className="relative bg-[#111113] px-3 text-xs uppercase tracking-widest text-zinc-600">
-              or
-            </span>
+          <div className="flex items-center space-x-2 py-1">
+            <Checkbox
+              id="terms"
+              checked={acceptTerms}
+              onCheckedChange={(checked) => setAcceptTerms(checked === true)}
+              required
+            />
+            <Label htmlFor="terms" className="text-sm font-normal text-muted-foreground">
+              I accept the{" "}
+              <Link to="/terms" className="text-primary hover:underline">
+                Terms and Conditions
+              </Link>
+            </Label>
+          </div>
+
+          {error && <p className="text-sm text-destructive text-center">{error}</p>}
+
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Creating account..." : "Create account"}
+          </Button>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+            </div>
           </div>
 
           <GoogleLoginButton />
-        </div>
 
-        <div className="text-center text-sm text-zinc-400">
-          Already have an account?{" "}
-          <Link
-            to="/login"
-            className="font-medium text-white transition-colors hover:text-zinc-300 hover:underline"
-          >
-            Login here
-          </Link>
-        </div>
-      </form>
-    </AuthCard>
+          <p className="text-center text-sm text-muted-foreground">
+            Already have an account?{" "}
+            <Link to="/login" className="text-primary font-medium hover:underline">
+              Sign in
+            </Link>
+          </p>
+        </form>
+      </AuthCard>
+    </div>
   );
 }

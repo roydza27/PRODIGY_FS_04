@@ -54,7 +54,7 @@ export default function DMList() {
             </p>
           </div>
         ) : (
-          conversations.map((conversation: Record<string, unknown> & { _id: string; participants: { _id: string; name: string; avatarUrl?: string }[]; unreadCount?: number; lastMessage?: Record<string, unknown> & { senderId: { _id: string }, createdAt: string, text: string } }) => {
+          conversations.map((conversation) => {
             const other = getOtherParticipant(conversation.participants);
             if (!other) return null;
 
@@ -127,7 +127,7 @@ export default function DMList() {
                         )}>
                           {lastMessage ? (
                             <>
-                              {lastMessage.senderId._id === currentUser?.id ? "You: " : ""}
+                              {(typeof lastMessage.senderId === "object" ? lastMessage.senderId._id : lastMessage.senderId) === currentUser?.id ? "You: " : ""}
                               {lastMessage.text}
                             </>
                           ) : (

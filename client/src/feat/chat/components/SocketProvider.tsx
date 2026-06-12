@@ -51,14 +51,16 @@ export function SocketProvider({
     (state) => state.addNotification
   );
 
-  const typingTimeoutsRef = useRef<Record<string, NodeJS.Timeout>>({});
+  const typingTimeoutsRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   const [isConnected, setIsConnected] =
     useState(false);
 
   useEffect(() => {
     const handleConnect = () => {
-      console.info("[Socket] Connected - fetching presence");
+      if (import.meta.env.DEV) {
+        console.info("[Socket] Connected - fetching presence");
+      }
       setIsConnected(true);
       
       // Fetch initial presence list as a fallback/additional sync
@@ -68,7 +70,9 @@ export function SocketProvider({
     };
 
     const handleDisconnect = () => {
-      console.info("[Socket] Disconnected");
+      if (import.meta.env.DEV) {
+        console.info("[Socket] Disconnected");
+      }
       setIsConnected(false);
     };
 
@@ -77,7 +81,9 @@ export function SocketProvider({
     }: {
       userIds: string[];
     }) => {
-      console.info("[Presence] sync", userIds.length, "users online");
+      if (import.meta.env.DEV) {
+        console.info("[Presence] sync", userIds.length, "users online");
+      }
       setOnlineUsers(userIds);
     };
 
@@ -86,7 +92,9 @@ export function SocketProvider({
     }: {
       userId: string;
     }) => {
-      console.info("[Presence] online", userId);
+      if (import.meta.env.DEV) {
+        console.info("[Presence] online", userId);
+      }
       setUserOnline(userId);
     };
 
@@ -97,7 +105,9 @@ export function SocketProvider({
       userId: string;
       lastSeenAt?: string;
     }) => {
-      console.info("[Presence] offline", userId, lastSeenAt);
+      if (import.meta.env.DEV) {
+        console.info("[Presence] offline", userId, lastSeenAt);
+      }
       setUserOffline(userId, lastSeenAt);
     };
 
@@ -172,7 +182,9 @@ export function SocketProvider({
     };
 
     const handleWorkspaceMembersUpdated = () => {
-      console.info("[Socket] Workspace members updated - invalidating queries");
+      if (import.meta.env.DEV) {
+        console.info("[Socket] Workspace members updated - invalidating queries");
+      }
       queryClient.invalidateQueries({ queryKey: workspaceKeys.all });
     };
 
@@ -186,7 +198,9 @@ export function SocketProvider({
     };
 
     const handleNewMessageNotification = (message: Record<string, unknown> & { _id: string; type: string; text: string; roomId?: string; conversationId?: string; senderId?: { _id: string; name?: string; avatarUrl?: string } | string; createdAt?: string }) => {
-      console.info("[Socket] New message received - updating sidebars");
+      if (import.meta.env.DEV) {
+        console.info("[Socket] New message received - updating sidebars");
+      }
       
       const senderId = typeof message.senderId === "string" ? message.senderId : message.senderId?._id;
       const isMyMessage = senderId === useAuthStore.getState().user?.id;
@@ -270,7 +284,8 @@ export function SocketProvider({
       // 3. Browser Notification (if window unfocused)
       if (!isFocused) {
         if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
-          new Notification(typeof message.senderId === "object" ? message.senderId.name : "New Message", {
+          const senderName = typeof message.senderId === "object" ? message.senderId.name : "New Message";
+          new Notification(senderName || "New Message", {
             body: message.text,
             icon: (typeof message.senderId === "object" ? message.senderId.avatarUrl : null) || "/favicon.svg",
           });
@@ -343,25 +358,33 @@ export function SocketProvider({
     socketService.on("workspace:removed", handleWorkspaceMembersUpdated);
 
     if (isAuthenticated && token) {
-      console.info("[Socket] Connecting with token");
+      if (import.meta.env.DEV) {
+        console.info("[Socket] Connecting with token");
+      }
       socketService.connect(token);
       
       // If already connected, manual sync is needed because the 'connect' event won't fire again
       if (socketService.isConnected()) {
-        console.info("[Socket] Already connected - manual sync");
+        if (import.meta.env.DEV) {
+          console.info("[Socket] Already connected - manual sync");
+        }
         setTimeout(() => {
           setIsConnected(true);
         }, 0);
         getPresence().then(setOnlineUsers).catch(console.error);
       }
     } else {
-      console.info("[Socket] Not authenticated, disconnecting");
+      if (import.meta.env.DEV) {
+        console.info("[Socket] Not authenticated, disconnecting");
+      }
       socketService.disconnect();
       clearPresence(); // Clear presence on logout
     }
 
     return () => {
-      console.info("[Socket] Cleaning up listeners and disconnecting");
+      if (import.meta.env.DEV) {
+        console.info("[Socket] Cleaning up listeners and disconnecting");
+      }
       socketService.off(
         "connect",
         handleConnect

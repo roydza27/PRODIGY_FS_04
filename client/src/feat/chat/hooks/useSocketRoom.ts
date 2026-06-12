@@ -43,10 +43,12 @@ export function useSocketRoom(
     const handleNewMessage = (
       message: Message
     ) => {
-      console.log(
-        "[CLIENT] received",
-        message
-      );
+      if (import.meta.env.DEV) {
+        console.log(
+          "[CLIENT] received",
+          message
+        );
+      }
 
       const messageRoomId =
         typeof message.roomId ===
@@ -121,7 +123,9 @@ export function useSocketRoom(
     const handleMessageUpdated = (
       updatedMessage: Message
     ) => {
-      console.log("[useSocketRoom] Received updated message:", updatedMessage);
+      if (import.meta.env.DEV) {
+        console.log("[useSocketRoom] Received updated message:", updatedMessage);
+      }
 
       const messageRoomId =
         typeof updatedMessage.roomId === "string"

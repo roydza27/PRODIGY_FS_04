@@ -59,6 +59,7 @@ export type UpdateWorkspacePayload = {
   name?: string;
   description?: string;
   iconUrl?: string;
+  visibility?: "invite-only" | "public";
 };
 
 export type InviteMemberPayload = {

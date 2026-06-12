@@ -13,6 +13,8 @@ import type { Workspace } from "../types/workspace.types";
 import type { AuthUser } from "@/shared/types/auth";
 import type { Message } from "@/feat/chat/types/message.types";
 import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
+import { useActiveWorkspace } from "@/feat/workspaces/hooks/useActiveWorkspace";
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
@@ -144,7 +146,7 @@ export default function SearchPage() {
                         <MessageSquare className="h-4 w-4 text-muted-foreground/40" /> Messages found
                       </h3>
                       <div className="grid gap-4">
-                        {messages.map(m => <MessageResultCard key={m._id} message={m} />)}
+                        {messages.map(m => <MessageResultCard key={m._id} message={m} query={debouncedQuery} />)}
                       </div>
                     </motion.section>
                   )}
@@ -159,7 +161,7 @@ export default function SearchPage() {
                 </TabsContent>
 
                 <TabsContent value="messages" className="grid gap-4 focus-visible:outline-none">
-                  {messages?.map(m => <MessageResultCard key={m._id} message={m} />)}
+                  {messages?.map(m => <MessageResultCard key={m._id} message={m} query={debouncedQuery} />)}
                 </TabsContent>
               </AnimatePresence>
             </Tabs>

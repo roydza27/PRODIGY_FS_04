@@ -17,7 +17,9 @@ export function useSendMessage(
 
   const sendMessage = useCallback(
     (text: string) => {
-      console.log("[useSendMessage] Attempting to send:", { workspaceId, user, roomId, conversationId, text });
+      if (import.meta.env.DEV) {
+        console.log("[useSendMessage] Attempting to send:", { workspaceId, user, roomId, conversationId, text });
+      }
 
       if (!workspaceId || !user) {
         console.warn("[useSendMessage] Missing workspaceId or user", { workspaceId, user });
@@ -55,7 +57,9 @@ export function useSendMessage(
         updatedAt: new Date().toISOString(),
       };
 
-      console.log("[useSendMessage] Optimistic update:", optimisticMessage);
+      if (import.meta.env.DEV) {
+        console.log("[useSendMessage] Optimistic update:", optimisticMessage);
+      }
 
       // Update cache
       const queryKey = roomId
