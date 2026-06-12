@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useState, useRef, useEffect } from "react";
 import { 
   IconHash, 
@@ -10,30 +11,64 @@ import {
   IconLayoutList,
   IconCircleX,
   IconCircleMinus,
-  IconTrash
+  IconTrash,
+  IconFolder,
 } from "@tabler/icons-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { PresenceStatus } from "@/shared/components/ui/presence-status";
 import { formatLastSeen } from "@/utils/date";
+import { clearChat } from "../api/message.api";
 
 interface Props {
   roomName: string;
   isDM?: boolean;
+  isAdmin?: boolean;
   avatarUrl?: string;
   username?: string;
   status?: string;
   memberCount?: number;
   isOnline?: boolean;
   lastSeenAt?: string;
+  showFiles?: boolean;
+  onToggleFiles?: () => void;
+  contextId?: string;
 }
 
 // ============================================================================
 // POP-UP MENU COMPONENT
 // ============================================================================
-function ChatOptionsMenu({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+function ChatOptionsMenu({ 
+  isOpen, 
+  onClose,
+  isDM,
+  isAdmin,
+  contextId
+}: { 
+  isOpen: boolean; 
+  onClose: () => void;
+  isDM: boolean;
+  isAdmin?: boolean;
+  contextId?: string;
+}) {
+  const queryClient = useQueryClient();
   const menuRef = useRef<HTMLDivElement>(null);
+  
+  const handleClearChat = async () => {
+    if (!contextId) return;
+    try {
+      await clearChat(isDM ? "dm" : "room", contextId);
+      if (isDM) {
+        queryClient.invalidateQueries({ queryKey: ["conversation-messages", contextId] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["messages", contextId] });
+      }
+      onClose();
+    } catch (error) {
+      console.error("Failed to clear chat:", error);
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -54,7 +89,7 @@ function ChatOptionsMenu({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
     { icon: <IconHeart size={18} stroke={1.5} />, label: "Add to favourites" },
     { icon: <IconLayoutList size={18} stroke={1.5} />, label: "Add to list" },
     { icon: <IconCircleX size={18} stroke={1.5} />, label: "Close chat" },
-    { icon: <IconCircleMinus size={18} stroke={1.5} />, label: "Clear chat" },
+    ...(!isDM && !isAdmin ? [] : [{ icon: <IconCircleMinus size={18} stroke={1.5} />, label: "Clear chat", onClick: handleClearChat }]),
     { icon: <IconTrash size={18} stroke={1.5} className="text-destructive" />, label: "Delete chat", isDestructive: true },
   ];
 
@@ -73,7 +108,9 @@ function ChatOptionsMenu({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
             {menuItems.map((item, index) => (
               <li 
                 key={index}
-                onClick={onClose}
+                onClick={() => {
+                  item.onClick ? item.onClick() : onClose();
+                }}
                 className={cn(
                   "flex items-center gap-3.5 px-5 py-2.5 cursor-pointer transition-colors hover:bg-muted/80",
                   item.isDestructive ? "text-destructive hover:bg-destructive/10" : "text-popover-foreground/80 hover:text-popover-foreground"
@@ -96,11 +133,15 @@ function ChatOptionsMenu({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
 export default function ChatHeader({
   roomName,
   isDM = false,
+  isAdmin = false,
   avatarUrl,
   username,
   status,
   isOnline = false,
   lastSeenAt,
+  showFiles = false,
+  onToggleFiles,
+  contextId,
 }: Props) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
@@ -163,6 +204,22 @@ export default function ChatHeader({
 
       {/* Right Section: Minimal Actions */}
       <div className="flex items-center gap-1 text-muted-foreground/70">
+        {onToggleFiles && (
+          <button
+            title="Shared Files"
+            aria-label="Toggle shared files panel"
+            onClick={onToggleFiles}
+            className={cn(
+              "flex h-10 w-10 items-center justify-center rounded-full transition-colors active:scale-95",
+              showFiles
+                ? "bg-primary/10 text-primary"
+                : "hover:bg-muted/50 hover:text-foreground"
+            )}
+          >
+            <IconFolder size={20} stroke={1.5} />
+          </button>
+        )}
+
         <button 
           title="Search"
           aria-label="Search messages"
@@ -190,6 +247,9 @@ export default function ChatHeader({
       <ChatOptionsMenu 
         isOpen={isMenuOpen} 
         onClose={() => setIsMenuOpen(false)} 
+        isDM={isDM}
+        isAdmin={isAdmin}
+        contextId={contextId}
       />
     </header>
   );

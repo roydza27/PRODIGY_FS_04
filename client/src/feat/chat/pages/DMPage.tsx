@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   IconUser, 
@@ -20,6 +20,7 @@ import { useWorkspaceStore } from "@/feat/workspaces/store/workspace.store";
 import ChatHeader from "../components/ChatHeader";
 import MessageList from "../components/MessageList";
 import MessageComposer from "../components/MessageComposer";
+import SharedFilesPanel from "../components/SharedFilesPanel";
 import { cn } from "@/lib/utils";
 
 import { PageLayout } from "@/shared/components/layout/PageLayout";
@@ -28,6 +29,7 @@ const EMPTY_SET = new Set<string>();
 
 export default function DMPage() {
   const { conversationId } = useParams<{ conversationId: string }>();
+  const [showFiles, setShowFiles] = useState(false);
 
   const {
     activeWorkspace,
@@ -131,6 +133,9 @@ export default function DMPage() {
         isDM
         isOnline={online}
         lastSeenAt={lastSeenAt}
+        showFiles={showFiles}
+        onToggleFiles={() => setShowFiles((v) => !v)}
+        contextId={conversationId}
       />
 
       {/* Note: Removed the outer overflow-y-auto here. 
@@ -259,6 +264,13 @@ export default function DMPage() {
         workspaceId={conversation.workspaceId}
         conversationId={conversationId} 
         placeholderName={otherParticipant.name}
+      />
+
+      {/* Shared Files Panel — overlaid */}
+      <SharedFilesPanel
+        open={showFiles}
+        onClose={() => setShowFiles(false)}
+        conversationId={conversationId}
       />
     </PageLayout>
   );

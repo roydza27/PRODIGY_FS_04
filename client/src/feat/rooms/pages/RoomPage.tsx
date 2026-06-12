@@ -23,7 +23,7 @@ export default function RoomPage() {
 
         {room && (
           <>
-            <ChatHeader roomName={room.name} />
+            <ChatHeader roomName={room.name} contextId={room._id} />
 
             <div className="flex-1 overflow-hidden">
               <MessageList />

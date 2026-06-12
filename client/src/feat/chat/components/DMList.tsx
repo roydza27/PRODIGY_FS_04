@@ -71,7 +71,7 @@ export default function DMList() {
                 className={cn(
                   "group relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-300",
                   isActive
-                    ? "bg-primary/10 text-primary shadow-[0_0_20px_rgba(var(--primary),0.05)] ring-1 ring-primary/20"
+                    ? "bg-brand/10 text-foreground shadow-[0_0_20px_rgba(139,92,246,0.05)] ring-1 ring-white/10"
                     : unreadCount > 0 
                       ? "bg-white/[0.03] text-foreground shadow-sm"
                       : "text-muted-foreground hover:bg-white/[0.05] hover:text-foreground"
@@ -122,7 +122,7 @@ export default function DMList() {
                         </span>
                       ) : (
                         <p className={cn(
-                          "truncate text-[12px] leading-tight",
+                          "truncate text-[12px] leading-tight text-left",
                           isActive ? "text-primary/60" : unreadCount > 0 ? "font-bold text-foreground/90" : "font-medium text-muted-foreground/50"
                         )}>
                           {lastMessage ? (
@@ -146,7 +146,7 @@ export default function DMList() {
                 </div>
 
                 {isActive && (
-                  <div className="absolute -left-3 h-8 w-1 rounded-r-full bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
+                  <div className="absolute -left-3 h-8 w-1 rounded-r-full bg-primary shadow-[0_0_10px_#8b5cf6]" />
                 )}
               </button>
             );

@@ -9,11 +9,14 @@ import { useRoomMessages } from "../hooks/useRoomMessages";
 import { useSocketRoom } from "../hooks/useSocketRoom";
 import { useGetWorkspaceMembers } from "@/feat/workspaces/api/workspace.queries";
 import { usePresenceStore } from "@/app/stores/presence.store";
+import { useAuthStore } from "@/app/stores/auth.store";
+import { useWorkspaceMember } from "@/feat/workspaces/hooks/useWorkspaceMember";
 
 import ChatHeader from "../components/ChatHeader";
 import RoomIntro from "../components/RoomIntro";
 import MessageList from "../components/MessageList";
 import MessageComposer from "../components/MessageComposer";
+import SharedFilesPanel from "../components/SharedFilesPanel";
 import { MemberSidebar } from "@/shared/components/workspace/member-sidebar";
 
 import { PageLayout } from "@/shared/components/layout/PageLayout";
@@ -25,6 +28,7 @@ const EMPTY_SET = new Set<string>();
 export default function RoomChatPage() {
   const { roomId } = useParams<{ roomId: string }>();
   const [showMembers, setShowMembers] = useState(typeof window !== "undefined" ? window.innerWidth >= 1280 : true);
+  const [showFiles, setShowFiles] = useState(false);
 
   const {
     activeWorkspace,
@@ -32,6 +36,9 @@ export default function RoomChatPage() {
   } = useActiveWorkspace();
 
   const workspaceId = activeWorkspace?._id;
+  const userId = useAuthStore((state) => state.user?.id);
+  
+  const { isAdmin } = useWorkspaceMember(workspaceId || "", userId || "");
 
   const { data: members = [] } = useGetWorkspaceMembers(workspaceId || "");
   const typingUserIds = usePresenceStore((state) => 
@@ -133,10 +140,14 @@ export default function RoomChatPage() {
       </div>
 
       <div className="relative flex h-[60px] items-center justify-between border-b border-border/30 bg-background px-4 z-40">
-        <ChatHeader 
-          roomName={room.name} 
+        <ChatHeader
+          roomName={room.name}
           memberCount={room.memberCount || 0}
           isDM={false}
+          isAdmin={isAdmin}
+          showFiles={showFiles}
+          onToggleFiles={() => setShowFiles((v) => !v)}
+          contextId={room._id}
         />
         <button
           onClick={() => setShowMembers(!showMembers)}
@@ -195,6 +206,13 @@ export default function RoomChatPage() {
         {showMembers && workspaceId && (
           <MemberSidebar workspaceId={workspaceId} />
         )}
+
+        {/* Shared Files Panel — overlaid on the right */}
+        <SharedFilesPanel
+          open={showFiles}
+          onClose={() => setShowFiles(false)}
+          roomId={roomId}
+        />
       </div>
     </PageLayout>
   );

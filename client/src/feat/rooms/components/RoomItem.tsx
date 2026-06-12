@@ -38,7 +38,7 @@ export default function RoomItem({
       className={cn(
         "group relative flex items-center justify-between rounded-xl px-2 py-2 transition-all duration-300",
         isActive
-          ? "bg-primary/10 text-primary shadow-[0_0_20px_rgba(var(--primary),0.05)] ring-1 ring-primary/20"
+          ? "bg-brand/10 text-foreground shadow-[0_0_20px_rgba(139,92,246,0.05)] ring-1 ring-white/10"
           : unreadCount > 0 
             ? "bg-white/[0.03] text-foreground shadow-sm"
             : "text-muted-foreground hover:bg-muted/40 hover:text-foreground"
@@ -51,10 +51,10 @@ export default function RoomItem({
         <div className={cn(
           "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-all duration-300",
           isActive 
-            ? "border-primary/30 bg-primary/10 text-primary shadow-inner shadow-primary/10" 
+            ? "border-white/10 bg-brand/10 text-foreground shadow-inner shadow-brand/10" 
             : unreadCount > 0
-              ? "border-primary/20 bg-primary/5 text-primary/80"
-              : "border-border/50 bg-muted/30 text-muted-foreground/50 group-hover:border-primary/20 group-hover:bg-primary/5 group-hover:text-primary/60"
+              ? "border-brand/20 bg-brand/5 text-brand/80"
+              : "border-border/50 bg-muted/30 text-muted-foreground/50 group-hover:border-brand/20 group-hover:bg-brand/5 group-hover:text-brand/60"
         )}>
           {room.isPrivate ? (
             <Lock size={16} strokeWidth={2.5} />
@@ -67,7 +67,7 @@ export default function RoomItem({
           <div className="flex w-full items-center justify-between gap-1">
             <p className={cn(
               "truncate text-[14px] font-bold tracking-tight transition-colors",
-              isActive ? "text-primary" : unreadCount > 0 ? "text-foreground" : "text-muted-foreground/80 group-hover:text-foreground"
+              isActive ? "text-foreground" : unreadCount > 0 ? "text-foreground" : "text-muted-foreground/80 group-hover:text-foreground"
             )}>
               {room.name}
             </p>
@@ -98,7 +98,7 @@ export default function RoomItem({
 
       <div className="flex items-center gap-1 pr-1">
         {unreadCount > 0 && !mentionCount && !isActive && (
-          <div className="mr-1 h-1.5 w-1.5 rounded-full bg-primary" />
+          <div className="mr-1 h-1.5 w-1.5 rounded-full bg-brand" />
         )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -149,7 +149,7 @@ export default function RoomItem({
         </DropdownMenu>
 
         {isActive && (
-          <div className="h-6 w-1 rounded-l-full bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)] animate-in slide-in-from-right-1" />
+          <div className="h-6 w-1 rounded-l-full bg-brand shadow-[0_0_10px_#8b5cf6] animate-in slide-in-from-right-1" />
         )}
       </div>
     </div>
