@@ -7,6 +7,8 @@ import { useActiveWorkspace } from "@/feat/workspaces/hooks/useActiveWorkspace";
 import { useRoom } from "@/feat/rooms/hooks/useRoom";
 import { useRoomMessages } from "../hooks/useRoomMessages";
 import { useSocketRoom } from "../hooks/useSocketRoom";
+import { useGetWorkspaceMembers } from "@/feat/workspaces/api/workspace.queries";
+import { usePresenceStore } from "@/app/stores/presence.store";
 
 import ChatHeader from "../components/ChatHeader";
 import RoomIntro from "../components/RoomIntro";
@@ -18,6 +20,8 @@ import { PageLayout } from "@/shared/components/layout/PageLayout";
 import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/lib/utils";
 
+const EMPTY_SET = new Set<string>();
+
 export default function RoomChatPage() {
   const { roomId } = useParams<{ roomId: string }>();
   const [showMembers, setShowMembers] = useState(typeof window !== "undefined" ? window.innerWidth >= 1280 : true);
@@ -28,6 +32,21 @@ export default function RoomChatPage() {
   } = useActiveWorkspace();
 
   const workspaceId = activeWorkspace?._id;
+
+  const { data: members = [] } = useGetWorkspaceMembers(workspaceId || "");
+  const typingUserIds = usePresenceStore((state) => 
+    (roomId ? state.typingUsers[roomId] : null) ?? EMPTY_SET
+  );
+
+  const typingUsers = Array.from(typingUserIds)
+    .map(id => {
+       const member = (members as Array<Record<string, unknown> & { userId?: { _id: string; name: string; avatarUrl?: string } | string }>).find((m) => {
+         const mUserId = typeof m.userId === "string" ? m.userId : m.userId?._id;
+         return mUserId === id;
+       });
+       return typeof member?.userId === "object" ? member.userId : null;
+    })
+    .filter(Boolean);
 
   const {
     data: roomResponse,
@@ -160,6 +179,8 @@ export default function RoomChatPage() {
                 <MessageList 
                   messages={messages} 
                   isDM={false} 
+                  isTyping={typingUsers.length > 0}
+                  typingUsers={typingUsers as Array<{ _id: string; name: string; avatarUrl?: string }>}
                 />
               </div>
             )}

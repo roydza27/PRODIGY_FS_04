@@ -173,10 +173,10 @@ export const registerRoomHandlers = (
   /**
    * Room Typing Start
    */
-  socket.on("room:typing:start", ({ roomId }) => {
-    if (!roomId) return;
-    const roomKey = `room:${roomId}`;
-    socket.to(roomKey).emit("room:typing:start", {
+  socket.on("room:typing:start", ({ workspaceId, roomId }) => {
+    if (!roomId || !workspaceId) return;
+    const workspaceRoom = `workspace:${workspaceId}`;
+    socket.to(workspaceRoom).emit("room:typing:start", {
       roomId,
       userId: socket.data.userId,
     });
@@ -185,12 +185,25 @@ export const registerRoomHandlers = (
   /**
    * Room Typing Stop
    */
-  socket.on("room:typing:stop", ({ roomId }) => {
-    if (!roomId) return;
-    const roomKey = `room:${roomId}`;
-    socket.to(roomKey).emit("room:typing:stop", {
+  socket.on("room:typing:stop", ({ workspaceId, roomId }) => {
+    if (!roomId || !workspaceId) return;
+    const workspaceRoom = `workspace:${workspaceId}`;
+    socket.to(workspaceRoom).emit("room:typing:stop", {
       roomId,
       userId: socket.data.userId,
     });
+  });
+
+  /**
+   * Room Seen
+   */
+  socket.on("room:seen", async ({ workspaceId, roomId }) => {
+    if (!workspaceId || !roomId) return;
+    try {
+      await membershipRepository.updateLastReadAt(workspaceId, socket.data.userId, roomId);
+      io.to(`user:${socket.data.userId}`).emit("room:seen:ack", { workspaceId, roomId });
+    } catch (error) {
+      logger.error("[Socket] room:seen failed", error);
+    }
   });
 };

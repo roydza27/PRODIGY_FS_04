@@ -106,9 +106,37 @@ export const useSocketDM = (
       );
     };
 
+    const handleMessageUpdated = (
+      updatedMessage: Message
+    ) => {
+      console.log("[useSocketDM] Received updated message:", updatedMessage);
+
+      if (
+        String(updatedMessage.conversationId) !==
+        String(conversationId)
+      ) {
+        return;
+      }
+
+      queryClient.setQueryData<Message[]>(
+        [
+          "conversation-messages",
+          conversationId,
+        ],
+        (previous = []) => {
+          return previous.map(m => m._id === updatedMessage._id ? updatedMessage : m);
+        }
+      );
+    };
+
     socketService.on(
       "message:new",
       handleNewMessage
+    );
+
+    socketService.on(
+      "message:updated",
+      handleMessageUpdated
     );
 
     const handleMessageStatus = ({ messageId, status }: { messageId: string, status: MessageStatus }) => {
@@ -138,7 +166,32 @@ export const useSocketDM = (
     socketService.on("message:status", handleMessageStatus);
     socketService.on("message:seen:all", handleSeenAll);
 
+    // Mark as seen when window focuses
+    const handleFocus = () => {
+      socketService.markDMSeen(conversationId);
+      
+      const clearUnread = (old: Record<string, unknown>[] | undefined) => {
+         if (!old) return old;
+         return old.map((c: Record<string, unknown>) => c._id === conversationId ? { ...c, unreadCount: 0 } : c);
+      };
+
+      queryClient.setQueryData(["conversations", "global"], clearUnread);
+      if (workspaceId) {
+        queryClient.setQueryData(["conversations", workspaceId], clearUnread);
+      }
+      
+      // Also invalidate to sync with backend after a slight delay
+      setTimeout(() => queryClient.invalidateQueries({ queryKey: ["conversations"] }), 500);
+    };
+
+    window.addEventListener("focus", handleFocus);
+    
+    // Also mark as seen initially when joining
+    handleFocus();
+
     return () => {
+      window.removeEventListener("focus", handleFocus);
+      
       socketService.off(
         "connect",
         joinDM
@@ -151,6 +204,11 @@ export const useSocketDM = (
       socketService.off(
         "message:new",
         handleNewMessage
+      );
+
+      socketService.off(
+        "message:updated",
+        handleMessageUpdated
       );
 
       socketService.off("message:status", handleMessageStatus);
