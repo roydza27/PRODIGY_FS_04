@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Outlet, useParams, useNavigate, useLocation } from "react-router-dom";
 
+import { logger } from "@/utils/logger";
 import { AppSidebar } from "@/shared/components/layout/app-sidebar";
 import { GlobalHeader } from "@/shared/components/layout/global-header";
 import {
@@ -28,7 +29,7 @@ export default function WorkspaceLayout() {
     if (!isLoading && workspaceSlug && !activeWorkspace) {
       // Only redirect if we are on a route that requires a workspace
       if (pathname.startsWith("/w/")) {
-        console.warn("[WorkspaceLayout] Workspace not found, redirecting to /workspaces");
+        logger.warn("[WorkspaceLayout] Workspace not found, redirecting to /workspaces");
         navigate("/workspaces");
       }
     }

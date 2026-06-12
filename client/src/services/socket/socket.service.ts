@@ -1,5 +1,7 @@
 import { io, Socket } from "socket.io-client";
 
+import { logger } from "@/utils/logger";
+
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL;
 
 if (!SOCKET_URL) {
@@ -28,28 +30,21 @@ class SocketService {
       autoConnect: false,
     });
 
-    if (import.meta.env.DEV) {
-      this.socket.on("connect", () => {
-        console.info("[Socket] Connected");
-      });
+    this.socket.on("connect", () => {
+    });
 
-      this.socket.on("disconnect", (reason) => {
-        console.info(
-          "[Socket] Disconnected:",
-          reason
+    this.socket.on("disconnect", () => {
+    });
+
+    this.socket.on(
+      "connect_error",
+      (error) => {
+        logger.error(
+          "[Socket] Connection Error:",
+          error
         );
-      });
-
-      this.socket.on(
-        "connect_error",
-        (error) => {
-          console.error(
-            "[Socket] Connection Error:",
-            error
-          );
-        }
-      );
-    }
+      }
+    );
   }
 
   connect(token: string) {
@@ -148,15 +143,8 @@ class SocketService {
   sendMessage(
     payload: SendMessagePayload
   ) {
-    if (import.meta.env.DEV) {
-      console.log(
-        "[CLIENT] Sending",
-        payload
-      );
-    }
-
     if (!this.socket.connected) {
-      console.warn(
+      logger.warn(
         "[Socket] Cannot send message"
       );
       return;

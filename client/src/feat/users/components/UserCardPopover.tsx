@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { logger } from "@/utils/logger";
 import UserCard from "./UserCard";
 
 import { useAuthStore } from "@/app/stores/auth.store";
@@ -47,7 +48,7 @@ export default function UserCardPopover({
 
       navigate(`/dm/${conversation._id}`);
     } catch (error) {
-      console.error("Failed to open DM:", error);
+      logger.error("Failed to open DM:", error);
     }
   };
 

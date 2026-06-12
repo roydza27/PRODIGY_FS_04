@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
+import { logger } from "@/utils/logger";
 import { useAuthStore } from "@/app/stores/auth.store";
 import { socketService } from "@/services/socket/socket.service";
 
@@ -17,17 +18,13 @@ export function useSendMessage(
 
   const sendMessage = useCallback(
     (text: string) => {
-      if (import.meta.env.DEV) {
-        console.log("[useSendMessage] Attempting to send:", { workspaceId, user, roomId, conversationId, text });
-      }
-
       if (!workspaceId || !user) {
-        console.warn("[useSendMessage] Missing workspaceId or user", { workspaceId, user });
+        logger.warn("[useSendMessage] Missing workspaceId or user", { workspaceId, user });
         return;
       }
 
       if (!roomId && !conversationId) {
-        console.warn("[useSendMessage] Missing roomId and conversationId");
+        logger.warn("[useSendMessage] Missing roomId and conversationId");
         return;
       }
 
@@ -56,10 +53,6 @@ export function useSendMessage(
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-
-      if (import.meta.env.DEV) {
-        console.log("[useSendMessage] Optimistic update:", optimisticMessage);
-      }
 
       // Update cache
       const queryKey = roomId

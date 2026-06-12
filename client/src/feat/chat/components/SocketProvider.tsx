@@ -7,6 +7,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "react-router-dom";
 
+import { logger } from "@/utils/logger";
 import { useAuthStore } from "@/app/stores/auth.store";
 import { usePresenceStore } from "@/app/stores/presence.store";
 import { useNotificationStore } from "@/app/stores/notification.store";
@@ -58,21 +59,15 @@ export function SocketProvider({
 
   useEffect(() => {
     const handleConnect = () => {
-      if (import.meta.env.DEV) {
-        console.info("[Socket] Connected - fetching presence");
-      }
       setIsConnected(true);
       
       // Fetch initial presence list as a fallback/additional sync
       getPresence()
         .then(setOnlineUsers)
-        .catch(console.error);
+        .catch(logger.error);
     };
 
     const handleDisconnect = () => {
-      if (import.meta.env.DEV) {
-        console.info("[Socket] Disconnected");
-      }
       setIsConnected(false);
     };
 
@@ -81,9 +76,6 @@ export function SocketProvider({
     }: {
       userIds: string[];
     }) => {
-      if (import.meta.env.DEV) {
-        console.info("[Presence] sync", userIds.length, "users online");
-      }
       setOnlineUsers(userIds);
     };
 
@@ -92,9 +84,6 @@ export function SocketProvider({
     }: {
       userId: string;
     }) => {
-      if (import.meta.env.DEV) {
-        console.info("[Presence] online", userId);
-      }
       setUserOnline(userId);
     };
 
@@ -105,9 +94,6 @@ export function SocketProvider({
       userId: string;
       lastSeenAt?: string;
     }) => {
-      if (import.meta.env.DEV) {
-        console.info("[Presence] offline", userId, lastSeenAt);
-      }
       setUserOffline(userId, lastSeenAt);
     };
 
@@ -182,9 +168,6 @@ export function SocketProvider({
     };
 
     const handleWorkspaceMembersUpdated = () => {
-      if (import.meta.env.DEV) {
-        console.info("[Socket] Workspace members updated - invalidating queries");
-      }
       queryClient.invalidateQueries({ queryKey: workspaceKeys.all });
     };
 
@@ -198,10 +181,6 @@ export function SocketProvider({
     };
 
     const handleNewMessageNotification = (message: Record<string, unknown> & { _id: string; type: string; text: string; roomId?: string; conversationId?: string; senderId?: { _id: string; name?: string; avatarUrl?: string } | string; createdAt?: string }) => {
-      if (import.meta.env.DEV) {
-        console.info("[Socket] New message received - updating sidebars");
-      }
-      
       const senderId = typeof message.senderId === "string" ? message.senderId : message.senderId?._id;
       const isMyMessage = senderId === useAuthStore.getState().user?.id;
       const isCurrentPage = (message.type === "dm" && location.pathname.includes(message.conversationId as string)) ||
@@ -358,33 +337,21 @@ export function SocketProvider({
     socketService.on("workspace:removed", handleWorkspaceMembersUpdated);
 
     if (isAuthenticated && token) {
-      if (import.meta.env.DEV) {
-        console.info("[Socket] Connecting with token");
-      }
       socketService.connect(token);
       
       // If already connected, manual sync is needed because the 'connect' event won't fire again
       if (socketService.isConnected()) {
-        if (import.meta.env.DEV) {
-          console.info("[Socket] Already connected - manual sync");
-        }
         setTimeout(() => {
           setIsConnected(true);
         }, 0);
-        getPresence().then(setOnlineUsers).catch(console.error);
+        getPresence().then(setOnlineUsers).catch(logger.error);
       }
     } else {
-      if (import.meta.env.DEV) {
-        console.info("[Socket] Not authenticated, disconnecting");
-      }
       socketService.disconnect();
       clearPresence(); // Clear presence on logout
     }
 
     return () => {
-      if (import.meta.env.DEV) {
-        console.info("[Socket] Cleaning up listeners and disconnecting");
-      }
       socketService.off(
         "connect",
         handleConnect
