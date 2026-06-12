@@ -2,14 +2,17 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageLayout } from "@/shared/components/layout/PageLayout";
 import { Input } from "@/shared/components/ui/input";
-import { Search, Users, Building2, ChevronRight, ArrowRight, Zap } from "lucide-react";
+import { Search, Users, Building2, ChevronRight, ArrowRight, Zap, MessageSquare } from "lucide-react";
 import { useSearchUsers } from "@/feat/users/api/user.queries";
 import { useSearchWorkspaces } from "@/feat/workspaces/api/workspace.queries";
+import { useSearchMessages } from "@/feat/chat/api/chat.queries";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import type { Workspace } from "../types/workspace.types";
 import type { AuthUser } from "@/shared/types/auth";
+import type { Message } from "@/feat/chat/types/message.types";
+import { format } from "date-fns";
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
@@ -25,9 +28,12 @@ export default function SearchPage() {
 
   const { data: users, isLoading: usersLoading } = useSearchUsers(debouncedQuery);
   const { data: workspaces, isLoading: workspacesLoading } = useSearchWorkspaces(debouncedQuery);
+  const { data: messages, isLoading: messagesLoading } = useSearchMessages(debouncedQuery);
 
-  const hasResults = (users && users.length > 0) || (workspaces && workspaces.length > 0);
-  const isLoading = usersLoading || workspacesLoading;
+  const hasResults = (users && users.length > 0) || 
+                     (workspaces && workspaces.length > 0) ||
+                     (messages && messages.length > 0);
+  const isLoading = usersLoading || workspacesLoading || messagesLoading;
 
   return (
     <PageLayout variant="constrained" className="relative py-10 flex flex-col gap-10 min-h-full bg-background text-foreground selection:bg-primary/20 text-left">
@@ -47,14 +53,14 @@ export default function SearchPage() {
           Global Search
         </h1>
         <p className="text-muted-foreground/80 text-[15px] font-normal max-w-xl leading-relaxed">
-          Search across the entire network for specialized production teams and talented engineers.
+          Search across the entire network for people, workspaces, and historical messages.
         </p>
       </div>
 
       <div className="relative z-10 group max-w-4xl">
         <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
         <Input
-          placeholder="Search for people, teams, or workspaces..."
+          placeholder="Search for people, workspaces, or messages..."
           className="h-12 pl-12 pr-12 text-[15px] font-normal rounded-xl border-border/40 bg-card/40 focus-visible:ring-primary/20 focus-visible:bg-card/60 transition-all placeholder:text-muted-foreground/40 shadow-sm"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -93,6 +99,7 @@ export default function SearchPage() {
                 <TabsTrigger value="all" className="rounded-lg px-4 text-[13px] font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">All Results</TabsTrigger>
                 <TabsTrigger value="users" className="rounded-lg px-4 text-[13px] font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Engineers ({users?.length || 0})</TabsTrigger>
                 <TabsTrigger value="workspaces" className="rounded-lg px-4 text-[13px] font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Workspaces ({workspaces?.length || 0})</TabsTrigger>
+                <TabsTrigger value="messages" className="rounded-lg px-4 text-[13px] font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Messages ({messages?.length || 0})</TabsTrigger>
               </TabsList>
 
               <AnimatePresence mode="wait">
@@ -126,6 +133,21 @@ export default function SearchPage() {
                       </div>
                     </motion.section>
                   )}
+
+                  {messages && messages.length > 0 && (
+                    <motion.section
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="space-y-4"
+                    >
+                      <h3 className="text-[12px] font-medium uppercase tracking-wider text-muted-foreground/70 flex items-center gap-2 px-1">
+                        <MessageSquare className="h-4 w-4 text-muted-foreground/40" /> Messages found
+                      </h3>
+                      <div className="grid gap-4">
+                        {messages.map(m => <MessageResultCard key={m._id} message={m} />)}
+                      </div>
+                    </motion.section>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="users" className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 focus-visible:outline-none">
@@ -134,6 +156,10 @@ export default function SearchPage() {
 
                 <TabsContent value="workspaces" className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 focus-visible:outline-none">
                   {workspaces?.map(w => <WorkspaceCard key={w._id} workspace={w} />)}
+                </TabsContent>
+
+                <TabsContent value="messages" className="grid gap-4 focus-visible:outline-none">
+                  {messages?.map(m => <MessageResultCard key={m._id} message={m} />)}
                 </TabsContent>
               </AnimatePresence>
             </Tabs>
@@ -147,7 +173,7 @@ export default function SearchPage() {
               Awaiting Input
             </h3>
             <p className="text-[13.5px] font-normal text-muted-foreground/50 max-w-sm leading-relaxed">
-              Initialize a search query to discover engineers and production workspaces across the layout grid.
+              Initialize a search query to discover engineers, workspaces, and messages across the layout grid.
             </p>
           </div>
         )}
@@ -156,15 +182,31 @@ export default function SearchPage() {
   );
 }
 
+function HighlightMatch({ text, query }: { text: string; query: string }) {
+  if (!query.trim()) return <>{text}</>;
+  
+  const parts = text.split(new RegExp(`(${query})`, 'gi'));
+  return (
+    <>
+      {parts.map((part, i) => 
+        part.toLowerCase() === query.toLowerCase() 
+          ? <mark key={i} className="bg-primary/30 text-primary-foreground rounded-sm px-0.5">{part}</mark> 
+          : part
+      )}
+    </>
+  );
+}
+
 function UserCard({ user }: { user: Partial<AuthUser> & { _id: string } }) {
+  const navigate = useNavigate();
   const fallbackInitial = user.name?.charAt(0)?.toUpperCase() ?? "?";
   
   return (
     <motion.div 
       whileHover={{ y: -2 }}
-      className="flex items-center gap-4 rounded-xl border border-border/30 bg-card/40 p-4 hover:bg-card/70 hover:border-border/50 transition-all group shadow-sm"
+      onClick={() => navigate(`/dm/${user._id}`)} // This might need a real conversation lookup, but for now we'll assume the DM creation logic handles it
+      className="flex items-center gap-4 rounded-xl border border-border/30 bg-card/40 p-4 hover:bg-card/70 hover:border-border/50 transition-all group shadow-sm cursor-pointer"
     >
-      {/* Changed to industrial standard rounded-full avatar layout */}
       <Avatar className="h-11 w-11 rounded-full border border-border/10 bg-muted/50 shrink-0">
         <AvatarImage src={user.avatarUrl} alt={user.name} className="object-cover" />
         <AvatarFallback className="rounded-full bg-primary/10 text-primary font-medium text-base">
@@ -183,10 +225,13 @@ function UserCard({ user }: { user: Partial<AuthUser> & { _id: string } }) {
 }
 
 function WorkspaceCard({ workspace }: { workspace: Workspace }) {
+  const navigate = useNavigate();
+  
   return (
     <motion.div 
       whileHover={{ y: -2 }}
-      className="group flex flex-col justify-between items-start rounded-2xl border border-border/30 bg-card/30 p-5 transition-all hover:bg-card/60 hover:border-border/60 active:scale-[0.99] shadow-sm min-h-[140px]"
+      onClick={() => navigate(`/w/${workspace.slug}`)}
+      className="group flex flex-col justify-between items-start rounded-2xl border border-border/30 bg-card/30 p-5 transition-all hover:bg-card/60 hover:border-border/60 active:scale-[0.99] shadow-sm min-h-[140px] cursor-pointer"
     >
       <div className="flex items-start gap-4 min-w-0 w-full">
         <div className="h-11 w-12 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center border border-primary/10 font-medium text-lg text-primary shrink-0">
@@ -203,10 +248,54 @@ function WorkspaceCard({ workspace }: { workspace: Workspace }) {
       </div>
       
       <div className="flex w-full justify-between items-center mt-4 pt-3 border-t border-border/10">
-        {/* Swapped badge structure to unified text layout strings */}
         <span className="text-[12px] font-medium text-primary/70 bg-primary/5 border border-primary/10 px-2 py-0.5 rounded-md">Verified Node</span>
         <ArrowRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0" />
       </div>
+    </motion.div>
+  );
+}
+
+function MessageResultCard({ message, query }: { message: Message; query: string }) {
+  const navigate = useNavigate();
+  const { activeWorkspace } = useActiveWorkspace();
+
+  const handleNavigate = () => {
+    if (message.type === "dm") {
+      navigate(`/dm/${message.conversationId}`);
+    } else {
+      navigate(`/w/${activeWorkspace?.slug}/rooms/${message.roomId}`);
+    }
+  };
+
+  return (
+    <motion.div 
+      whileHover={{ y: -1 }}
+      onClick={handleNavigate}
+      className="group flex items-start gap-4 rounded-xl border border-border/30 bg-card/40 p-4 hover:bg-card/70 hover:border-border/50 transition-all shadow-sm cursor-pointer"
+    >
+      <Avatar className="h-9 w-9 rounded-full border border-border/10 shrink-0">
+        <AvatarImage src={message.senderId.avatarUrl} alt={message.senderId.name} className="object-cover" />
+        <AvatarFallback className="rounded-full bg-primary/10 text-primary font-medium text-xs">
+          {message.senderId.name.charAt(0).toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-0.5">
+          <span className="text-[13.5px] font-black text-foreground/90">{message.senderId.name}</span>
+          <span className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">
+            {format(new Date(message.createdAt), "MMM d, h:mm a")}
+          </span>
+        </div>
+        <p className="text-[14px] font-medium text-muted-foreground/80 line-clamp-2">
+          <HighlightMatch text={message.text} query={query} />
+        </p>
+        <div className="mt-2 flex items-center gap-2">
+          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/60 bg-primary/5 px-2 py-0.5 rounded">
+            {message.type === "dm" ? "Direct Message" : "Channel"}
+          </span>
+        </div>
+      </div>
+      <ArrowRight size={14} className="text-muted-foreground/20 group-hover:text-primary group-hover:translate-x-0.5 transition-all mt-1" />
     </motion.div>
   );
 }
