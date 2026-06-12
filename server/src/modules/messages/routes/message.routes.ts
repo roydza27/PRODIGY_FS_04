@@ -18,4 +18,19 @@ router.get(
   messageController.getConversationHistory
 );
 
+router.get(
+  "/search",
+  messageController.searchMessages
+);
+
+router.patch(
+  "/:messageId",
+  messageController.updateMessage
+);
+
+router.delete(
+  "/:messageId",
+  messageController.deleteMessage
+);
+
 export default router;

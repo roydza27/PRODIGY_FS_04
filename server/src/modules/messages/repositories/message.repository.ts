@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { MessageModel } from "../models/message.model";
 import type {
   IMessage,
@@ -78,10 +79,55 @@ export const markConversationAsSeen = async (
 ): Promise<void> => {
   await MessageModel.updateMany(
     {
-      conversationId,
-      senderId: { $ne: userId },
+      conversationId: new mongoose.Types.ObjectId(conversationId),
+      senderId: { $ne: new mongoose.Types.ObjectId(userId) },
       status: { $ne: "seen" },
     },
-    { status: "seen" }
+    { $set: { status: "seen" } }
   ).exec();
+};
+
+export const updateMessage = async (
+  messageId: string,
+  text: string
+): Promise<IMessage | null> => {
+  return MessageModel.findByIdAndUpdate(
+    messageId,
+    { text, isEdited: true },
+    { new: true }
+  )
+    .populate("senderId", "name avatarUrl")
+    .lean()
+    .exec();
+};
+
+export const deleteMessage = async (
+  messageId: string
+): Promise<IMessage | null> => {
+  return MessageModel.findByIdAndUpdate(
+    messageId,
+    { text: "This message was deleted.", isDeleted: true },
+    { new: true }
+  )
+    .populate("senderId", "name avatarUrl")
+    .lean()
+    .exec();
+};
+
+export const searchMessages = async (
+  query: string,
+  workspaceIds: any[],
+  limit = 20
+): Promise<IMessage[]> => {
+  return MessageModel.find({
+    workspaceId: { $in: workspaceIds },
+    text: { $regex: query, $options: "i" },
+    isDeleted: { $ne: true },
+  })
+    .select("-__v")
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .populate("senderId", "name avatarUrl")
+    .lean()
+    .exec();
 };

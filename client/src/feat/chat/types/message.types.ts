@@ -23,6 +23,14 @@ export interface Message {
   type: "room" | "dm";
   text: string;
   status: MessageStatus;
+  isEdited?: boolean;
+  isDeleted?: boolean;
+  attachments?: Array<{
+    url: string;
+    name: string;
+    type: string;
+    size: number;
+  }>;
 
   createdAt: string;
   updatedAt: string;
