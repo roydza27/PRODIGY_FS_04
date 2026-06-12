@@ -1,5 +1,4 @@
 venv/
-*.md
 
 node_modules/
 .agents/
