@@ -270,7 +270,6 @@ export const forgotPassword = async (email: string): Promise<void> => {
   // 6. Send the Email
   try {
     await transporter.sendMail(mailOptions);
-    console.log(`[Success] Recovery email sent to: ${user.email}`);
   } catch (error) {
     console.error("SMTP Error: ", error);
     throw new Error("Failed to send recovery email. Please try again later.", { cause: error });

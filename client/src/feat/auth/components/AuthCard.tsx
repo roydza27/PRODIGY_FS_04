@@ -15,7 +15,7 @@ export default function AuthCard({
 }: AuthCardProps) {
   return (
     <div
-      className={`w-full max-w-sm rounded-[24px] border border-white/10 bg-[#111113]/95 p-4 shadow-2xl shadow-black/30 sm:max-w-md sm:p-6 md:max-w-lg md:p-8 ${className}`}
+      className={`w-full max-w-sm rounded-[24px] border border-white/10 bg-card/95 p-4 shadow-2xl shadow-black/30 sm:max-w-md sm:p-6 md:max-w-lg md:p-8 ${className}`}
     >
       <div className="mb-6 text-center sm:mb-8">
         <h1 className="mb-2 text-2xl font-bold tracking-[-0.04em] text-white sm:mb-3 sm:text-3xl">
