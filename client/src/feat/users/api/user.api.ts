@@ -1,4 +1,5 @@
 import { api } from "@/services/api";
+import type { AuthUser } from "@/shared/types/auth";
 
 export type UserSearchResult = {
   _id: string;
@@ -25,5 +26,13 @@ export const searchUsersApi = async (query: string): Promise<UserSearchResult[]>
   const response = await api.get<{ success: boolean; data: UserSearchResult[] }>(
     `/users/search?q=${encodeURIComponent(query)}`
   );
+  return response.data.data;
+};
+
+/**
+ * Fetch a single user by ID
+ */
+export const getUserByIdApi = async (id: string): Promise<AuthUser> => {
+  const response = await api.get<{ success: boolean; data: AuthUser }>(`/users/${id}`);
   return response.data.data;
 };

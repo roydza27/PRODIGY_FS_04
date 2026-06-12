@@ -37,6 +37,19 @@ export default function UserCardPopover({
   const isCurrentUser =
     user._id === currentUser?.id;
 
+  const handleViewProfile = () => {
+    if (onViewProfile) {
+      onViewProfile();
+      return;
+    }
+    
+    if (isCurrentUser) {
+      navigate("/profile");
+    } else {
+      navigate(`/profile/${user._id}`);
+    }
+  };
+
   const handleMessage = async () => {
     if (isCurrentUser || !activeWorkspace) return;
 
@@ -66,7 +79,7 @@ export default function UserCardPopover({
         <UserCard
           user={user}
           onMessage={!isCurrentUser ? handleMessage : undefined}
-          onViewProfile={onViewProfile}
+          onViewProfile={handleViewProfile}
         />
       </PopoverContent>
     </Popover>

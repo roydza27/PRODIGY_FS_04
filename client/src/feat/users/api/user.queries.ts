@@ -4,6 +4,7 @@ import * as userApi from "./user.api";
 export const userKeys = {
   all: ["users"] as const,
   search: (query: string) => [...userKeys.all, "search", query] as const,
+  detail: (id: string) => [...userKeys.all, "detail", id] as const,
 };
 
 /**
@@ -15,5 +16,17 @@ export const useSearchUsers = (query: string, enabled = true) => {
     queryFn: () => userApi.searchUsersApi(query),
     enabled: enabled && query.length > 0,
     staleTime: 2 * 60 * 1000,
+  });
+};
+
+/**
+ * Query: Get single user
+ */
+export const useUser = (id?: string) => {
+  return useQuery({
+    queryKey: userKeys.detail(id!),
+    queryFn: () => userApi.getUserByIdApi(id!),
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000,
   });
 };

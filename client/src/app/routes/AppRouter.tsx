@@ -25,6 +25,7 @@ import RoomChatPage from "@/feat/chat/pages/RoomChatPage";
 import DMPage from "@/feat/chat/pages/DMPage";
 
 import NotFoundPage from "@/feat/not-found/pages/NotFoundPage";
+import ProfilePage from "@/feat/users/pages/ProfilePage";
 
 export default function AppRouter() {
   return (
@@ -93,6 +94,15 @@ export default function AppRouter() {
           <Route
             path="/w/:workspaceSlug/members"
             element={<WorkspaceMembersPage />}
+          />
+
+          <Route
+            path="/profile"
+            element={<ProfilePage />}
+          />
+          <Route
+            path="/profile/:userId"
+            element={<ProfilePage />}
           />
         </Route>
       </Route>

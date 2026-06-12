@@ -37,3 +37,24 @@ export const getPresence = async (_req: Request, res: Response) => {
     return res.status(400).json({ error: String(error) });
   }
 };
+
+/**
+ * GET /api/users/:id
+ */
+export const getUserById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const user = await userService.findUserById(id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: user,
+    });
+  } catch (error) {
+    return res.status(400).json({ error: String(error) });
+  }
+};
