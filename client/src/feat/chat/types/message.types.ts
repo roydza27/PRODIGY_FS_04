@@ -7,6 +7,29 @@ export const MessageStatus = {
 
 export type MessageStatus = (typeof MessageStatus)[keyof typeof MessageStatus];
 
+export type MessageContentType = "TEXT" | "FILE" | "DOCUMENT" | "IMAGE" | "VIDEO" | "AUDIO" | "LINK" | "SYSTEM";
+
+export interface IAttachment {
+  id?: string;
+  type: MessageContentType;
+  url: string;
+  filename: string;
+  filesize: number;
+  mimeType: string;
+  thumbnail?: string;
+  width?: number;
+  height?: number;
+  duration?: number;
+}
+
+export interface IReaction {
+  emoji: string;
+  users: {
+    _id: string;
+    name: string;
+  }[];
+}
+
 export interface Message {
   _id: string;
 
@@ -21,16 +44,16 @@ export interface Message {
   };
 
   type: "room" | "dm";
-  text: string;
+  messageType?: MessageContentType;
+  text?: string;
   status: MessageStatus;
   isEdited?: boolean;
   isDeleted?: boolean;
-  attachments?: Array<{
-    url: string;
-    name: string;
-    type: string;
-    size: number;
-  }>;
+  deletedAt?: string;
+  deletedBy?: string;
+  attachments?: IAttachment[];
+  reactions?: IReaction[];
+  replyTo?: Message;
 
   createdAt: string;
   updatedAt: string;

@@ -5,7 +5,7 @@ import { useAuthStore } from "@/app/stores/auth.store";
 import { socketService } from "@/services/socket/socket.service";
 
 import { MessageStatus } from "../types/message.types";
-import type { Message } from "../types/message.types";
+import type { Message, IAttachment, MessageContentType } from "../types/message.types";
 
 export function useSendMessage(
   workspaceId?: string,
@@ -16,24 +16,30 @@ export function useSendMessage(
   const user = useAuthStore((state) => state.user);
 
   const sendMessage = useCallback(
-    (text: string) => {
-      console.log("[useSendMessage] Attempting to send:", { workspaceId, user, roomId, conversationId, text });
-
+    (text: string, attachments: IAttachment[] = []) => {
       if (!workspaceId || !user) {
-        console.warn("[useSendMessage] Missing workspaceId or user", { workspaceId, user });
         return;
       }
 
       if (!roomId && !conversationId) {
-        console.warn("[useSendMessage] Missing roomId and conversationId");
         return;
       }
 
       const trimmedText = text.trim();
 
-      if (!trimmedText) {
+      // Must have text OR at least one attachment
+      if (!trimmedText && attachments.length === 0) {
         return;
       }
+
+      // Derive messageType
+      const messageType: MessageContentType = (() => {
+        if (attachments.length === 0) return "TEXT";
+        if (attachments.some((a) => a.type === "VIDEO")) return "VIDEO";
+        if (attachments.some((a) => a.type === "IMAGE")) return "IMAGE";
+        if (attachments.some((a) => a.type === "DOCUMENT")) return "DOCUMENT";
+        return "FILE";
+      })();
 
       // Create optimistic message
       const tempId = `temp-${Date.now()}`;
@@ -49,13 +55,13 @@ export function useSendMessage(
           avatarUrl: user.avatarUrl,
         },
         type: conversationId ? "dm" : "room",
-        text: trimmedText,
+        messageType,
+        text: trimmedText || undefined,
+        attachments,
         status: MessageStatus.SENDING,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-
-      console.log("[useSendMessage] Optimistic update:", optimisticMessage);
 
       // Update cache
       const queryKey = roomId
@@ -72,18 +78,12 @@ export function useSendMessage(
         roomId,
         conversationId,
         text: trimmedText,
+        messageType,
+        attachments,
       });
     },
-    [
-      workspaceId,
-      roomId,
-      conversationId,
-      queryClient,
-      user,
-    ]
+    [workspaceId, roomId, conversationId, queryClient, user]
   );
 
-  return {
-    sendMessage,
-  };
+  return { sendMessage };
 }

@@ -24,6 +24,21 @@ const messageSchema = new Schema<IMessage>(
       required: true,
     },
 
+    messageType: {
+      type: String,
+      enum: [
+        "TEXT",
+        "FILE",
+        "DOCUMENT",
+        "IMAGE",
+        "VIDEO",
+        "AUDIO",
+        "LINK",
+        "SYSTEM",
+      ],
+      default: "TEXT",
+    },
+
     roomId: {
       type: Schema.Types.ObjectId,
       ref: "Room",
@@ -36,7 +51,6 @@ const messageSchema = new Schema<IMessage>(
 
     text: {
       type: String,
-      required: true,
       trim: true,
       maxlength: 4000,
     },
@@ -57,14 +71,42 @@ const messageSchema = new Schema<IMessage>(
       default: false,
     },
 
+    deletedAt: {
+      type: Date,
+    },
+
+    deletedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+
     attachments: [
       {
-        url: { type: String, required: true },
-        name: { type: String, required: true },
+        id: { type: String },
         type: { type: String, required: true },
-        size: { type: Number, required: true },
+        url: { type: String, required: true },
+        filename: { type: String, required: true },
+        filesize: { type: Number, required: true },
+        mimeType: { type: String, required: true },
+        thumbnail: { type: String },
+        width: { type: Number },
+        height: { type: Number },
+        duration: { type: Number },
       },
     ],
+
+    reactions: [
+      {
+        emoji: { type: String, required: true },
+        users: [{ type: Schema.Types.ObjectId, ref: "User" }],
+      },
+    ],
+
+    replyTo: {
+      type: Schema.Types.ObjectId,
+      ref: "Message",
+      index: true,
+    },
   },
   {
     timestamps: true,

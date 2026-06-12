@@ -1,6 +1,13 @@
 import { api } from "@/services/api";
 import type { Message } from "../types/message.types";
 
+export const clearChat = async (
+  context: "room" | "dm",
+  contextId: string
+): Promise<void> => {
+  await api.delete(`/messages/clear/${context}/${contextId}`);
+};
+
 export const getRoomMessages = async (
   roomId: string
 ): Promise<Message[]> => {
@@ -17,7 +24,6 @@ export const getConversationMessages = async (
   const { data } = await api.get(
     `/messages/conversation/${conversationId}`
   );
-
   return data;
 };
 
@@ -48,6 +54,30 @@ export const searchMessages = async (
 ): Promise<Message[]> => {
   const { data } = await api.get(
     `/messages/search?q=${encodeURIComponent(query)}`
+  );
+
+  return data;
+};
+
+export const addReaction = async (
+  messageId: string,
+  emoji: string
+): Promise<Message> => {
+  const { data } = await api.post(
+    `/messages/${messageId}/reactions`,
+    { emoji }
+  );
+
+  return data;
+};
+
+export const removeReaction = async (
+  messageId: string,
+  emoji: string
+): Promise<Message> => {
+  const { data } = await api.delete(
+    `/messages/${messageId}/reactions`,
+    { data: { emoji } }
   );
 
   return data;

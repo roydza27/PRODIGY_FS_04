@@ -34,6 +34,8 @@ export default function MessageList({
   const currentUser = useAuthStore((state) => state.user);
   const currentUserId = currentUser?.id;
 
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+
   // ==========================================================================
   // SCROLL LOGIC
   // ==========================================================================
@@ -172,6 +174,8 @@ export default function MessageList({
                     attachments={message.attachments}
                     roomId={message.roomId}
                     conversationId={message.conversationId}
+                    isMenuOpen={activeMenuId === message._id}
+                    onMenuToggle={(open) => setActiveMenuId(open ? message._id : null)}
                   />
                 </motion.div>
               );
@@ -236,7 +240,7 @@ export default function MessageList({
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
             onClick={() => scrollToBottom("smooth")}
-            className="absolute bottom-4 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-[#202c33] text-[#8696a0] shadow-xl border border-white/5 transition-colors hover:bg-[#2a3942] hover:text-[#d1d7db] active:scale-95"
+            className="absolute bottom-4 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-xl border border-white/5 transition-colors hover:bg-primary/90 active:scale-95"
           >
             <IconChevronDown size={22} stroke={2.5} className="mt-0.5" />
             <AnimatePresence>
@@ -245,7 +249,7 @@ export default function MessageList({
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   exit={{ scale: 0 }}
-                  className="absolute -right-1.5 -top-1.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-emerald-500 px-1.5 text-[11px] font-bold text-background shadow-sm"
+                  className="absolute -right-1.5 -top-1.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-primary-foreground shadow-sm"
                 >
                   {unreadCount}
                 </motion.div>
