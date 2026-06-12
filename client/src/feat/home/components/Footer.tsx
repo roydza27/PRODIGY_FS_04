@@ -1,6 +1,6 @@
-import { MessageSquareMore } from "lucide-react";
 import { FiGithub, FiTwitter, FiLinkedin } from "react-icons/fi";
 import { Link } from "react-router-dom";
+import { Logo } from "@/shared/components/ui/logo";
 
 export default function Footer() {
   return (
@@ -10,11 +10,8 @@ export default function Footer() {
           
           {/* Brand Col */}
           <div className="col-span-2 lg:col-span-2">
-            <Link to="/" className="flex items-center gap-3 font-bold text-white text-2xl tracking-tight mb-8 transition-all hover:opacity-90 active:scale-95">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-600 shadow-lg shadow-violet-600/20 ring-1 ring-violet-400/20">
-                <MessageSquareMore className="h-6 w-6 text-white" />
-              </div>
-              <span className="font-black uppercase italic tracking-tighter">SyncSpace</span>
+            <Link to="/" className="mb-8 block transition-all hover:opacity-90 active:scale-95">
+              <Logo showText size="lg" />
             </Link>
             <p className="max-w-xs text-base font-medium leading-relaxed text-zinc-500 mb-10">
                 The high-performance communication platform for teams that build the future. Built for speed, security, and scale.

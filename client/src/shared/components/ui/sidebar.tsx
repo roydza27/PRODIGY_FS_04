@@ -142,7 +142,7 @@ function Sidebar({
     return (
       <div
         className={cn(
-          "flex h-full w-(--sidebar-width) min-w-(--sidebar-width) max-w-(--sidebar-width) shrink-0 flex-col bg-[#0B0B0D] text-white/90",
+          "flex h-full w-(--sidebar-width) min-w-(--sidebar-width) max-w-(--sidebar-width) shrink-0 flex-col bg-sidebar text-white/90",
           className
         )}
         {...props}
@@ -159,7 +159,7 @@ function Sidebar({
           data-sidebar="sidebar"
           data-mobile="true"
           side={side}
-          className="w-(--sidebar-width) bg-[#0B0B0D] p-0 text-white/90 [&>button]:hidden"
+          className="w-(--sidebar-width) bg-sidebar p-0 text-white/90 [&>button]:hidden"
         >
           <div className="flex h-full w-full flex-col">{children}</div>
         </SheetContent>
@@ -202,7 +202,7 @@ function Sidebar({
       >
         <div
           data-sidebar="sidebar"
-          className="flex h-full w-full flex-col bg-[#0B0B0D] group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border border-white/5 group-data-[variant=floating]:shadow-sm"
+          className="flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border border-white/5 group-data-[variant=floating]:shadow-sm"
         >
           {children}
         </div>
@@ -250,7 +250,7 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
       className={cn(
         "absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-white/10 group-data-[side=left]:-right-4 group-data-[side=left]:translate-x-1/2 group-data-[side=right]:-left-4 sm:flex",
         "[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize",
-        "group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full group-data-[collapsible=offcanvas]:hover:bg-[#0B0B0D]",
+        "group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full group-data-[collapsible=offcanvas]:hover:bg-sidebar",
         "[[data-side=left][data-state=collapsed]_&]:translate-x-0 [[data-side=right][data-state=collapsed]_&]:translate-x-0",
         className
       )}
@@ -363,7 +363,7 @@ function SidebarGroupLabel({
       data-sidebar="group-label"
       data-slot="sidebar-group-label"
       className={cn(
-        "flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium text-muted-foreground/70 outline-hidden ring-[#27272A] transition-[margin,opaicty] duration-200 ease-linear focus-visible:ring-2 [&_svg]:size-4 [&_svg]:shrink-0",
+        "flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium text-muted-foreground/70 outline-hidden ring-sidebar-ring transition-[margin,opaicty] duration-200 ease-linear focus-visible:ring-2 [&_svg]:size-4 [&_svg]:shrink-0",
         "group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0",
         className
       )}
@@ -384,7 +384,7 @@ function SidebarGroupAction({
       data-sidebar="group-action"
       data-slot="sidebar-group-action"
       className={cn(
-        "absolute right-3 top-3.5 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-muted-foreground outline-hidden ring-[#27272A] transition-transform hover:bg-[#18181B] hover:text-[#FAFAFA] focus-visible:ring-2 [&_svg]:size-4 [&_svg]:shrink-0",
+        "absolute right-3 top-3.5 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-muted-foreground outline-hidden ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-[#FAFAFA] focus-visible:ring-2 [&_svg]:size-4 [&_svg]:shrink-0",
         // Increases the hit area of the button on mobile.
         "after:absolute after:-inset-2 md:after:hidden",
         "group-data-[collapsible=icon]:hidden",
@@ -432,13 +432,13 @@ function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
 }
 
 const sidebarMenuButtonVariants = cva(
-  "peer/menu-button group/menu-button flex w-full items-center gap-2 overflow-hidden rounded-xl p-2 text-left text-sm ring-[#27272A] outline-hidden transition-[width,height,padding] group-has-data-[sidebar=menu-action]/menu-item:pr-8 group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! hover:bg-[#18181B] hover:text-[#FAFAFA] focus-visible:ring-2 active:bg-[#18181B] active:text-[#FAFAFA] disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-open:hover:bg-[#18181B] data-open:hover:text-[#FAFAFA] data-active:bg-[#18181B] data-active:font-medium data-active:text-[#FAFAFA] [&_svg]:size-4 [&_svg]:shrink-0 [&>span:last-child]:truncate",
+  "peer/menu-button group/menu-button flex w-full items-center gap-2 overflow-hidden rounded-xl p-2 text-left text-sm ring-sidebar-ring outline-hidden transition-[width,height,padding] group-has-data-[sidebar=menu-action]/menu-item:pr-8 group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! hover:bg-sidebar-accent hover:text-[#FAFAFA] focus-visible:ring-2 active:bg-sidebar-accent active:text-[#FAFAFA] disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-open:hover:bg-sidebar-accent data-open:hover:text-[#FAFAFA] data-active:bg-sidebar-accent data-active:font-medium data-active:text-[#FAFAFA] [&_svg]:size-4 [&_svg]:shrink-0 [&>span:last-child]:truncate",
   {
     variants: {
       variant: {
-        default: "hover:bg-[#18181B] hover:text-[#FAFAFA]",
+        default: "hover:bg-sidebar-accent hover:text-[#FAFAFA]",
         outline:
-          "bg-[#111113] shadow-[0_0_0_1px_#27272A] hover:bg-[#18181B] hover:text-[#FAFAFA] hover:shadow-[0_0_0_1px_#18181B]",
+          "bg-sidebar-accent shadow-[0_0_0_1px_var(--sidebar-border)] hover:bg-sidebar-accent hover:text-[#FAFAFA] hover:shadow-[0_0_0_1px_var(--sidebar-accent)]",
       },
       size: {
         default: "h-8 text-sm",
@@ -519,7 +519,7 @@ function SidebarMenuAction({
       data-sidebar="menu-action"
       data-slot="sidebar-menu-action"
       className={cn(
-        "absolute right-1 top-1.5 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-muted-foreground outline-hidden ring-[#27272A] transition-transform hover:bg-[#18181B] hover:text-[#FAFAFA] focus-visible:ring-2 [&_svg]:size-4 [&_svg]:shrink-0",
+        "absolute right-1 top-1.5 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-muted-foreground outline-hidden ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-[#FAFAFA] focus-visible:ring-2 [&_svg]:size-4 [&_svg]:shrink-0",
         // Increases the hit area of the button on mobile.
         "after:absolute after:-inset-2 md:after:hidden",
         "peer-data-[size=sm]/menu-button:top-1",
@@ -631,7 +631,7 @@ function SidebarMenuSubButton({
       data-size={size}
       data-active={isActive}
       className={cn(
-        "flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2 text-muted-foreground outline-hidden ring-[#27272A] transition-all hover:bg-[#18181B] hover:text-[#FAFAFA] focus-visible:ring-2 active:bg-[#18181B] active:text-[#FAFAFA] disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-active:bg-[#18181B] data-active:font-medium data-active:text-[#FAFAFA] [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-[#A1A1AA]",
+        "flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2 text-muted-foreground outline-hidden ring-sidebar-ring transition-all hover:bg-sidebar-accent hover:text-[#FAFAFA] focus-visible:ring-2 active:bg-sidebar-accent active:text-[#FAFAFA] disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-active:bg-sidebar-accent data-active:font-medium data-active:text-[#FAFAFA] [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-[#A1A1AA]",
         "group-data-[collapsible=icon]:hidden",
         size === "sm" && "text-xs",
         size === "md" && "text-sm",

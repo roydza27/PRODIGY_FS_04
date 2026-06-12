@@ -9,15 +9,17 @@ import { cn } from "@/lib/utils";
 import { SidebarTrigger } from "@/shared/components/ui/sidebar";
 
 import { NotificationCenter } from "@/feat/chat/components/NotificationCenter";
+import { Logo } from "@/shared/components/ui/logo";
 
 export function GlobalHeader() {
   return (
     <header className="h-12 w-full shrink-0 border-b border-white/5 bg-[#09090B] px-3 flex items-center justify-between z-50">
       {/* Left */}
-      <div className="flex flex-1 items-center">
+      <div className="flex flex-1 items-center gap-4">
         <div className="flex items-center md:hidden">
           <SidebarTrigger />
         </div>
+        <Logo showText size="sm" textClassName="text-[13px] hidden sm:block" />
       </div>
 
       {/* Center - Empty/Spacer */}
@@ -63,7 +65,7 @@ function HeaderAction({
       {icon}
 
       {count && count > 0 && (
-        <span className="absolute right-1.5 top-1.5 size-2 rounded-full border-2 border-[#09090B] bg-red-500" />
+        <span className="absolute right-1.5 top-1.5 size-2 rounded-full border-2 border-[#09090B] bg-primary" />
       )}
     </button>
   );

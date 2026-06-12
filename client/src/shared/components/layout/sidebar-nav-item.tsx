@@ -29,7 +29,7 @@ export function SidebarNavItem({ to, label, icon: Icon, end }: Props) {
             cn(
               "relative flex items-center gap-3 px-2 transition-all duration-200",
               isActive 
-                ? "bg-white/10 text-white" 
+                ? "bg-brand/10 text-foreground shadow-[0_0_20px_rgba(139,92,246,0.05)] ring-1 ring-white/10" 
                 : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
             )
           }
@@ -37,9 +37,9 @@ export function SidebarNavItem({ to, label, icon: Icon, end }: Props) {
           {({ isActive }) => (
             <>
               {isActive && (
-                <div className="absolute -left-2 top-1.5 bottom-1.5 w-1 rounded-r-full bg-white" />
+                <div className="absolute -left-2 top-1.5 bottom-1.5 w-1 rounded-r-full bg-brand shadow-[0_0_10px_#8b5cf6]" />
               )}
-              <Icon className={cn("size-4 shrink-0 transition-transform duration-200", isActive && "scale-105")} />
+              <Icon className={cn("size-4 shrink-0 transition-transform duration-200", isActive && "text-brand scale-105")} />
               <span className="truncate text-[14px] font-medium">{label}</span>
             </>
           )}

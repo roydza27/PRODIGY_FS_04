@@ -133,6 +133,8 @@ code {
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand: var(--brand);
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
@@ -175,24 +177,27 @@ code {
   --popover: #111111;
   --popover-foreground: #f4f4f5;
   
-  --primary: #ffffff; /* Brighter primary for CTAs/important actions */
+  --primary: #ffffff; /* Original White CTA Style */
   --primary-foreground: #090909;
+
+  --brand: #8b5cf6; /* Branded Violet Accent */
+  --brand-foreground: #ffffff;
   
   --secondary: #1a1a1a; /* Slightly lighter than card */
   --secondary-foreground: #f4f4f5;
   
-  --muted: #222222;
+  --muted: #161618;
   --muted-foreground: #a1a1aa;
   
-  --accent: #222222;
+  --accent: #1a1a1c;
   --accent-foreground: #fafafa;
   
-  --destructive: #7f1d1d;
+  --destructive: #ef4444;
   
   --border: #1a1a1a; /* Subtle borders */
   --input: #1a1a1a;
   
-  --ring: #3f3f46; /* Subtle ring */
+  --ring: #3f3f46; /* Neutral focus ring */
   
   /* Chart colors remain or tweak slightly if needed */
   --chart-1: #3b82f6;
@@ -203,12 +208,12 @@ code {
   
   --sidebar: #0e0e10; /* Darker than background for hierarchy */
   --sidebar-foreground: #f4f4f5;
-  --sidebar-primary: #f4f4f5;
-  --sidebar-primary-foreground: #18181b;
-  --sidebar-accent: #1e1e21;
+  --sidebar-primary: #8b5cf6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1a1a1c;
   --sidebar-accent-foreground: #f4f4f5;
   --sidebar-border: #1a1a1a;
-  --sidebar-ring: #3f3f46;
+  --sidebar-ring: #8b5cf6;
 }
 
 @layer base {

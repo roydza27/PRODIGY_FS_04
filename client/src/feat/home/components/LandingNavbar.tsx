@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/shared/components/ui/button";
-import { MessageSquareMore } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Logo } from "@/shared/components/ui/logo";
 
 export default function LandingNavbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -25,12 +25,9 @@ export default function LandingNavbar() {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6">
         <Link
           to="/"
-          className="flex items-center gap-3 font-bold text-white transition-all hover:opacity-90 active:scale-95"
+          className="transition-all hover:opacity-90 active:scale-95"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-600 shadow-lg shadow-violet-600/20 ring-1 ring-violet-400/20">
-            <MessageSquareMore className="h-5 w-5 text-white" />
-          </div>
-          <span className="text-xl tracking-tight font-black uppercase italic">SyncSpace</span>
+          <Logo showText size="md" />
         </Link>
 
         <div className="flex items-center gap-3">

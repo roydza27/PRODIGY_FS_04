@@ -41,7 +41,7 @@ export function NavUser({ user, onLogout, items = [] }: NavUserProps) {
       <DropdownMenuTrigger asChild>
         {/* Universal Button: Works in Navbar AND collapses in Sidebar */}
         <button
-          className="flex w-full items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] p-2 text-left text-sm transition-colors hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DB4444]/60 data-[state=open]:bg-white/[0.06]"
+          className="flex w-full items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] p-2 text-left text-sm transition-colors hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 data-[state=open]:bg-white/[0.06]"
         >
           <div className="relative shrink-0">
             <Avatar className="h-8 w-8 rounded-lg">

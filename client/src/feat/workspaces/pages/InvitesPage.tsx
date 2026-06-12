@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageLayout } from "@/shared/components/layout/PageLayout";
-import { UserPlus, X, Calendar, User, Mail, ShieldCheck } from "lucide-react";
+import { UserPlus, Check, X, Calendar, User, Mail, ShieldCheck } from "lucide-react";
 import { 
   useGetPendingInvites, 
   useAcceptInvite, 
@@ -12,10 +13,10 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import type { WorkspaceInvite } from "../types/workspace.types";
+import { cn } from "@/lib/utils";
 
 export default function InvitesPage() {
-  const { data: invites = [], isLoading, error } = useGetPendingInvites();
+  const { data: invites, isLoading, error } = useGetPendingInvites();
   const { mutate: acceptInvite, isPending: isAccepting } = useAcceptInvite();
   const { mutate: declineInvite, isPending: isDeclining } = useDeclineInvite();
 
@@ -24,9 +25,8 @@ export default function InvitesPage() {
       onSuccess: () => {
         toast.success(`Welcome to ${workspaceName}!`);
       },
-      onError: (err: unknown) => {
-        const error = err as { response?: { data?: { error?: string } } };
-        toast.error(error?.response?.data?.error || "Failed to accept invitation");
+      onError: (err: any) => {
+        toast.error(err?.response?.data?.error || "Failed to accept invitation");
       }
     });
   };
@@ -36,16 +36,16 @@ export default function InvitesPage() {
       onSuccess: () => {
         toast.success("Invitation declined");
       },
-      onError: (err: unknown) => {
-        const error = err as { response?: { data?: { error?: string } } };
-        toast.error(error?.response?.data?.error || "Failed to decline invitation");
+      onError: (err: any) => {
+        toast.error(err?.response?.data?.error || "Failed to decline invitation");
       }
     });
   };
 
   if (isLoading) {
+    /* REPLACED: Updated layout constraints to full state match */
     return (
-      <PageLayout variant="constrained" className="py-12 flex flex-col gap-8">
+      <PageLayout variant="full" className="py-12 px-6 md:px-12 flex flex-col gap-8">
         <div className="space-y-3">
           <Skeleton className="h-10 w-48 rounded-xl" />
           <Skeleton className="h-5 w-80 rounded-lg" />
@@ -61,7 +61,7 @@ export default function InvitesPage() {
 
   if (error) {
     return (
-      <PageLayout variant="constrained" className="flex items-center justify-center min-h-[70vh]">
+      <PageLayout variant="full" className="flex items-center justify-center min-h-[70vh] px-6">
         <div className="text-center space-y-5 max-w-sm">
           <div className="mx-auto h-14 w-14 rounded-full bg-destructive/10 flex items-center justify-center text-destructive">
             <X size={24} strokeWidth={2} />
@@ -82,9 +82,10 @@ export default function InvitesPage() {
   }
 
   return (
-    <PageLayout variant="constrained" className="relative py-10 flex flex-col gap-10 bg-background text-foreground selection:bg-primary/20">
+    /* REPLACED: Swapped "constrained" to "full" with correct padding matrix */
+    <PageLayout variant="full" className="relative py-12 px-6 md:px-12 flex flex-col gap-10 min-h-screen bg-background text-foreground selection:bg-primary/20">
       
-      {/* Background Ambient Glows */}
+      {/* Premium Background Ambient Glows */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[20%] -left-[10%] h-[40%] w-[40%] rounded-full bg-primary/5 blur-[120px]" />
         <div className="absolute -bottom-[10%] -right-[5%] h-[50%] w-[50%] rounded-full bg-emerald-500/5 blur-[140px]" />
@@ -126,7 +127,7 @@ export default function InvitesPage() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             <AnimatePresence mode="popLayout">
-              {(invites as WorkspaceInvite[]).map((invite) => {
+              {invites.map((invite) => {
                 const workspace = invite.workspaceId;
                 const inviter = invite.invitedBy;
                 
@@ -141,6 +142,7 @@ export default function InvitesPage() {
                   >
                     <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between relative z-10 w-full min-w-0">
                       <div className="flex items-start gap-4 min-w-0 flex-1">
+                        {/* Swapped avatar style layout to standard clean circle format */}
                         <Avatar className="h-14 w-14 rounded-full shadow-sm border border-border/10 bg-muted/50 shrink-0 transition-transform duration-300 group-hover:scale-105">
                           <AvatarImage src={workspace.iconUrl} alt={workspace.name} className="object-cover" />
                           <AvatarFallback className="rounded-full bg-gradient-to-br from-primary/10 to-primary/5 text-primary text-xl font-medium">
@@ -158,6 +160,7 @@ export default function InvitesPage() {
                             </div>
                           </div>
                           
+                          {/* Refined Metadata Blocks */}
                           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-muted-foreground/60">
                             {inviter && (
                               <span className="flex items-center gap-1.5 truncate max-w-[150px]">
@@ -174,6 +177,7 @@ export default function InvitesPage() {
                       </div>
                     </div>
 
+                    {/* Action buttons normalized to precise production scales */}
                     <div className="flex items-center justify-end gap-2 mt-5 pt-4 border-t border-border/10 w-full">
                       <Button 
                         variant="secondary" 

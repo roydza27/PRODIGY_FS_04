@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Home, Plus } from "lucide-react";
+import { Plus, MessageSquareMore } from "lucide-react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useActiveWorkspace } from "@/feat/workspaces/hooks/useActiveWorkspace";
@@ -37,13 +37,14 @@ export function WorkspaceRail() {
   return (
     <div className="flex h-full w-(--sidebar-width-icon) shrink-0 flex-col items-center border-r border-white/5 bg-[#09090B] py-4 text-[#FAFAFA]">
       <div className="flex w-full flex-1 flex-col items-center gap-3 overflow-y-auto no-scrollbar">
-        {/* Home Button */}
+        {/* Home Button - Now with Brand Logo */}
         <RailItem
-          icon={<Home className="size-5" />}
+          icon={<MessageSquareMore className="size-5" />}
           label="Home"
           active={isHomeActive}
           onClick={handleHomeClick}
-          activeColor="bg-primary text-primary-foreground" 
+          activeColor="bg-brand text-brand-foreground shadow-lg shadow-brand/20 ring-1 ring-white/10" 
+          hoverColor="hover:bg-brand hover:text-brand-foreground"
         />
 
         {/* Subtle Divider between Home and Workspaces */}

@@ -5,16 +5,16 @@ export const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-[#FAFAFA] text-[#09090B] [a]:hover:bg-[#E4E4E7]",
+        default: "bg-primary text-primary-foreground [a]:hover:bg-primary/90 shadow-sm shadow-primary/20",
         secondary:
-          "bg-[#18181B] text-[#FAFAFA] [a]:hover:bg-[#1F1F23]",
+          "bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80",
         destructive:
-          "bg-red-500/10 text-red-500 focus-visible:ring-red-500/20 [a]:hover:bg-red-500/20",
+          "bg-destructive/10 text-destructive focus-visible:ring-destructive/20 [a]:hover:bg-destructive/20",
         outline:
-          "border-[#27272A] text-[#FAFAFA] [a]:hover:bg-[#18181B] [a]:hover:text-[#A1A1AA]",
+          "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-foreground",
         ghost:
-          "hover:bg-[#18181B] hover:text-[#A1A1AA]",
-        link: "text-[#FAFAFA] underline-offset-4 hover:underline",
+          "hover:bg-muted hover:text-foreground",
+        link: "text-foreground underline-offset-4 hover:underline",
       },
     },
     defaultVariants: {

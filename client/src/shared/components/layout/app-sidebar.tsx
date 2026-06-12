@@ -1,17 +1,18 @@
 "use client";
 
 import * as React from "react";
-import { Home, Search, UserPlus } from "lucide-react";
+import { Search, UserPlus, MessageSquareMore } from "lucide-react";
 import RoomSidebar from "@/feat/rooms/components/RoomSidebar";
 import DMList from "@/feat/chat/components/DMList";
 import { SidebarNavItem } from "@/shared/components/layout/sidebar-nav-item";
 import { SidebarSection } from "@/shared/components/layout/sidebar-section";
 import { NavUser } from "@/shared/components/layout/nav-user";
 import { useAuthStore } from "@/app/stores/auth.store";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { useActiveWorkspace } from "@/feat/workspaces/hooks/useActiveWorkspace";
 import { WorkspaceRail } from "@/shared/components/workspace/workspace-rail";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Logo } from "@/shared/components/ui/logo";
 
 import {
   Sidebar,
@@ -33,6 +34,7 @@ export function AppSidebar({
   ...props
 }: AppSidebarProps) {
   const { workspaceSlug } = useParams();
+  const location = useLocation();
   const authUser = useAuthStore((state) => state.user);
   const { documents = [], navSecondary = [], userMenu = [] } = sidebarData;
   const { activeWorkspace } = useActiveWorkspace();
@@ -98,13 +100,13 @@ export function AppSidebar({
               </div>
             </>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-6 border-white">
               <SidebarSection title="Navigation">
                 <SidebarNavItem
                   to="/workspaces"
                   label="Home"
-                  icon={Home}
-                  end
+                  icon={MessageSquareMore}
+                  end={!location.pathname.startsWith("/dm/")}
                 />
                 <SidebarNavItem
                   to="/workspaces/search"

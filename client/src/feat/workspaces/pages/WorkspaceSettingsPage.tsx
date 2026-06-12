@@ -158,7 +158,10 @@ export default function WorkspaceSettingsPage() {
   }
 
   return (
-    <PageLayout variant="narrow" className="space-y-10 pb-20">
+    <PageLayout
+      variant="full"
+      className="w-full px-4 sm:px-6 lg:px-10 xl:px-12 2xl:px-16 pb-20"
+    >
       <div className="text-left">
       <div>
         <h1 className="text-3xl font-black tracking-tight text-foreground">

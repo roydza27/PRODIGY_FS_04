@@ -57,8 +57,8 @@ export default function WorkspaceHomePage() {
         {/* Dynamic Header Section */}
         <section className="relative px-4 py-8 md:px-8 md:py-16 lg:px-12 lg:py-20 overflow-hidden border-b border-white/5 bg-gradient-to-b from-primary/[0.02] to-transparent">
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute -top-24 -left-20 h-[500px] w-[500px] rounded-full bg-primary/5 blur-[120px] animate-pulse" />
-            <div className="absolute top-40 -right-20 h-[400px] w-[400px] rounded-full bg-emerald-500/5 blur-[100px]" />
+            <div className="absolute -top-24 -left-20 h-[500px] w-[500px] rounded-full bg-primary/10 blur-[120px] animate-pulse" />
+            <div className="absolute top-40 -right-20 h-[400px] w-[400px] rounded-full bg-indigo-500/5 blur-[100px]" />
           </div>
 
           <div className="relative z-10 flex flex-col gap-8 md:flex-row md:items-end md:justify-between max-w-7xl mx-auto">
@@ -129,22 +129,22 @@ export default function WorkspaceHomePage() {
               label="Active Members" 
               value={activeWorkspace.memberCount || 1} 
               icon={<Users className="h-5 w-5" />} 
-              color="text-emerald-500"
-              bg="bg-emerald-500/10"
+              color="text-indigo-400"
+              bg="bg-indigo-400/10"
             />
             <ModernStatCard 
               label="Text Channels" 
               value={textChannels} 
               icon={<MessageSquare className="h-5 w-5" />} 
-              color="text-blue-500"
-              bg="bg-blue-500/10"
+              color="text-violet-400"
+              bg="bg-violet-400/10"
             />
             <ModernStatCard 
               label="Security Level" 
               value={activeWorkspace.visibility === 'public' ? 'Standard' : 'Private'} 
               icon={<ShieldCheck className="h-5 w-5" />} 
-              color="text-purple-500"
-              bg="bg-purple-500/10"
+              color="text-primary/80"
+              bg="bg-primary/5"
             />
           </section>
 

@@ -12,6 +12,7 @@ import {
 } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 import { useActiveWorkspace } from "@/feat/workspaces/hooks/useActiveWorkspace";
 import { 
@@ -58,6 +59,7 @@ import { cn } from "@/lib/utils";
 type FilterType = "all" | "owner" | "admin" | "member" | "online";
 
 export default function WorkspaceMembersPage() {
+  const navigate = useNavigate();
   const { activeWorkspace, isLoading: workspaceLoading } = useActiveWorkspace();
   const workspaceId = activeWorkspace?._id || "";
   
@@ -207,7 +209,10 @@ export default function WorkspaceMembersPage() {
   }
 
   return (
-    <PageLayout variant="constrained">
+    <PageLayout
+      variant="full"
+      className="w-full px-4 sm:px-6 lg:px-10 xl:px-12 2xl:px-16 pb-20"
+    >
       <div className="flex flex-col gap-8 text-left">
         
         {/* Header */}
@@ -351,7 +356,10 @@ export default function WorkspaceMembersPage() {
                             <DropdownMenuLabel className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/40 px-4 py-2">
                               Options
                             </DropdownMenuLabel>
-                            <DropdownMenuItem className="flex items-center gap-3 px-4 py-2.5 cursor-pointer">
+                            <DropdownMenuItem 
+                              onClick={() => navigate(isMe ? "/profile" : `/profile/${userId}`)}
+                              className="flex items-center gap-3 px-4 py-2.5 cursor-pointer"
+                            >
                               <IconUserCircle size={18} />
                               <span className="font-bold">View Profile</span>
                             </DropdownMenuItem>

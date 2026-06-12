@@ -87,78 +87,91 @@ export default function WorkspaceListPage() {
   }
 
   return (
-    /* REPLACED: Changed variant from "constrained" to "full" and added side padding (px-6 md:px-12) */
-    <PageLayout variant="full" className="relative py-12 px-6 md:px-12 flex flex-col gap-10 bg-background text-foreground selection:bg-primary/20 text-left">
+    /* REPLACED: Enhanced responsiveness with more granular breakpoints and fluid spacing */
+    <PageLayout variant="full" className="relative py-8 sm:py-12 px-4 sm:px-6 md:px-10 lg:px-16 flex flex-col gap-8 sm:gap-12 bg-background text-foreground selection:bg-primary/20 text-left">
       
       {/* Background Ambient Glows */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-0 h-[40%] w-[40%] rounded-full bg-primary/5 blur-[120px]" />
-        <div className="absolute top-[30%] -right-[10%] h-[35%] w-[35%] rounded-full bg-blue-500/5 blur-[100px]" />
+        <div className="absolute top-0 left-0 h-[40%] w-[40%] rounded-full bg-primary/10 blur-[120px]" />
+        <div className="absolute top-[30%] -right-[10%] h-[35%] w-[35%] rounded-full bg-indigo-500/5 blur-[100px]" />
       </div>
 
       {/* Welcome Platform Hub Hero Banner */}
-      <section className="relative z-10 rounded-2xl border border-border/30 bg-card/30 p-8 md:p-12 overflow-hidden backdrop-blur-sm shadow-xl">
-        <div className="relative z-10 flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-          
-          <div className="flex flex-col items-start gap-4">
-            {/* Platform Hub Badge */}
-            <div className="flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 border border-primary/10">
-              <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-              <span className="text-[10px] font-medium uppercase tracking-wider text-primary">Platform Hub</span>
-            </div>
-            
-            <div className="space-y-2">
-              <h1 className="text-3xl md:text-5xl font-semibold tracking-tight text-foreground">
-                Welcome back!
-              </h1>
-              <p className="max-w-xl text-[15px] font-normal text-muted-foreground/80 leading-relaxed">
-                Access your production environments and collaborate with your team in real-time.
-              </p>
-            </div>
-          </div>
+      <section className="relative rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm shadow-xl">
+        <div className="relative z-10 px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12 xl:px-14 xl:py-14">
 
-          <div className="flex flex-col sm:flex-row items-center gap-3.5 shrink-0 w-full sm:w-auto">
-            <Button 
-              size="lg" 
-              className="h-11 w-full sm:w-auto rounded-xl px-5 text-[14px] font-medium shadow-md shadow-primary/10 hover:bg-primary/90 transition-all active:scale-[0.98]"
-              onClick={() => setIsCreateModalOpen(true)}
-            >
-              <Plus className="mr-2 h-4 w-4" strokeWidth={2.5} />
-              New Workspace
-            </Button>
-            <Button 
-              variant="secondary"
-              size="lg" 
-              className="h-11 w-full sm:w-auto rounded-xl px-5 text-[14px] font-medium border border-border/50 bg-muted/40 transition-all active:scale-[0.98]"
-              onClick={() => setIsJoinModalOpen(true)}
-            >
-              <UserPlus className="mr-2 h-4 w-4" strokeWidth={2} />
-              Join Team
-            </Button>
-          </div>
+          <div className="flex flex-col gap-8 xl:flex-row xl:items-center xl:justify-between">
 
+            {/* Left */}
+            <div className="max-w-3xl space-y-5">
+
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/10 bg-primary/10 px-3 py-1">
+                <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                <span className="text-[10px] uppercase tracking-wider font-medium text-primary">
+                  Platform Hub
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                <h1 className="text-3xl font-semibold tracking-tight leading-tight sm:text-4xl md:text-5xl lg:text-[56px]">
+                  Welcome back!
+                </h1>
+
+                <p className="max-w-2xl text-sm leading-7 text-muted-foreground/80 sm:text-base">
+                  Access your production environments and collaborate with your team in real-time.
+                  Manage workspaces, invite members, and scale your architecture.
+                </p>
+              </div>
+            </div>
+
+            {/* Right */}
+            <div className="flex w-full flex-col gap-3 sm:flex-row xl:w-auto xl:shrink-0">
+
+              <Button
+                size="lg"
+                className="h-12 w-full rounded-xl px-6 text-sm font-medium shadow-md shadow-primary/10 transition-all hover:bg-primary/90 active:scale-[0.98] sm:flex-1 xl:w-auto"
+                onClick={() => setIsCreateModalOpen(true)}
+              >
+                <Plus className="mr-2 h-4 w-4" strokeWidth={2.5} />
+                New Workspace
+              </Button>
+
+              <Button
+                variant="secondary"
+                size="lg"
+                className="h-12 w-full rounded-xl border border-border/50 bg-muted/40 px-6 text-sm font-medium transition-all active:scale-[0.98] sm:flex-1 xl:w-auto"
+                onClick={() => setIsJoinModalOpen(true)}
+              >
+                <UserPlus className="mr-2 h-4 w-4" strokeWidth={2} />
+                Join Team
+              </Button>
+
+            </div>
+
+          </div>
         </div>
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.02] pointer-events-none" />
+
+        <div className="pointer-events-none absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.02]" />
       </section>
 
       {/* Recent Workspaces / Environments Activity */}
       {recentWorkspaces.length > 0 && !search && (
-        <section className="space-y-4 relative z-10 w-full">
+        <section className="space-y-5 relative z-10 w-full">
           <h2 className="flex items-center gap-2 text-[12px] font-medium uppercase tracking-wider text-muted-foreground/70 px-1">
             <Clock className="h-4 w-4 text-muted-foreground/40" /> Recent Environments
           </h2>
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {recentWorkspaces.map(w => (
               <Link 
                 key={w._id} 
                 to={`/w/${w.slug}`}
-                className="group relative flex flex-col gap-5 rounded-2xl border border-border/40 bg-card/40 p-5 transition-all hover:bg-card/70 hover:border-primary/30 shadow-sm active:scale-[0.99]"
+                className="group relative flex flex-col gap-5 rounded-2xl border border-border/40 bg-card/40 p-5 sm:p-6 transition-all hover:bg-card/70 hover:border-primary/30 shadow-sm active:scale-[0.99]"
               >
                 <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-medium text-lg border border-primary/10 transition-transform duration-300 group-hover:scale-105 shrink-0">
                   {w.name.charAt(0).toUpperCase()}
                 </div>
-                <div className="min-w-0 space-y-0.5">
-                  <h3 className="font-medium text-[15px] text-foreground/90 truncate group-hover:text-primary transition-colors">{w.name}</h3>
+                <div className="min-w-0 space-y-1">
+                  <h3 className="font-medium text-[15px] sm:text-[16px] text-foreground/90 truncate group-hover:text-primary transition-colors">{w.name}</h3>
                   <p className="text-[12.5px] text-muted-foreground/60">{w.memberCount} members</p>
                 </div>
               </Link>
@@ -168,46 +181,46 @@ export default function WorkspaceListPage() {
       )}
 
       {/* Main Workspaces Layout Container Section */}
-      <section className="space-y-4 relative z-10">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-1">
+      <section className="space-y-6 relative z-10">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between px-1">
           <h2 className="flex items-center gap-2 text-[12px] font-medium uppercase tracking-wider text-muted-foreground/70">
             <Building2 className="h-4 w-4 text-muted-foreground/40" /> Your Workspaces
           </h2>
-          <div className="relative w-full sm:w-64 group">
+          <div className="relative w-full sm:max-w-xs group">
             <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
             <Input
               placeholder="Filter workspaces..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-9 rounded-xl border-border/40 bg-card/40 pl-9 pr-4 text-[13.5px] font-normal shadow-none focus-visible:ring-primary/20 hover:bg-card/60 transition-all"
+              className="h-10 rounded-xl border-border/40 bg-card/40 pl-10 pr-4 text-[14px] font-normal shadow-none focus-visible:ring-primary/20 hover:bg-card/60 transition-all"
             />
           </div>
         </div>
 
         {/* Unified Responsive Grid (Now stretches out fluidly matching the workspace view) */}
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
           
           {filteredWorkspaces.map((workspace) => (
             <Link 
               key={workspace._id}
               to={`/w/${workspace.slug}`} 
-              className="group flex flex-col justify-between items-start rounded-2xl border border-border/30 bg-card/30 p-5 transition-all hover:bg-card/60 hover:border-border/60 active:scale-[0.99] shadow-sm min-h-[140px]"
+              className="group flex flex-col justify-between items-start rounded-2xl border border-border/30 bg-card/30 p-5 sm:p-6 transition-all hover:bg-card/60 hover:border-border/60 active:scale-[0.99] shadow-sm min-h-[160px]"
             >
               <div className="flex items-start gap-4 min-w-0 w-full">
                 <div className="h-11 w-12 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center border border-primary/10 font-medium text-lg text-primary shrink-0">
                   {workspace.name.charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-[15.5px] font-medium text-foreground/90 group-hover:text-primary transition-colors truncate">
+                  <h3 className="text-[15.5px] sm:text-[16.5px] font-medium text-foreground/90 group-hover:text-primary transition-colors truncate">
                     {workspace.name}
                   </h3>
-                  <p className="text-[13px] text-muted-foreground/60 line-clamp-2 mt-0.5 whitespace-normal">
+                  <p className="text-[13px] sm:text-[13.5px] text-muted-foreground/60 line-clamp-2 mt-1 whitespace-normal leading-relaxed">
                     {workspace.description || "Active production architecture workspace linked environment"}
                   </p>
                 </div>
               </div>
               
-              <div className="flex w-full justify-between items-center mt-4 pt-3 border-t border-border/10">
+              <div className="flex w-full justify-between items-center mt-5 pt-4 border-t border-border/10">
                 <span className="text-[12px] font-medium text-muted-foreground/50">Production Unit</span>
                 <ArrowRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0" />
               </div>
@@ -215,12 +228,12 @@ export default function WorkspaceListPage() {
           ))}
 
           {/* Inline Notification Utility Card */}
-          <div className="rounded-2xl border border-border/30 bg-card/10 p-5 shadow-sm flex flex-col justify-between min-h-[140px]">
+          <div className="rounded-2xl border border-border/30 bg-card/10 p-5 sm:p-6 shadow-sm flex flex-col justify-between min-h-[160px]">
             <h3 className="flex items-center gap-2 text-[12px] font-medium uppercase tracking-wider text-muted-foreground/70">
               <Bell className="h-3.5 w-3.5 text-muted-foreground/40" /> System Alerts
             </h3>
             {pendingInvitesCount > 0 ? (
-              <div className="flex items-center gap-3 bg-primary/5 p-3 rounded-xl border border-primary/10 mt-2">
+              <div className="flex items-center gap-3 bg-primary/5 p-3 rounded-xl border border-primary/10 mt-3">
                 <UserPlus className="h-4 w-4 text-primary shrink-0" />
                 <div className="min-w-0">
                   <p className="text-[13px] font-medium truncate">{pendingInvitesCount} Entry Invites Pending</p>
@@ -234,11 +247,11 @@ export default function WorkspaceListPage() {
           </div>
 
           {/* Inline Shortcuts Control Card */}
-          <div className="rounded-2xl border border-border/30 bg-card/10 p-5 shadow-sm flex flex-col justify-between min-h-[140px]">
+          <div className="rounded-2xl border border-border/30 bg-card/10 p-5 sm:p-6 shadow-sm flex flex-col justify-between min-h-[160px]">
             <h3 className="text-[12px] font-medium uppercase tracking-wider text-muted-foreground/70 flex items-center gap-2">
               <Zap className="h-3.5 w-3.5 text-muted-foreground/40" /> Directory Actions
             </h3>
-            <div className="grid grid-cols-2 gap-2 mt-3 w-full">
+            <div className="grid grid-cols-2 gap-2 mt-4 w-full">
               <Link to="/workspaces/search" className="flex flex-col justify-center items-center gap-2 rounded-xl bg-card/40 border border-border/10 p-3 text-[12.5px] font-medium text-foreground/80 hover:bg-card/80 hover:border-border/40 transition-all text-center group">
                 <Search className="h-4 w-4 text-muted-foreground/60 group-hover:text-primary transition-colors" /> Search Global
               </Link>
