@@ -1,4 +1,5 @@
 import { io, Socket } from "socket.io-client";
+import type { IAttachment, MessageContentType } from "@/feat/chat/types/message.types";
 
 const SOCKET_URL =
   import.meta.env.VITE_SOCKET_URL ??
@@ -9,6 +10,9 @@ export interface SendMessagePayload {
   roomId?: string;
   conversationId?: string;
   text: string;
+  messageType?: MessageContentType;
+  attachments?: IAttachment[];
+  replyTo?: string;
 }
 
 class SocketService {
@@ -21,17 +25,6 @@ class SocketService {
     });
 
     if (import.meta.env.DEV) {
-      this.socket.on("connect", () => {
-        console.info("[Socket] Connected");
-      });
-
-      this.socket.on("disconnect", (reason) => {
-        console.info(
-          "[Socket] Disconnected:",
-          reason
-        );
-      });
-
       this.socket.on(
         "connect_error",
         (error) => {
@@ -140,15 +133,7 @@ class SocketService {
   sendMessage(
     payload: SendMessagePayload
   ) {
-    console.log(
-      "[CLIENT] Sending",
-      payload
-    );
-
     if (!this.socket.connected) {
-      console.warn(
-        "[Socket] Cannot send message"
-      );
       return;
     }
 

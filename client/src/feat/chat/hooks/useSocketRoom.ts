@@ -43,20 +43,12 @@ export function useSocketRoom(
     const handleNewMessage = (
       message: Message
     ) => {
-      console.log(
-        "[CLIENT] received",
-        message
-      );
-
-      const messageRoomId =
-        typeof message.roomId ===
-        "string"
-          ? message.roomId
-          : (
-              message.roomId as unknown as {
-                _id?: string;
-              }
-            )?._id;
+      // Extract roomId string reliably
+      const messageRoomId = typeof message.roomId === "string" 
+        ? message.roomId 
+        : typeof message.roomId === "object" && message.roomId !== null
+          ? (message.roomId as any)._id || message.roomId.toString()
+          : String(message.roomId);
 
       if (
         String(messageRoomId) !==
@@ -66,7 +58,7 @@ export function useSocketRoom(
       }
 
       // Mark as seen if the window is focused
-      if (document.hasFocus()) {
+      if (document.visibilityState === "visible") {
          socketService.markRoomSeen(workspaceId, roomId);
       }
 
@@ -121,12 +113,11 @@ export function useSocketRoom(
     const handleMessageUpdated = (
       updatedMessage: Message
     ) => {
-      console.log("[useSocketRoom] Received updated message:", updatedMessage);
-
-      const messageRoomId =
-        typeof updatedMessage.roomId === "string"
-          ? updatedMessage.roomId
-          : (updatedMessage.roomId as unknown as { _id?: string })?._id;
+      const messageRoomId = typeof updatedMessage.roomId === "string"
+        ? updatedMessage.roomId
+        : typeof updatedMessage.roomId === "object" && updatedMessage.roomId !== null
+          ? (updatedMessage.roomId as any)._id || updatedMessage.roomId.toString()
+          : String(updatedMessage.roomId);
 
       if (String(messageRoomId) !== String(roomId)) {
         return;
@@ -150,24 +141,36 @@ export function useSocketRoom(
       handleMessageUpdated
     );
 
-    // Mark as seen when window focuses
+    // Mark as seen when window focuses or becomes visible
     const handleFocus = () => {
+      if (document.visibilityState !== "visible") return;
+
       socketService.markRoomSeen(workspaceId, roomId);
       queryClient.setQueryData(["rooms", workspaceId], (old: Record<string, unknown>[] | undefined) => {
          if (!old) return old;
          return old.map((r: Record<string, unknown>) => r._id === roomId ? { ...r, unreadCount: 0, mentionCount: 0 } : r);
       });
-      // Also invalidate to sync with backend
-      setTimeout(() => queryClient.invalidateQueries({ queryKey: ["rooms"] }), 300);
+      // Sync with backend immediately
+      queryClient.invalidateQueries({ queryKey: ["rooms"] });
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        handleFocus();
+      }
     };
 
     window.addEventListener("focus", handleFocus);
+    window.addEventListener("visibilitychange", handleVisibilityChange);
     
     // Also mark as seen initially when joining
-    handleFocus();
+    if (document.visibilityState === "visible") {
+      handleFocus();
+    }
 
     return () => {
       window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("visibilitychange", handleVisibilityChange);
       
       socketService.off(
         "connect",

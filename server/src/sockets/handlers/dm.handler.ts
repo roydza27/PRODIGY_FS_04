@@ -158,9 +158,6 @@ export const registerDMHandlers = (
 
         socket.data.activeDM = dmRoom;
 
-        logger.info(
-          `[Socket] ${userId} joined ${dmRoom}`
-        );
       } catch (error) {
         logger.error(
           "[Socket] dm:join failed",
@@ -189,14 +186,8 @@ export const registerDMHandlers = (
           socket.data.activeDM = undefined;
         }
 
-        logger.info(
-          `[Socket] ${socket.data.userId} left ${dmRoom}`
-        );
       } catch (error) {
-        logger.error(
-          "[Socket] dm:leave failed",
-          error
-        );
+        logger.error("[Socket] dm:leave failed", error);
       }
     }
   );

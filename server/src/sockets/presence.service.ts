@@ -24,8 +24,6 @@ class PresenceService {
 
     sockets.add(socketId);
     
-    logger.info(`[Presence] User ${uid} added socket ${socketId}. Total sockets: ${sockets.size}`);
-    
     return isNew;
   }
 
@@ -41,14 +39,11 @@ class PresenceService {
     
     if (sockets) {
       sockets.delete(socketId);
-      logger.info(`[Presence] User ${uid} removed socket ${socketId}. Sockets left: ${sockets.size}`);
       
       if (sockets.size === 0) {
         this.onlineUsers.delete(uid);
         return true;
       }
-    } else {
-      logger.warn(`[Presence] Attempted to remove socket ${socketId} for user ${uid}, but user not found in Map.`);
     }
     
     return false;

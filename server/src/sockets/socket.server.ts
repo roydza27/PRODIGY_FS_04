@@ -53,10 +53,7 @@ export const setupSocket = (server: HttpServer) => {
         decoded.sub;
 
       if (!userId) {
-        logger.error(
-          "[Socket] Invalid JWT payload:",
-          decoded
-        );
+        logger.error("[Socket] Invalid JWT payload: userId missing");
 
         return next(
           new Error("Authentication failed.")
@@ -81,10 +78,6 @@ export const setupSocket = (server: HttpServer) => {
   io.on("connection", async (socket: Socket) => {
     const userId = String(socket.data.userId);
 
-    logger.info(
-      `[Socket] User connected: ${userId} (Socket: ${socket.id})`
-    );
-
     // Register presence
     const isFirstConnection = presenceService.add(userId, socket.id);
     
@@ -104,7 +97,6 @@ export const setupSocket = (server: HttpServer) => {
     }
 
     // Send initial presence sync
-    logger.info(`[Socket] Emitting presence:sync to user ${userId}`);
     socket.emit("presence:sync", {
       userIds: presenceService.getOnlineUserIds(),
     });
@@ -115,15 +107,10 @@ export const setupSocket = (server: HttpServer) => {
 
     // If it's the first connection for this user across all tabs, broadcast online status
     if (isFirstConnection) {
-      logger.info(`[Socket] Emitting presence:online for user ${userId}`);
       io.emit("presence:online", { userId });
     }
 
     socket.on("disconnect", (reason) => {
-      logger.info(
-        `[Socket] User disconnected: ${userId} (${reason}) (Socket: ${socket.id})`
-      );
-
       // Remove presence
       const isLastConnection = presenceService.remove(userId, socket.id);
 
@@ -134,8 +121,6 @@ export const setupSocket = (server: HttpServer) => {
         setTimeout(async () => {
           // Re-check if the user is still offline (didn't reconnect in another tab/refresh)
           if (!presenceService.isOnline(userId)) {
-            logger.info(`[Socket] Grace period ended. Emitting presence:offline for user ${userId}`);
-            
             const lastSeenAt = await updateLastSeen(userId);
             
             // TODO: Optimize presence broadcasts to be workspace-scoped instead of global
@@ -143,8 +128,6 @@ export const setupSocket = (server: HttpServer) => {
               userId, 
               lastSeenAt: lastSeenAt.toISOString() 
             });
-          } else {
-            logger.info(`[Socket] User ${userId} reconnected during grace period. Offline broadcast skipped.`);
           }
         }, GRACE_PERIOD);
       }

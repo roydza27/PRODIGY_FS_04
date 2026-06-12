@@ -58,17 +58,15 @@ export function SocketProvider({
 
   useEffect(() => {
     const handleConnect = () => {
-      console.info("[Socket] Connected - fetching presence");
       setIsConnected(true);
       
       // Fetch initial presence list as a fallback/additional sync
       getPresence()
         .then(setOnlineUsers)
-        .catch(console.error);
+        .catch(() => {});
     };
 
     const handleDisconnect = () => {
-      console.info("[Socket] Disconnected");
       setIsConnected(false);
     };
 
@@ -77,7 +75,6 @@ export function SocketProvider({
     }: {
       userIds: string[];
     }) => {
-      console.info("[Presence] sync", userIds.length, "users online");
       setOnlineUsers(userIds);
     };
 
@@ -86,7 +83,6 @@ export function SocketProvider({
     }: {
       userId: string;
     }) => {
-      console.info("[Presence] online", userId);
       setUserOnline(userId);
     };
 
@@ -97,7 +93,6 @@ export function SocketProvider({
       userId: string;
       lastSeenAt?: string;
     }) => {
-      console.info("[Presence] offline", userId, lastSeenAt);
       setUserOffline(userId, lastSeenAt);
     };
 
@@ -171,8 +166,21 @@ export function SocketProvider({
       setTyping(roomId, userId, false);
     };
 
+    const handleChatCleared = ({
+      context,
+      contextId,
+    }: {
+      context: "room" | "dm";
+      contextId: string;
+    }) => {
+      if (context === "dm") {
+        queryClient.invalidateQueries({ queryKey: ["conversation-messages", contextId] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["messages", contextId] });
+      }
+    };
+
     const handleWorkspaceMembersUpdated = () => {
-      console.info("[Socket] Workspace members updated - invalidating queries");
       queryClient.invalidateQueries({ queryKey: workspaceKeys.all });
     };
 
@@ -185,21 +193,40 @@ export function SocketProvider({
       queryClient.invalidateQueries({ queryKey: workspaceKeys.all });
     };
 
-    const handleNewMessageNotification = (message: Record<string, unknown> & { _id: string; type: string; text: string; roomId?: string; conversationId?: string; senderId?: { _id: string; name?: string; avatarUrl?: string } | string; createdAt?: string }) => {
-      console.info("[Socket] New message received - updating sidebars");
-      
+    const handleNewMessageNotification = (message: Record<string, unknown> & { 
+      _id: string; 
+      type: string; 
+      text: string; 
+      workspaceId?: string;
+      roomId?: string; 
+      conversationId?: string; 
+      senderId?: { _id: string; name?: string; avatarUrl?: string } | string; 
+      createdAt?: string 
+    }) => {
       const senderId = typeof message.senderId === "string" ? message.senderId : message.senderId?._id;
-      const isMyMessage = senderId === useAuthStore.getState().user?.id;
+      const currentUserId = useAuthStore.getState().user?.id;
+      const isMyMessage = senderId === currentUserId;
       const isCurrentPage = (message.type === "dm" && location.pathname.includes(message.conversationId as string)) ||
                           (message.type === "room" && location.pathname.includes(message.roomId as string));
+      const isVisible = document.visibilityState === "visible";
       const isFocused = document.hasFocus();
+
+      // REPORT DELIVERY IMMEDIATELY FOR DMs (Global)
+      if (message.type === "dm" && message.conversationId && !isMyMessage) {
+        socketService.markDMDelivered(message._id, message.conversationId);
+        
+        // If we are currently viewing this DM and it is visible, mark as seen
+        if (isCurrentPage && isVisible) {
+          socketService.markDMSeen(message.conversationId);
+        }
+      }
 
       // Update conversations cache optimistically
       if (message.type === "dm" && message.conversationId) {
         queryClient.setQueryData(["conversations", "global"], (old: Record<string, unknown>[] | undefined) => {
           if (!old) return old;
           const convIndex = old.findIndex((c: Record<string, unknown>) => c._id === message.conversationId);
-          if (convIndex === -1) return old; // If not in list, fallback to invalidation later
+          if (convIndex === -1) return old;
           
           const newConversations = [...old];
           const conv = { ...newConversations[convIndex] };
@@ -219,7 +246,9 @@ export function SocketProvider({
 
       // Update rooms cache optimistically
       if (message.type === "room" && message.roomId) {
-        const workspaceId = location.pathname.split("/w/")[1]?.split("/")[0]; // Rough extraction, fallback below
+        // Use workspaceId from message first, fallback to URL
+        const workspaceId = message.workspaceId || location.pathname.split("/w/")[1]?.split("/")[0];
+        
         if (workspaceId) {
           queryClient.setQueryData(["rooms", workspaceId], (old: Record<string, unknown>[] | undefined) => {
             if (!old) return old;
@@ -233,7 +262,6 @@ export function SocketProvider({
             
             if (!isMyMessage && !(isCurrentPage && isFocused)) {
               room.unreadCount = ((room.unreadCount as number) || 0) + 1;
-              // Simple check for mentions
               const myNickname = useAuthStore.getState().user?.name;
               if (myNickname && typeof message.text === "string" && message.text.includes(`@${myNickname}`)) {
                 room.mentionCount = ((room.mentionCount as number) || 0) + 1;
@@ -246,14 +274,15 @@ export function SocketProvider({
         }
       }
 
-      // Still invalidate to ensure absolute sync, but delay it heavily to avoid race condition with mark-seen
+      // Sync sidebars with minimal delay
+      const invalidationDelay = 100;
       setTimeout(() => {
         if (message.type === "dm") {
           queryClient.invalidateQueries({ queryKey: ["conversations"] });
         } else {
           queryClient.invalidateQueries({ queryKey: ["rooms"] });
         }
-      }, 2000);
+      }, invalidationDelay);
 
       if (isMyMessage) return;
 
@@ -334,6 +363,7 @@ export function SocketProvider({
     socketService.on("message:new", handleNewMessageNotification);
     socketService.on("message:seen:all", handleMessageSeenAll);
     socketService.on("room:seen:ack", handleRoomSeenAck);
+    socketService.on("chat:cleared", handleChatCleared);
 
     // Membership Events
     socketService.on("workspace:member-joined", handleWorkspaceMembersUpdated);
@@ -343,25 +373,21 @@ export function SocketProvider({
     socketService.on("workspace:removed", handleWorkspaceMembersUpdated);
 
     if (isAuthenticated && token) {
-      console.info("[Socket] Connecting with token");
       socketService.connect(token);
       
       // If already connected, manual sync is needed because the 'connect' event won't fire again
       if (socketService.isConnected()) {
-        console.info("[Socket] Already connected - manual sync");
         setTimeout(() => {
           setIsConnected(true);
         }, 0);
-        getPresence().then(setOnlineUsers).catch(console.error);
+        getPresence().then(setOnlineUsers).catch(() => {});
       }
     } else {
-      console.info("[Socket] Not authenticated, disconnecting");
       socketService.disconnect();
       clearPresence(); // Clear presence on logout
     }
 
     return () => {
-      console.info("[Socket] Cleaning up listeners and disconnecting");
       socketService.off(
         "connect",
         handleConnect
@@ -403,6 +429,7 @@ export function SocketProvider({
       socketService.off("message:new", handleNewMessageNotification);
       socketService.off("message:seen:all", handleMessageSeenAll);
       socketService.off("room:seen:ack", handleRoomSeenAck);
+      socketService.off("chat:cleared", handleChatCleared);
 
       socketService.off("workspace:member-joined", handleWorkspaceMembersUpdated);
       socketService.off("workspace:member-removed", handleWorkspaceMembersUpdated);

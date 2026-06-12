@@ -21,7 +21,9 @@ export const registerMessageHandlers = (
         roomId,
         conversationId,
         text,
+        messageType,
         attachments,
+        replyTo,
       } = payload;
 
       /**
@@ -100,12 +102,11 @@ export const registerMessageHandlers = (
         senderId,
         text: trimmedText,
         type,
+        messageType: messageType || "TEXT",
         attachments,
+        replyTo,
       });
 
-      logger.info(
-        `[Socket] Message handled by service for ${type === "room" ? "room:" + roomId : "dm:" + conversationId}`
-      );
     } catch (error) {
       logger.error(
         "[Socket] message:send failed",

@@ -37,23 +37,16 @@ export const useSocketDM = (
     const handleNewMessage = (
       newMessage: Message
     ) => {
-      console.log("[useSocketDM] Received message:", newMessage);
-
       if (
         String(newMessage.conversationId) !==
         String(conversationId)
       ) {
-        console.log("[useSocketDM] Message for different conversation, ignoring");
         return;
       }
 
-      // If message is from others, mark as delivered
+      // Mark as seen immediately if we are viewing this conversation
       if (newMessage.senderId._id !== currentUserId) {
-        console.log("[useSocketDM] Marking as delivered:", newMessage._id);
-        socketService.markDMDelivered(newMessage._id, conversationId);
-        
-        // Also mark as seen if the window is focused
-        if (document.hasFocus()) {
+        if (document.visibilityState === "visible") {
            socketService.markDMSeen(conversationId);
         }
       }
@@ -109,8 +102,6 @@ export const useSocketDM = (
     const handleMessageUpdated = (
       updatedMessage: Message
     ) => {
-      console.log("[useSocketDM] Received updated message:", updatedMessage);
-
       if (
         String(updatedMessage.conversationId) !==
         String(conversationId)
@@ -139,23 +130,58 @@ export const useSocketDM = (
       handleMessageUpdated
     );
 
-    const handleMessageStatus = ({ messageId, status }: { messageId: string, status: MessageStatus }) => {
+    const handleMessageStatus = ({ 
+      messageId, 
+      conversationId: payloadConvId, 
+      status 
+    }: { 
+      messageId: string, 
+      conversationId: string, 
+      status: MessageStatus 
+    }) => {
+      if (payloadConvId !== conversationId) return;
+
+      const statusPriority: Record<string, number> = {
+        sending: 0,
+        sent: 1,
+        delivered: 2,
+        seen: 3,
+      };
+
       queryClient.setQueryData<Message[]>(
         ["conversation-messages", conversationId],
         (previous = []) => {
-          return previous.map(m => m._id === messageId ? { ...m, status } : m);
+          return previous.map(m => {
+            if (m._id !== messageId) return m;
+            
+            // Only update if the new status is more advanced
+            const currentPrio = statusPriority[m.status] ?? 0;
+            const newPrio = statusPriority[status] ?? 0;
+            
+            if (newPrio > currentPrio) {
+              return { ...m, status };
+            }
+            return m;
+          });
         }
       );
     };
 
-    const handleSeenAll = ({ seenBy }: { seenBy: string }) => {
-      if (seenBy === currentUserId) return;
+    const handleSeenAll = ({ 
+      conversationId: payloadConvId, 
+      seenBy 
+    }: { 
+      conversationId: string, 
+      seenBy: string 
+    }) => {
+      if (String(seenBy) === String(currentUserId)) return;
+      if (payloadConvId !== conversationId) return;
 
       queryClient.setQueryData<Message[]>(
         ["conversation-messages", conversationId],
         (previous = []) => {
           return previous.map(m => 
-            m.senderId._id === currentUserId && m.status !== MessageStatus.SEEN 
+            String(m.senderId._id) === String(currentUserId) && m.status !== MessageStatus.SEEN 
               ? { ...m, status: MessageStatus.SEEN } 
               : m
           );
@@ -166,8 +192,10 @@ export const useSocketDM = (
     socketService.on("message:status", handleMessageStatus);
     socketService.on("message:seen:all", handleSeenAll);
 
-    // Mark as seen when window focuses
+    // Mark as seen when window focuses or becomes visible
     const handleFocus = () => {
+      if (document.visibilityState !== "visible") return;
+
       socketService.markDMSeen(conversationId);
       
       const clearUnread = (old: Record<string, unknown>[] | undefined) => {
@@ -180,17 +208,35 @@ export const useSocketDM = (
         queryClient.setQueryData(["conversations", workspaceId], clearUnread);
       }
       
-      // Also invalidate to sync with backend after a slight delay
-      setTimeout(() => queryClient.invalidateQueries({ queryKey: ["conversations"] }), 500);
+      // Sync sidebars immediately
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        handleFocus();
+      }
     };
 
     window.addEventListener("focus", handleFocus);
+    window.addEventListener("visibilitychange", handleVisibilityChange);
     
     // Also mark as seen initially when joining
-    handleFocus();
+    if (document.visibilityState === "visible") {
+      handleFocus();
+    }
+
+    // Periodically check for missed messages to mark as delivered (if they arrived while offline)
+    const messages = queryClient.getQueryData<Message[]>(["conversation-messages", conversationId]) || [];
+    messages.forEach(m => {
+      if (String(m.senderId._id) !== String(currentUserId) && m.status === MessageStatus.SENT) {
+        socketService.markDMDelivered(m._id, conversationId!);
+      }
+    });
 
     return () => {
       window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("visibilitychange", handleVisibilityChange);
       
       socketService.off(
         "connect",
