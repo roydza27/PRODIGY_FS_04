@@ -13,6 +13,7 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 
+import { logger } from "@/utils/logger";
 import { useUpdateRoom } from "../api/room.queries";
 
 import type { Room } from "../types/room.types";
@@ -68,7 +69,7 @@ export default function UpdateRoomDialog({
 
       setOpen(false);
     } catch (error) {
-      console.error(error);
+      logger.error("Failed to update room:", error);
     }
   };
 

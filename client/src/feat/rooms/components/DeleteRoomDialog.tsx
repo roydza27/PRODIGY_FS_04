@@ -12,6 +12,7 @@ import {
 
 import { Button } from "@/shared/components/ui/button";
 
+import { logger } from "@/utils/logger";
 import { useDeleteRoom } from "../api/room.queries";
 
 import type { Room } from "../types/room.types";
@@ -39,7 +40,7 @@ export default function DeleteRoomDialog({
 
       setOpen(false);
     } catch (error) {
-      console.error(error);
+      logger.error("Failed to delete room:", error);
     }
   };
 

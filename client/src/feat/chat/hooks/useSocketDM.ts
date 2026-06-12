@@ -37,25 +37,15 @@ export const useSocketDM = (
     const handleNewMessage = (
       newMessage: Message
     ) => {
-      if (import.meta.env.DEV) {
-        console.log("[useSocketDM] Received message:", newMessage);
-      }
-
       if (
         String(newMessage.conversationId) !==
         String(conversationId)
       ) {
-        if (import.meta.env.DEV) {
-          console.log("[useSocketDM] Message for different conversation, ignoring");
-        }
         return;
       }
 
       // If message is from others, mark as delivered
       if (newMessage.senderId._id !== currentUserId) {
-        if (import.meta.env.DEV) {
-          console.log("[useSocketDM] Marking as delivered:", newMessage._id);
-        }
         socketService.markDMDelivered(newMessage._id, conversationId);
         
         // Also mark as seen if the window is focused
@@ -115,10 +105,6 @@ export const useSocketDM = (
     const handleMessageUpdated = (
       updatedMessage: Message
     ) => {
-      if (import.meta.env.DEV) {
-        console.log("[useSocketDM] Received updated message:", updatedMessage);
-      }
-
       if (
         String(updatedMessage.conversationId) !==
         String(conversationId)

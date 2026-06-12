@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Search, Loader2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
+import { logger } from "@/utils/logger";
 import {
   Dialog,
   DialogContent,
@@ -55,7 +56,7 @@ export default function CreateDMDialog({ workspaceId, trigger }: CreateDMDialogP
       setOpen(false);
       navigate(`/dm/${conversation._id}`);
     } catch (error) {
-      console.error("Failed to start DM:", error);
+      logger.error("Failed to start DM:", error);
     } finally {
       setIsCreating(false);
     }
