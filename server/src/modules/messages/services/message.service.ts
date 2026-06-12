@@ -57,13 +57,13 @@ export const getRoomHistory = async (
   roomId: string
 ) => {
   if (!mongoose.Types.ObjectId.isValid(roomId)) {
-    throw "Invalid room id";
+    throw new Error("Invalid room id");
   }
 
   const room = await roomRepository.findRoomById(roomId);
 
   if (!room) {
-    throw "Room not found";
+    throw new Error("Room not found");
   }
 
   return messageRepository.findRoomMessages(roomId);
@@ -96,10 +96,10 @@ export const updateMessage = async (
   text: string
 ) => {
   const message = await MessageModel.findById(messageId);
-  if (!message) throw "Message not found";
+  if (!message) throw new Error("Message not found");
 
   if (message.senderId.toString() !== userId) {
-    throw "Unauthorized: You can only edit your own messages";
+    throw new Error("Unauthorized: You can only edit your own messages");
   }
 
   const updatedMessage = await messageRepository.updateMessage(messageId, text);
@@ -126,10 +126,10 @@ export const deleteMessage = async (
   userId: string
 ) => {
   const message = await MessageModel.findById(messageId);
-  if (!message) throw "Message not found";
+  if (!message) throw new Error("Message not found");
 
   if (message.senderId.toString() !== userId) {
-    throw "Unauthorized: You can only delete your own messages";
+    throw new Error("Unauthorized: You can only delete your own messages");
   }
 
   const deletedMessage = await messageRepository.deleteMessage(messageId);
