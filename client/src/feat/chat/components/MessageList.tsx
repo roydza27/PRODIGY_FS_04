@@ -10,20 +10,18 @@ import MessageDateDivider from "./MessageDateDivider";
 
 import type { Message as MessageType } from "../types/message.types";
 
-import type { AuthUser } from "@/shared/types/auth";
-
 interface MessageListProps {
   messages?: MessageType[];
   isDM?: boolean;
   isTyping?: boolean; 
-  typingUser?: Partial<AuthUser> | null;    
+  typingUsers?: Array<{ _id: string; name: string; avatarUrl?: string }> | null;    
 }
 
 export default function MessageList({
   messages = [],
   isDM = false,
   isTyping = false,
-  typingUser = null, 
+  typingUsers = [], 
 }: MessageListProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const scrollAnchorRef = useRef<HTMLDivElement>(null);
@@ -160,6 +158,7 @@ export default function MessageList({
                   )}
 
                   <Message
+                    id={message._id}
                     author={author}
                     content={message.text}
                     timestamp={new Date(message.createdAt)}
@@ -168,6 +167,11 @@ export default function MessageList({
                     isDM={isDM}
                     isCurrentUser={isCurrentUser}
                     status={message.status}
+                    isEdited={message.isEdited}
+                    isDeleted={message.isDeleted}
+                    attachments={message.attachments}
+                    roomId={message.roomId}
+                    conversationId={message.conversationId}
                   />
                 </motion.div>
               );
@@ -175,31 +179,45 @@ export default function MessageList({
           </AnimatePresence>
 
           <AnimatePresence>
-            {isTyping && typingUser && (
+            {isTyping && typingUsers && typingUsers.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.15 } }}
                 className="flex w-full mt-2 mb-4"
               >
-                <div className="flex items-end gap-3">
+                <div className="flex items-end gap-3 px-4">
                   {!isDM && (
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted/50">
-                      {typingUser.avatarUrl ? (
-                        <img src={typingUser.avatarUrl} alt="typing" className="h-full w-full object-cover" />
-                      ) : (
-                        <span className="text-sm font-bold text-foreground">
-                          {typingUser.name?.charAt(0)?.toUpperCase()}
-                        </span>
-                      )}
+                    <div className="flex -space-x-3 mb-0.5">
+                      {typingUsers.slice(0, 3).map((user) => (
+                        <div key={user._id} className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted border-2 border-background shadow-sm">
+                          {user.avatarUrl ? (
+                            <img src={user.avatarUrl} alt="typing" className="h-full w-full object-cover" />
+                          ) : (
+                            <span className="text-[10px] font-black text-foreground">
+                              {user.name?.charAt(0)?.toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   )}
-                  <div className="flex h-[42px] items-center rounded-2xl rounded-bl-sm bg-muted/40 px-4 shadow-sm border border-border/10">
-                    <div className="flex items-center gap-1.5 opacity-60">
-                      <motion.div animate={{ y: [0, -4, 0] }} transition={{ duration: 0.6, repeat: Infinity, ease: "easeInOut" }} className="h-1.5 w-1.5 rounded-full bg-foreground" />
-                      <motion.div animate={{ y: [0, -4, 0] }} transition={{ duration: 0.6, repeat: Infinity, ease: "easeInOut", delay: 0.15 }} className="h-1.5 w-1.5 rounded-full bg-foreground" />
-                      <motion.div animate={{ y: [0, -4, 0] }} transition={{ duration: 0.6, repeat: Infinity, ease: "easeInOut", delay: 0.3 }} className="h-1.5 w-1.5 rounded-full bg-foreground" />
+                  
+                  <div className="flex flex-col gap-1">
+                    <div className="flex h-[36px] items-center rounded-2xl rounded-bl-sm bg-muted/30 px-3.5 shadow-sm border border-border/10 w-fit">
+                      <div className="flex items-center gap-1.5 opacity-60">
+                        <motion.div animate={{ y: [0, -4, 0] }} transition={{ duration: 0.6, repeat: Infinity, ease: "easeInOut" }} className="h-1.5 w-1.5 rounded-full bg-foreground" />
+                        <motion.div animate={{ y: [0, -4, 0] }} transition={{ duration: 0.6, repeat: Infinity, ease: "easeInOut", delay: 0.15 }} className="h-1.5 w-1.5 rounded-full bg-foreground" />
+                        <motion.div animate={{ y: [0, -4, 0] }} transition={{ duration: 0.6, repeat: Infinity, ease: "easeInOut", delay: 0.3 }} className="h-1.5 w-1.5 rounded-full bg-foreground" />
+                      </div>
                     </div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-1">
+                      {typingUsers.length === 1 
+                        ? `${typingUsers[0].name} is typing...`
+                        : typingUsers.length === 2
+                        ? `${typingUsers[0].name} and ${typingUsers[1].name} are typing...`
+                        : `${typingUsers.length} people are typing...`}
+                    </p>
                   </div>
                 </div>
               </motion.div>

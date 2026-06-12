@@ -12,7 +12,7 @@ export const getWorkspaceRooms = async (userId: string, workspaceId: string) => 
     throw new Error("User is not a member of this workspace");
   }
 
-  return roomRepository.findRoomsByWorkspaceId(workspaceId);
+  return roomRepository.findRoomsByWorkspaceId(workspaceId, userId);
 };
 
 export const createRoom = async (

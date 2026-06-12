@@ -46,6 +46,25 @@ const messageSchema = new Schema<IMessage>(
       enum: Object.values(MessageStatus),
       default: MessageStatus.SENT,
     },
+
+    isEdited: {
+      type: Boolean,
+      default: false,
+    },
+
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+
+    attachments: [
+      {
+        url: { type: String, required: true },
+        name: { type: String, required: true },
+        type: { type: String, required: true },
+        size: { type: Number, required: true },
+      },
+    ],
   },
   {
     timestamps: true,

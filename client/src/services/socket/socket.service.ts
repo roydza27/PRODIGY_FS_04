@@ -130,6 +130,13 @@ class SocketService {
     });
   }
 
+  markRoomSeen(workspaceId: string, roomId: string) {
+    this.emit("room:seen", {
+      workspaceId,
+      roomId,
+    });
+  }
+
   sendMessage(
     payload: SendMessagePayload
   ) {

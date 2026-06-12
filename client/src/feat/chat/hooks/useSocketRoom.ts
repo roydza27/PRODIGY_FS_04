@@ -65,6 +65,11 @@ export function useSocketRoom(
         return;
       }
 
+      // Mark as seen if the window is focused
+      if (document.hasFocus()) {
+         socketService.markRoomSeen(workspaceId, roomId);
+      }
+
       queryClient.setQueryData<MessagesResponse>(
         ["messages", roomId],
         (previous = []) => {
@@ -113,12 +118,57 @@ export function useSocketRoom(
       );
     };
 
+    const handleMessageUpdated = (
+      updatedMessage: Message
+    ) => {
+      console.log("[useSocketRoom] Received updated message:", updatedMessage);
+
+      const messageRoomId =
+        typeof updatedMessage.roomId === "string"
+          ? updatedMessage.roomId
+          : (updatedMessage.roomId as unknown as { _id?: string })?._id;
+
+      if (String(messageRoomId) !== String(roomId)) {
+        return;
+      }
+
+      queryClient.setQueryData<MessagesResponse>(
+        ["messages", roomId],
+        (previous = []) => {
+          return previous.map(m => m._id === updatedMessage._id ? updatedMessage : m);
+        }
+      );
+    };
+
     socketService.on<Message>(
       "message:new",
       handleNewMessage
     );
 
+    socketService.on<Message>(
+      "message:updated",
+      handleMessageUpdated
+    );
+
+    // Mark as seen when window focuses
+    const handleFocus = () => {
+      socketService.markRoomSeen(workspaceId, roomId);
+      queryClient.setQueryData(["rooms", workspaceId], (old: Record<string, unknown>[] | undefined) => {
+         if (!old) return old;
+         return old.map((r: Record<string, unknown>) => r._id === roomId ? { ...r, unreadCount: 0, mentionCount: 0 } : r);
+      });
+      // Also invalidate to sync with backend
+      setTimeout(() => queryClient.invalidateQueries({ queryKey: ["rooms"] }), 300);
+    };
+
+    window.addEventListener("focus", handleFocus);
+    
+    // Also mark as seen initially when joining
+    handleFocus();
+
     return () => {
+      window.removeEventListener("focus", handleFocus);
+      
       socketService.off(
         "connect",
         joinRoom
@@ -127,6 +177,11 @@ export function useSocketRoom(
       socketService.off<Message>(
         "message:new",
         handleNewMessage
+      );
+
+      socketService.off<Message>(
+        "message:updated",
+        handleMessageUpdated
       );
 
       socketService.leaveRoom(

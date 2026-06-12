@@ -2,12 +2,13 @@
 
 import React from "react";
 import {
-  Inbox,
   HelpCircle,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { SidebarTrigger } from "@/shared/components/ui/sidebar";
+
+import { NotificationCenter } from "@/feat/chat/components/NotificationCenter";
 
 export function GlobalHeader() {
   return (
@@ -24,10 +25,7 @@ export function GlobalHeader() {
 
       {/* Right */}
       <div className="flex flex-1 items-center justify-end gap-0.5">
-        <HeaderAction
-          icon={<Inbox className="size-4" />}
-          label="Inbox"
-        />
+        <NotificationCenter />
 
         <HeaderAction
           icon={<HelpCircle className="size-4" />}

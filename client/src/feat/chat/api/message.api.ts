@@ -20,3 +20,35 @@ export const getConversationMessages = async (
 
   return data;
 };
+
+export const updateMessage = async (
+  messageId: string,
+  text: string
+): Promise<Message> => {
+  const { data } = await api.patch(
+    `/messages/${messageId}`,
+    { text }
+  );
+
+  return data;
+};
+
+export const deleteMessage = async (
+  messageId: string
+): Promise<Message> => {
+  const { data } = await api.delete(
+    `/messages/${messageId}`
+  );
+
+  return data;
+};
+
+export const searchMessages = async (
+  query: string
+): Promise<Message[]> => {
+  const { data } = await api.get(
+    `/messages/search?q=${encodeURIComponent(query)}`
+  );
+
+  return data;
+};

@@ -25,12 +25,17 @@ export const registerDMHandlers = (
         );
 
         if (message) {
-          // Notify the sender
-          io.to(`dm:${conversationId}`).emit("message:status", {
-            messageId,
-            conversationId,
-            status: "delivered",
-          });
+          const conversation = await conversationService.getConversation(conversationId);
+          if (conversation && conversation.participants) {
+            conversation.participants.forEach((participant: any) => {
+              const participantId = typeof participant === "object" ? participant._id : participant;
+              io.to(`user:${participantId}`).emit("message:status", {
+                messageId,
+                conversationId,
+                status: "delivered",
+              });
+            });
+          }
         }
       } catch (error) {
         logger.error("[Socket] dm:delivered failed", error);
@@ -54,11 +59,16 @@ export const registerDMHandlers = (
           userId
         );
 
-        // Notify all participants in the DM room
-        io.to(`dm:${conversationId}`).emit("message:seen:all", {
-          conversationId,
-          seenBy: userId,
-        });
+        const conversation = await conversationService.getConversation(conversationId);
+        if (conversation && conversation.participants) {
+          conversation.participants.forEach((participant: any) => {
+            const participantId = typeof participant === "object" ? participant._id : participant;
+            io.to(`user:${participantId}`).emit("message:seen:all", {
+              conversationId,
+              seenBy: userId,
+            });
+          });
+        }
       } catch (error) {
         logger.error("[Socket] dm:seen failed", error);
       }
@@ -196,13 +206,25 @@ export const registerDMHandlers = (
    */
   socket.on(
     "dm:typing:start",
-    ({ conversationId }) => {
+    async ({ conversationId }) => {
       if (!conversationId) return;
-      const dmRoom = `dm:${conversationId}`;
-      socket.to(dmRoom).emit("dm:typing:start", {
-        conversationId,
-        userId: socket.data.userId,
-      });
+      
+      try {
+        const conversation = await conversationService.getConversation(conversationId);
+        if (conversation && conversation.participants) {
+          conversation.participants.forEach((participant: any) => {
+            const participantId = typeof participant === "object" ? participant._id : participant;
+            if (participantId.toString() !== socket.data.userId) {
+              socket.to(`user:${participantId}`).emit("dm:typing:start", {
+                conversationId,
+                userId: socket.data.userId,
+              });
+            }
+          });
+        }
+      } catch (error) {
+        logger.error("[Socket] dm:typing:start failed", error);
+      }
     }
   );
 
@@ -211,13 +233,25 @@ export const registerDMHandlers = (
    */
   socket.on(
     "dm:typing:stop",
-    ({ conversationId }) => {
+    async ({ conversationId }) => {
       if (!conversationId) return;
-      const dmRoom = `dm:${conversationId}`;
-      socket.to(dmRoom).emit("dm:typing:stop", {
-        conversationId,
-        userId: socket.data.userId,
-      });
+      
+      try {
+        const conversation = await conversationService.getConversation(conversationId);
+        if (conversation && conversation.participants) {
+          conversation.participants.forEach((participant: any) => {
+            const participantId = typeof participant === "object" ? participant._id : participant;
+            if (participantId.toString() !== socket.data.userId) {
+              socket.to(`user:${participantId}`).emit("dm:typing:stop", {
+                conversationId,
+                userId: socket.data.userId,
+              });
+            }
+          });
+        }
+      } catch (error) {
+        logger.error("[Socket] dm:typing:stop failed", error);
+      }
     }
   );
 };

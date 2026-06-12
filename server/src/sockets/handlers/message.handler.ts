@@ -21,6 +21,7 @@ export const registerMessageHandlers = (
         roomId,
         conversationId,
         text,
+        attachments,
       } = payload;
 
       /**
@@ -30,15 +31,14 @@ export const registerMessageHandlers = (
         return;
       }
 
-      if (!text || typeof text !== "string") {
+      const hasText = text && typeof text === "string" && text.trim().length > 0;
+      const hasAttachments = Array.isArray(attachments) && attachments.length > 0;
+
+      if (!hasText && !hasAttachments) {
         return;
       }
 
-      const trimmedText = text.trim();
-
-      if (trimmedText.length === 0) {
-        return;
-      }
+      const trimmedText = text?.trim() || "";
 
       if (trimmedText.length > MAX_MESSAGE_LENGTH) {
         return;
@@ -91,51 +91,53 @@ export const registerMessageHandlers = (
       }
 
       /**
-       * Persist message
+       * Persist message (service handles broadcast)
        */
-      const message =
-        await messageService.sendMessage({
-          workspaceId,
-          roomId,
-          conversationId,
-          senderId,
-          text: trimmedText,
-          type,
-        });
-
-      if (!message) {
-        return;
-      }
-
-      /**
-       * Broadcast
-       */
-      if (type === "room") {
-        io.to(`room:${roomId}`).emit(
-          "message:new",
-          message
-        );
-
-        logger.info(
-          `[Socket] Room message broadcast -> room:${roomId}`
-        );
-
-        return;
-      }
-
-      io.to(`dm:${conversationId}`).emit(
-        "message:new",
-        message
-      );
+      await messageService.sendMessage({
+        workspaceId,
+        roomId,
+        conversationId,
+        senderId,
+        text: trimmedText,
+        type,
+        attachments,
+      });
 
       logger.info(
-        `[Socket] DM broadcast -> dm:${conversationId}`
+        `[Socket] Message handled by service for ${type === "room" ? "room:" + roomId : "dm:" + conversationId}`
       );
     } catch (error) {
       logger.error(
         "[Socket] message:send failed",
         error
       );
+    }
+  });
+
+  socket.on("message:seen", async ({ messageId, conversationId }) => {
+    try {
+      const userId = socket.data.userId;
+
+      if (messageId) {
+        const updatedMessage = await messageService.updateMessageStatus(
+          messageId,
+          "seen"
+        );
+        
+        if (updatedMessage) {
+          const room = updatedMessage.type === "room" 
+            ? `room:${updatedMessage.roomId}` 
+            : `dm:${updatedMessage.conversationId}`;
+          
+          io.to(room).emit("message:updated", updatedMessage);
+        }
+      } else if (conversationId) {
+        await messageService.markConversationAsSeen(conversationId, userId);
+        // We might want to broadcast a "conversation:seen" event instead of updating every message
+        io.to(`dm:${conversationId}`).emit("conversation:seen", { conversationId, userId });
+      }
+    } catch (error) {
+      logger.error("[Socket] message:seen failed", error);
     }
   });
 };

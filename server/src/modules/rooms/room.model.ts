@@ -42,6 +42,14 @@ const roomSchema = new Schema<IRoom>(
       default: "active",
       index: true,
     },
+    lastMessageAt: {
+      type: Date,
+      default: Date.now,
+    },
+    lastMessage: {
+      type: Schema.Types.ObjectId,
+      ref: "Message",
+    },
   },
   {
     timestamps: true,

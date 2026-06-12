@@ -11,6 +11,7 @@ import { registerRoomHandlers } from "./handlers/room.handler";
 import { registerMessageHandlers } from "./handlers/message.handler";
 import { registerDMHandlers } from "./handlers/dm.handler";
 import { socketService } from "../services/socket.service";
+import * as membershipRepository from "../modules/workspaces/membership.repository";
 
 interface SocketJwtPayload {
   id?: string;
@@ -77,7 +78,7 @@ export const setupSocket = (server: HttpServer) => {
     }
   });
 
-  io.on("connection", (socket: Socket) => {
+  io.on("connection", async (socket: Socket) => {
     const userId = String(socket.data.userId);
 
     logger.info(
@@ -88,6 +89,19 @@ export const setupSocket = (server: HttpServer) => {
     const isFirstConnection = presenceService.add(userId, socket.id);
     
     socket.join(`user:${userId}`);
+
+    // Automatically join all active workspace rooms to receive global notifications
+    try {
+      const memberships = await membershipRepository.findUserWorkspaces(userId, "active");
+      memberships.forEach(m => {
+        const workspaceId = typeof m.workspaceId === "object" ? (m.workspaceId as any)._id : m.workspaceId;
+        if (workspaceId) {
+          socket.join(`workspace:${workspaceId}`);
+        }
+      });
+    } catch (err) {
+      logger.error("[Socket] Failed to join workspace rooms on connect", err);
+    }
 
     // Send initial presence sync
     logger.info(`[Socket] Emitting presence:sync to user ${userId}`);

@@ -52,9 +52,10 @@ const membershipSchema = new Schema<IMembership>(
       type: Date,
       default: null,
     },
-    lastReadAt: {
-      type: Date,
-      default: null,
+    roomLastRead: {
+      type: Map,
+      of: Date,
+      default: {},
     },
     mutedUntil: {
       type: Date,

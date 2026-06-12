@@ -19,6 +19,14 @@ export interface IMessage {
   conversationId?: Types.ObjectId;
   text: string;
   status: MessageStatus;
+  isEdited?: boolean;
+  isDeleted?: boolean;
+  attachments?: Array<{
+    url: string;
+    name: string;
+    type: string;
+    size: number;
+  }>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -30,4 +38,10 @@ export interface CreateMessageInput {
   roomId?: string;
   conversationId?: string;
   text: string;
+  attachments?: Array<{
+    url: string;
+    name: string;
+    type: string;
+    size: number;
+  }>;
 }

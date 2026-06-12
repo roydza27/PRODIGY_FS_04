@@ -1,4 +1,6 @@
+import mongoose from "mongoose";
 import { ConversationModel } from "./conversation.model";
+import { MessageModel } from "../messages/models/message.model";
 import type { IConversation } from "./conversation.types";
 
 export const findConversationById = async (id: string): Promise<IConversation | null> => {
@@ -8,25 +10,77 @@ export const findConversationById = async (id: string): Promise<IConversation | 
 export const findUserConversations = async (
   workspaceId: string,
   userId: string
-): Promise<IConversation[]> => {
-  return ConversationModel.find({
+): Promise<any[]> => {
+  const conversations = await ConversationModel.find({
     workspaceId,
     participants: userId,
   })
     .populate("participants", "name avatarUrl username")
     .sort({ lastMessageAt: -1 })
     .lean();
+
+  const userObjId = new mongoose.Types.ObjectId(userId);
+
+  const enrichedConversations = await Promise.all(
+    conversations.map(async (conv) => {
+      const [lastMessage, unreadCount] = await Promise.all([
+        MessageModel.findOne({ conversationId: conv._id })
+          .sort({ createdAt: -1 })
+          .populate("senderId", "name")
+          .lean(),
+        MessageModel.countDocuments({
+          conversationId: conv._id,
+          senderId: { $ne: userObjId },
+          status: { $ne: "seen" },
+        }),
+      ]);
+
+      return {
+        ...conv,
+        lastMessage,
+        unreadCount,
+      };
+    })
+  );
+
+  return enrichedConversations;
 };
 
 export const findAllUserConversations = async (
   userId: string
-): Promise<IConversation[]> => {
-  return ConversationModel.find({
+): Promise<any[]> => {
+  const conversations = await ConversationModel.find({
     participants: userId,
   })
     .populate("participants", "name avatarUrl username")
     .sort({ lastMessageAt: -1 })
     .lean();
+
+  const userObjId = new mongoose.Types.ObjectId(userId);
+
+  const enrichedConversations = await Promise.all(
+    conversations.map(async (conv) => {
+      const [lastMessage, unreadCount] = await Promise.all([
+        MessageModel.findOne({ conversationId: conv._id })
+          .sort({ createdAt: -1 })
+          .populate("senderId", "name")
+          .lean(),
+        MessageModel.countDocuments({
+          conversationId: conv._id,
+          senderId: { $ne: userObjId },
+          status: { $ne: "seen" },
+        }),
+      ]);
+
+      return {
+        ...conv,
+        lastMessage,
+        unreadCount,
+      };
+    })
+  );
+
+  return enrichedConversations;
 };
 
 export const findDM = async (

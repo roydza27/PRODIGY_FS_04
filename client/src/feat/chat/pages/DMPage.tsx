@@ -248,7 +248,7 @@ export default function DMPage() {
               messages={messages} 
               isDM={true} 
               isTyping={isOtherTyping}
-              typingUser={otherParticipant}
+              typingUsers={isOtherTyping ? [otherParticipant] : []}
             />
           </div>
         )}

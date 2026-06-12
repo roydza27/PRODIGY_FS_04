@@ -166,3 +166,14 @@ export const countWorkspaceMembers = async (workspaceId: string): Promise<number
 export const deleteAllWorkspaceMemberships = async (workspaceId: string): Promise<void> => {
   await MembershipModel.deleteMany({ workspaceId });
 };
+
+export const updateLastReadAt = async (
+  workspaceId: string,
+  userId: string,
+  roomId: string
+): Promise<void> => {
+  await MembershipModel.updateOne(
+    { workspaceId, userId, status: "active" },
+    { $set: { [`roomLastRead.${roomId}`]: new Date() } }
+  ).exec();
+};

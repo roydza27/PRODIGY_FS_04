@@ -1,5 +1,8 @@
+import mongoose from "mongoose";
 import type { IRoom, CreateRoomInput } from "./room.types";
 import { RoomModel } from "./room.model";
+import { MessageModel } from "../messages/models/message.model";
+import { MembershipModel } from "../workspaces/membership.model";
 
 export const findRoomById = async (roomId: string): Promise<IRoom | null> => {
   return RoomModel.findById(roomId).lean();
@@ -7,15 +10,60 @@ export const findRoomById = async (roomId: string): Promise<IRoom | null> => {
 
 export const findRoomsByWorkspaceId = async (
   workspaceId: string,
+  userId?: string,
   status: "active" | "archived" | "all" = "active"
-): Promise<IRoom[]> => {
+): Promise<any[]> => {
   const query: Record<string, unknown> = { workspaceId };
 
   if (status !== "all") {
     query.status = status;
   }
 
-  return RoomModel.find(query).sort({ createdAt: 1 }).lean();
+  const rooms = await RoomModel.find(query)
+    .sort({ lastMessageAt: -1 })
+    .populate({
+      path: "lastMessage",
+      populate: { path: "senderId", select: "name" },
+    })
+    .lean();
+
+  if (!userId) return rooms;
+
+  // Enhance with unread info
+  const membership = await MembershipModel.findOne({ workspaceId, userId }).lean();
+  const roomLastRead = (membership?.roomLastRead as Record<string, Date>) || {};
+  const userObjId = new mongoose.Types.ObjectId(userId);
+
+  const enrichedRooms = await Promise.all(
+    rooms.map(async (room) => {
+      const lastReadAt = roomLastRead[room._id.toString()] || new Date(0);
+      
+      const [unreadCount, mentionCount] = await Promise.all([
+        MessageModel.countDocuments({
+          roomId: room._id,
+          senderId: { $ne: userObjId },
+          createdAt: { $gt: lastReadAt },
+        }),
+        MessageModel.countDocuments({
+          roomId: room._id,
+          senderId: { $ne: userObjId },
+          createdAt: { $gt: lastReadAt },
+          $or: [
+            { text: new RegExp(`@${membership?.nickname || ""}`, "i") },
+            // We'll need user's actual username/name here too if nickname isn't enough
+          ]
+        }),
+      ]);
+
+      return {
+        ...room,
+        unreadCount,
+        mentionCount,
+      };
+    })
+  );
+
+  return enrichedRooms;
 };
 
 export const createRoom = async (
