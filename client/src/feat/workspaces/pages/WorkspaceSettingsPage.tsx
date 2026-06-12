@@ -72,11 +72,11 @@ export default function WorkspaceSettingsPage() {
           return prev !== next ? next : prev;
         });
         setLogoUrl(prev => {
-          const next = (activeWorkspace as Record<string, unknown>).logoUrl as string || "";
+          const next = activeWorkspace.iconUrl || "";
           return prev !== next ? next : prev;
         });
         setVisibility(prev => {
-          const next = (activeWorkspace as Record<string, unknown>).visibility as "public" | "private" || "private";
+          const next = activeWorkspace.visibility === "invite-only" ? "private" : "public";
           return prev !== next ? next : prev;
         });
         setIsEdited(false);
@@ -95,7 +95,12 @@ export default function WorkspaceSettingsPage() {
       return;
     }
 
-    updateWorkspace({ name, description, logoUrl, visibility } as Parameters<typeof updateWorkspace>[0], {
+    updateWorkspace({ 
+      name, 
+      description, 
+      iconUrl: logoUrl, 
+      visibility: visibility === "private" ? "invite-only" : "public" 
+    }, {
       onSuccess: () => {
         toast.success("Workspace updated successfully");
         setIsEdited(false);

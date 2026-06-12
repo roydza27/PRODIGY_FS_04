@@ -40,7 +40,7 @@ export default function RoomChatPage() {
 
   const typingUsers = Array.from(typingUserIds)
     .map(id => {
-       const member = (members as Array<Record<string, unknown> & { userId?: { _id: string; name: string; avatarUrl?: string } | string }>).find((m) => {
+       const member = members.find((m) => {
          const mUserId = typeof m.userId === "string" ? m.userId : m.userId?._id;
          return mUserId === id;
        });

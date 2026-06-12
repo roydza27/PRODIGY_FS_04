@@ -9,9 +9,14 @@ import { messageRoutes } from "./modules/messages";
 
 const app = express();
 
+const allowedOrigins = [env.clientUrl];
+if (process.env.NODE_ENV !== "production") {
+  allowedOrigins.push("http://localhost:5173", "http://127.0.0.1:5173");
+}
+
 app.use(
   cors({
-    origin: [env.clientUrl, "http://localhost:5173", "http://127.0.0.1:5173"],
+    origin: allowedOrigins,
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],

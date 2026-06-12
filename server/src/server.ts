@@ -6,16 +6,22 @@ import { logger } from "./utils/logger";
 import { setupSocket } from "./sockets/socket.server";
 
 const startServer = async () => {
-  await connectDB();
+  try {
+    await connectDB();
 
-  const server = http.createServer(app);
+    const server = http.createServer(app);
 
-  // Initialize Socket.IO
-  setupSocket(server);
+    // Initialize Socket.IO
+    setupSocket(server);
 
-  server.listen(env.port, () => {
-    logger.info(`Server running on http://localhost:${env.port}`);
-  });
+    server.listen(env.port, () => {
+      const host = env.nodeEnv === "production" ? "Server" : `http://localhost:${env.port}`;
+      logger.info(`${host} running on port ${env.port}`);
+    });
+  } catch (error) {
+    logger.error("Failed to start server:", error);
+    process.exit(1);
+  }
 };
 
 void startServer();

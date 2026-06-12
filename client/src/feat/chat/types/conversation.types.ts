@@ -8,6 +8,17 @@ export interface Conversation {
     avatarUrl?: string;
     lastSeenAt?: string;
   }[];
+  unreadCount?: number;
+  lastMessage?: {
+    _id: string;
+    senderId: string | {
+      _id: string;
+      name: string;
+      avatarUrl?: string;
+    };
+    text: string;
+    createdAt: string;
+  };
   lastMessageAt: string;
   createdAt: string;
   updatedAt: string;
